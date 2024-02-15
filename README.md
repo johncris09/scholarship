@@ -1,8 +1,14 @@
 # scholarship
+
+
+![Picture](scholarship.png)
+
+
 Upgraded system from  [Oroqscholarship](https://oroquietacity.net/oroqscholarship/#/login).
-- Previous repo [Oroqscholarship](https://github.com/johncris09/oroqscholarship)
- 
-## Huge Update
+##### Previous repo [Oroqscholarship](https://github.com/johncris09/oroqscholarship)
+
+
+## Huge Updates
 
 - Switch database approach from [denormalization](https://en.wikipedia.org/wiki/Denormalization)  to [normalization](https://en.wikipedia.org/wiki/Database_normalization)
 - In registration, remove unnecessary fields
@@ -33,7 +39,7 @@ B             # Last Name abbreviation
 - Clone the repo: `https://github.com/johncris09/scholarship.git`
 
 
-#### <i>Prerequisites</i>
+### <i>Prerequisites</i>
 
 ##### Before you begin,
 - move package.json/package.json to project/package.json
@@ -43,15 +49,15 @@ B             # Last Name abbreviation
 - in client/.env_development, fill in the following
 ```
 # .env
-REACT_APP_DEVELOPER=DEVELOPER_NAME
-REACT_APP_IS_DEVELOPMENT=false
-REACT_APP_BASEURL_DEVELOPMENT=BACKEND_FOLDER
-REACT_APP_BASEURL_PRODUCTION=BACKEND_FOLDER_IN_WEBSITE
-REACT_APP_USERNAME=API_USERNAME
-REACT_APP_PASSWORD=API_PASSWORD
-REACT_APP_DATE_UPDATED=DATE_UPDATED
-REACT_APP_STATUS_APPROVED_KEY=SECKRET_KEY
-REACT_APP_MINUTES_NO_ACTIVITY=MINUTES
+REACT_APP_DEVELOPER           = DEVELOPER_NAME
+REACT_APP_IS_DEVELOPMENT      = false
+REACT_APP_BASEURL_DEVELOPMENT = BACKEND_FOLDER
+REACT_APP_BASEURL_PRODUCTION  = BACKEND_FOLDER_IN_WEBSITE
+REACT_APP_USERNAME            = API_USERNAME
+REACT_APP_PASSWORD            = API_PASSWORD
+REACT_APP_DATE_UPDATED        = DATE_UPDATED
+REACT_APP_STATUS_APPROVED_KEY = SECKRET_KEY
+REACT_APP_MINUTES_NO_ACTIVITY = MINUTES
 ```
 ```
 
