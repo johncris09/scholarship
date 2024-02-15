@@ -1,0 +1,31 @@
+# api
+api/application/config/database.php
+api/application/config/config.php
+/application/controllers/Course copy.php 
+api/system
+
+# client
+client/build
+client/.env
+client/build
+client/node_modules
+client/package-lock.json
+client/package copy.json
+client/src/test
+client/src/views/registration/Registration copy.js
+client/src/views/registration/College.js
+client/src/views/registration/SeniorHigh.js
+client/src/views/registration/Toast.js
+client/src/views/registration/Tvet.js
+client/src/views/pages/register
+client/src/views/import
+client/src/views/disapproved/College copy.js
+client/src/views/disapproved/SeniorHigh copy.js
+client/src/views/dashboard/Dashboard copy.js
+client/src/views/dashboard/Dashboard1.js
+client/src/assets/template
+client/src/assets/images/avatars
+client/src/assets/images/angular.jpg
+client/src/assets/images/react.jpg
+client/src/assets/images/vue.jpg
+client/src/assets/app

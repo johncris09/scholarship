@@ -1,0 +1,664 @@
+import React, { useState, useEffect, useRef } from 'react'
+import './../../assets/css/react-paginate.css'
+import Swal from 'sweetalert2'
+import {
+  CButton,
+  CCard,
+  CCardBody,
+  CCardHeader,
+  CCol,
+  CForm,
+  CFormCheck,
+  CFormInput,
+  CFormLabel,
+  CFormSelect,
+  CFormText,
+  CInputGroup,
+  CModal,
+  CModalBody,
+  CModalHeader,
+  CModalTitle,
+  CRow,
+  CSpinner,
+} from '@coreui/react'
+import MaterialReactTable from 'material-react-table'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEye, faEyeSlash, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { useFormik } from 'formik'
+import Select from 'react-select'
+import { ToastContainer, toast } from 'react-toastify'
+import { Box, IconButton, Tooltip } from '@mui/material'
+import { DeleteOutline, EditSharp, Key } from '@mui/icons-material'
+import {
+  DefaultLoading,
+  RequiredFieldNote,
+  api,
+  decrypted,
+  handleError,
+  requiredField,
+  roleType,
+  toSentenceCase,
+  validationPrompt,
+} from 'src/components/SystemConfiguration'
+import * as Yup from 'yup'
+
+const User = ({ cardTitle }) => {
+  const [data, setData] = useState([])
+  const selectSeniorHighSchoolInputRef = useRef()
+  const selectRoleTypeInputRef = useRef()
+  const [validated, setValidated] = useState(true)
+  const [passwordValidated, setPasswordValidated] = useState(false)
+  const [fetchDataLoading, setFetchDataLoading] = useState(true)
+  const [operationLoading, setOperationLoading] = useState(false)
+  const [modalFormVisible, setModalFormVisible] = useState(false)
+  const [modalChangePasswordFormVisible, setModalChangePasswordFormVisible] = useState(false)
+  const [seniorHighSchool, setSeniorHighSchool] = useState([])
+  const [isEnableEdit, setIsEnableEdit] = useState(false)
+  const [togglePassword, setTogglePassword] = useState(true)
+  const [fetchSeniorHighSchoolLoading, setFetchSeniorHighSchoolLoading] = useState(false)
+
+  useEffect(() => {
+    fetchData()
+    fetchSeniorHighSchool()
+  }, [])
+
+  const fetchData = () => {
+    api
+      .get('user')
+      .then((response) => {
+        setData(response.data)
+      })
+      .catch((error) => {
+        toast.error(handleError(error))
+      })
+      .finally(() => {
+        setFetchDataLoading(false)
+      })
+  }
+
+  const fetchSeniorHighSchool = () => {
+    setFetchSeniorHighSchoolLoading(true)
+    api
+      .get('senior_high_school')
+      .then((response) => {
+        const formattedData = response.data.map((item) => {
+          const value = item.id
+          const label = `${item.school}`
+          return { value, label }
+        })
+
+        setSeniorHighSchool(formattedData)
+      })
+      .catch((error) => {
+        toast.error(handleError(error))
+      })
+      .finally(() => {
+        setFetchSeniorHighSchoolLoading(false)
+      })
+  }
+
+  const validationSchema = Yup.object().shape({
+    first_name: Yup.string().required('First Name is required'),
+    last_name: Yup.string().required('Last Name is required'),
+    username: Yup.string().required('Username is required'),
+    role_type: Yup.string().when('school_user', {
+      is: false,
+      then: (schema) => schema.required('Role Type is required'),
+      otherwise: (schema) => schema,
+    }),
+    password: Yup.string().when('hidePassword', {
+      is: false,
+      then: (schema) =>
+        schema
+          .required('Password is required')
+          .min(7, 'Too Short!')
+          .max(12, 'Too Long!')
+          .matches(
+            /^(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
+            'Password must have at least 1 uppercase letter, 1 symbol, and be at least 8 characters',
+          ),
+      otherwise: (schema) => schema,
+    }),
+    school: Yup.string().when('school_user', {
+      is: true,
+      then: (schema) => schema.required('School is required'),
+      otherwise: (schema) => schema,
+    }),
+  })
+  const form = useFormik({
+    initialValues: {
+      id: '',
+      first_name: '',
+      last_name: '',
+      middle_name: '',
+      username: '',
+      password: '',
+      hidePassword: false,
+      role_type: '',
+      school_user: false,
+      school: '',
+    },
+    validationSchema: validationSchema,
+    onSubmit: async (values) => {
+      if (values.hidePassword) {
+        setOperationLoading(true)
+        setFetchDataLoading(true)
+        await api
+          .put('user/update/' + values.id, values)
+          .then((response) => {
+            console.info(response.data)
+            toast.success(response.data.message)
+            fetchData()
+            setValidated(false)
+            setModalFormVisible(false)
+          })
+          .catch((error) => {
+            console.info(error)
+            // toast.error(handleError(error))
+          })
+          .finally(() => {
+            setOperationLoading(false)
+            setFetchDataLoading(false)
+          })
+      } else {
+        await api
+          .post('user/insert', values)
+          .then((response) => {
+            toast.success(response.data.message)
+            form.resetForm()
+            setValidated(false)
+            fetchData()
+          })
+          .catch((error) => {
+            toast.error(handleError(error))
+          })
+          .finally(() => {
+            setOperationLoading(false)
+          })
+      }
+    },
+  })
+
+  const updatePasswordFormValidationSchema = Yup.object().shape({
+    password: Yup.string()
+      .required('Password is required')
+      .min(7, 'Too Short!')
+      .max(12, 'Too Long!')
+      .matches(
+        /^(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
+        'Password must have at least 1 uppercase letter, 1 symbol, and be at least 8 characters',
+      ),
+  })
+  const updatePasswordForm = useFormik({
+    initialValues: {
+      id: '',
+      password: '',
+    },
+    validationSchema: updatePasswordFormValidationSchema,
+    onSubmit: async (values) => {
+      setOperationLoading(true)
+      setFetchDataLoading(true)
+      // update password
+      await api
+        .put('user/change_password/' + values.id, values)
+        .then((response) => {
+          toast.success(response.data.message)
+          fetchData()
+          setPasswordValidated(false)
+          setModalChangePasswordFormVisible(false)
+        })
+        .catch((error) => {
+          toast.error(handleError(error))
+        })
+        .finally(() => {
+          setOperationLoading(false)
+          setFetchDataLoading(false)
+        })
+    },
+  })
+
+  const handleInputChange = (e) => {
+    form.handleChange(e)
+    const { name, value, type, checked } = e.target
+
+    if (type === 'text' && name !== 'username' && name !== 'password') {
+      form.setFieldValue(name, toSentenceCase(value))
+    } else {
+      form.setFieldValue(name, value)
+    }
+
+    if (type === 'checkbox') {
+      form.setFieldValue(name, checked)
+      // reset school and role type
+      if (!checked) {
+        form.setFieldValue('school', '')
+        form.setFieldValue('role_type', '')
+      } else {
+        form.setFieldValue('role_type', 'User')
+      }
+    }
+  }
+
+  const handleSelectChange = (selectedOption, ref) => {
+    form.setFieldValue(ref.name, selectedOption ? selectedOption.value : '')
+  }
+
+  const handlePasswordInputChange = (e) => {
+    const { name, value } = e.target
+    updatePasswordForm.setFieldValue(name, value)
+  }
+
+  const column = [
+    {
+      accessorKey: 'firstname',
+      header: 'First Name',
+    },
+
+    {
+      accessorKey: 'middlename',
+      header: 'M.I.',
+    },
+    {
+      accessorKey: 'lastname',
+      header: 'Last Name',
+    },
+    {
+      accessorKey: 'username',
+      header: 'Username',
+    },
+    {
+      accessorKey: 'role',
+      header: 'Role',
+      accessorFn: (row) => {
+        if (row.role === '4BSVYawhFI8j779vM8q1') {
+          return 'Administrator'
+        }
+        if (row.role === 'KmOlD4kHZC93Yp8Jirhc') {
+          return 'Encoder'
+        }
+        if (row.role === 'azr14gGCV7hLW2ppQz2l') {
+          return 'User'
+        }
+      },
+    },
+    {
+      accessorKey: 'school',
+      header: 'School',
+    },
+  ]
+
+  return (
+    <>
+      <ToastContainer />
+      <CCard className="mb-4" style={{ position: 'relative' }}>
+        <CCardHeader>
+          {cardTitle}
+          <div className="float-end">
+            <CButton
+              size="sm"
+              color="primary"
+              onClick={() => {
+                form.resetForm()
+                setIsEnableEdit(false)
+                setValidated(false)
+                setModalFormVisible(!modalFormVisible)
+              }}
+            >
+              <FontAwesomeIcon icon={faPlus} /> Add {cardTitle}
+            </CButton>
+          </div>
+        </CCardHeader>
+        <CCardBody>
+          <MaterialReactTable
+            columns={column}
+            data={data}
+            state={{
+              isLoading: fetchDataLoading,
+              isSaving: fetchDataLoading,
+              showLoadingOverlay: fetchDataLoading,
+              showProgressBars: fetchDataLoading,
+              showSkeletons: fetchDataLoading,
+            }}
+            muiCircularProgressProps={{
+              color: 'secondary',
+              thickness: 5,
+              size: 55,
+            }}
+            muiSkeletonProps={{
+              animation: 'pulse',
+              height: 28,
+            }}
+            columnFilterDisplayMode="popover"
+            paginationDisplayMode="pages"
+            positionToolbarAlertBanner="bottom"
+            enableStickyHeader
+            enableStickyFooter
+            enableRowActions
+            initialState={{
+              density: 'compact',
+              columnPinning: { left: ['mrt-row-actions'] },
+            }}
+            renderRowActions={({ row, table }) => (
+              <Box sx={{ display: 'flex', flexWrap: 'nowrap' }}>
+                <Tooltip title="Edit">
+                  <IconButton
+                    color="warning"
+                    onClick={() => {
+                      setOperationLoading(false)
+
+                      form.setValues({
+                        id: row.original.id,
+                        last_name: row.original.lastname,
+                        first_name: row.original.firstname,
+                        middle_name: row.original.middlename,
+                        username: row.original.username,
+                        role_type: row.original.role,
+                        hidePassword: true,
+                        school_user: row.original.school != null ? row.original.school : '',
+                        school: row.original.school_id === null ? '' : row.original.school_id,
+                      })
+                      setModalFormVisible(true)
+                    }}
+                  >
+                    <EditSharp />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Delete">
+                  <IconButton
+                    color="error"
+                    onClick={() => {
+                      Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You won't be able to revert this!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, delete it!',
+                      }).then(async (result) => {
+                        if (result.isConfirmed) {
+                          validationPrompt(() => {
+                            let id = row.original.ID
+                            setFetchDataLoading(true)
+                            api
+                              .delete('user/delete/' + id)
+                              .then((response) => {
+                                fetchData()
+                                toast.success(response.data.message)
+                              })
+                              .catch((error) => {
+                                toast.error(handleError(error))
+                              })
+                              .finally(() => {
+                                setFetchDataLoading(false)
+                              })
+                          })
+                        }
+                      })
+                    }}
+                  >
+                    <DeleteOutline />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Change Password">
+                  <IconButton
+                    color="secondary"
+                    onClick={() => {
+                      setModalChangePasswordFormVisible(true)
+                      updatePasswordForm.setValues({
+                        id: row.original.id,
+                        password: '',
+                      })
+                    }}
+                  >
+                    <Key />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            )}
+          />
+
+          {fetchDataLoading && <DefaultLoading />}
+        </CCardBody>
+      </CCard>
+
+      <CModal
+        alignment="center"
+        visible={modalFormVisible}
+        onClose={() => setModalFormVisible(false)}
+        backdrop="static"
+        keyboard={false}
+        size="lg"
+      >
+        <CModalHeader>
+          <CModalTitle>{isEnableEdit ? `Edit ${cardTitle}` : `Add New ${cardTitle}`}</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <RequiredFieldNote />
+          <CForm
+            className="row g-3 needs-validation mt-4"
+            noValidate
+            validated={validated}
+            onSubmit={form.handleSubmit}
+            style={{ position: 'relative' }}
+          >
+            <CRow>
+              <CCol>
+                <CFormInput
+                  type="text"
+                  label={requiredField('First Name')}
+                  name="first_name"
+                  onChange={handleInputChange}
+                  value={form.values.first_name}
+                  required
+                  placeholder="First Name"
+                />
+                {form.touched.first_name && form.errors.first_name && (
+                  <CFormText className="text-danger">{form.errors.first_name}</CFormText>
+                )}
+              </CCol>
+              <CCol>
+                <CFormInput
+                  type="text"
+                  label="Middle Initial"
+                  name="middle_name"
+                  onChange={handleInputChange}
+                  value={form.values.middle_name}
+                  placeholder="Middle Initial"
+                />
+              </CCol>
+              <CCol>
+                <CFormInput
+                  type="text"
+                  label={requiredField('Last Name')}
+                  name="last_name"
+                  onChange={handleInputChange}
+                  value={form.values.last_name}
+                  required
+                  placeholder="Last Name"
+                />
+                {form.touched.last_name && form.errors.last_name && (
+                  <CFormText className="text-danger">{form.errors.last_name}</CFormText>
+                )}
+              </CCol>
+            </CRow>
+
+            <CRow>
+              <CCol>
+                <CFormInput
+                  type="text"
+                  label={requiredField('Username')}
+                  name="username"
+                  onChange={handleInputChange}
+                  value={form.values.username}
+                  required
+                  placeholder="Username"
+                />
+                {form.touched.username && form.errors.username && (
+                  <CFormText className="text-danger">{form.errors.username}</CFormText>
+                )}
+              </CCol>
+              {!form.values.hidePassword && (
+                <>
+                  <CCol>
+                    <CFormLabel>{requiredField('Password')}</CFormLabel>
+                    <CInputGroup className="mb-3">
+                      <CFormInput
+                        type={togglePassword ? 'password' : 'text'}
+                        name="password"
+                        onChange={handleInputChange}
+                        value={form.values.password}
+                        required
+                        placeholder="Password"
+                      />
+                      <CButton
+                        onClick={() => {
+                          setTogglePassword((prevShowPassword) => !prevShowPassword)
+                        }}
+                        type="button"
+                        color="secondary"
+                        variant="outline"
+                      >
+                        <FontAwesomeIcon icon={togglePassword ? faEye : faEyeSlash} />
+                      </CButton>
+                    </CInputGroup>
+                    {form.touched.password && form.errors.password && (
+                      <CFormText className="text-danger">{form.errors.password}</CFormText>
+                    )}
+                  </CCol>
+                </>
+              )}
+              {!form.values.school_user && (
+                <CCol md={form.values.hidePassword ? 6 : 12}>
+                  <CFormLabel>{requiredField('Role Type')}</CFormLabel>
+                  <Select
+                    ref={selectRoleTypeInputRef}
+                    value={roleType.find((option) => option.value === form.values.role_type)}
+                    onChange={handleSelectChange}
+                    options={roleType}
+                    name="role_type"
+                    isSearchable
+                    placeholder="Search..."
+                    isClearable
+                    required
+                  />
+                  {form.touched.role_type && form.errors.role_type && (
+                    <CFormText className="text-danger">{form.errors.role_type}</CFormText>
+                  )}
+                </CCol>
+              )}
+            </CRow>
+            <CRow>
+              <CCol className="mt-4">
+                <CFormCheck
+                  name="school_user"
+                  onChange={handleInputChange}
+                  checked={form.values.school_user}
+                  label="Create a user for the school"
+                />
+              </CCol>
+            </CRow>
+
+            {form.values.school_user && (
+              <CRow>
+                <CCol className="mt-1">
+                  <hr />
+                  <CFormLabel>
+                    {
+                      <>
+                        {fetchSeniorHighSchoolLoading && <CSpinner size="sm" />}
+                        {requiredField(' School')}
+                      </>
+                    }
+                  </CFormLabel>
+                  <Select
+                    ref={selectSeniorHighSchoolInputRef}
+                    value={seniorHighSchool.find((option) => option.value === form.values.school)}
+                    onChange={handleSelectChange}
+                    options={seniorHighSchool}
+                    name="school"
+                    isSearchable
+                    placeholder="Search..."
+                    isClearable
+                    required
+                  />
+                  {form.touched.school && form.errors.school && (
+                    <CFormText className="text-danger">{form.errors.school}</CFormText>
+                  )}
+                </CCol>
+              </CRow>
+            )}
+
+            <hr />
+            <CCol xs={12}>
+              <CButton color="primary" type="submit" className="float-end">
+                {isEnableEdit ? 'Update' : 'Submit form'}
+              </CButton>
+            </CCol>
+          </CForm>
+          {operationLoading && <DefaultLoading />}
+        </CModalBody>
+      </CModal>
+
+      <CModal
+        alignment="center"
+        visible={modalChangePasswordFormVisible}
+        onClose={() => setModalChangePasswordFormVisible(false)}
+        backdrop="static"
+        keyboard={false}
+        size="lg"
+      >
+        <CModalHeader>
+          <CModalTitle>Change Password</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <RequiredFieldNote />
+          <CForm
+            className="row g-3 needs-validation mt-4"
+            noValidate
+            validated={passwordValidated}
+            onSubmit={updatePasswordForm.handleSubmit}
+            style={{ position: 'relative' }}
+          >
+            <CCol md={12}>
+              <CFormLabel>{requiredField('Password')}</CFormLabel>
+              <CInputGroup className="mb-3">
+                <CFormInput
+                  type={togglePassword ? 'password' : 'text'}
+                  name="password"
+                  onChange={handlePasswordInputChange}
+                  value={updatePasswordForm.values.password}
+                  required
+                  placeholder="Password"
+                />
+                <CButton
+                  onClick={() => {
+                    setTogglePassword((prevShowPassword) => !prevShowPassword)
+                  }}
+                  type="button"
+                  color="secondary"
+                  variant="outline"
+                >
+                  <FontAwesomeIcon icon={togglePassword ? faEye : faEyeSlash} />
+                </CButton>
+              </CInputGroup>
+              {updatePasswordForm.touched.password && updatePasswordForm.errors.password && (
+                <CFormText className="text-danger">{updatePasswordForm.errors.password}</CFormText>
+              )}
+            </CCol>
+
+            <hr />
+            <CCol xs={12}>
+              <CButton color="primary" type="submit" className="float-end">
+                Change Password
+              </CButton>
+            </CCol>
+          </CForm>
+          {operationLoading && <DefaultLoading />}
+        </CModalBody>
+      </CModal>
+    </>
+  )
+}
+
+export default User
