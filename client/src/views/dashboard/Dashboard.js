@@ -43,9 +43,11 @@ import {
   requiredField,
   RequiredFieldNote,
   toSentenceCase,
+  MagnifyingGlassLoading,
 } from 'src/components/SystemConfiguration'
 import * as Yup from 'yup'
 import CountUp from 'react-countup'
+import { Skeleton } from '@mui/material'
 
 const Dashboard = ({ cardTitle }) => {
   const [loading, setLoading] = useState(false)
@@ -117,6 +119,7 @@ const Dashboard = ({ cardTitle }) => {
     ])
       .then((responses) => {
         const newData = responses.map((response) => response.data)
+        console.info(newData)
         setTotalStatusData(newData)
       })
       .catch((error) => {
@@ -151,6 +154,7 @@ const Dashboard = ({ cardTitle }) => {
 
   const handleRemoveFilter = () => {
     setLoading(true)
+    setLoadingTotal(false)
     setLoadingOperation(true)
     setLoadingChart(true)
     filterForm.resetForm()
@@ -160,6 +164,7 @@ const Dashboard = ({ cardTitle }) => {
   }
 
   const handleViewAllData = () => {
+    setLoadingTotal(false)
     setLoadingTotal(true)
     setLoadingOperation(true)
     setLoadingChart(true)
@@ -251,6 +256,7 @@ const Dashboard = ({ cardTitle }) => {
     },
     validationSchema: filterFormValidationSchema,
     onSubmit: async (values) => {
+      setLoadingTotal(false)
       setLoadingTotal(true)
       setLoadingOperation(true)
       setLoadingChart(true)
@@ -440,228 +446,351 @@ const Dashboard = ({ cardTitle }) => {
                 </CRow>
               </CForm>
 
-              {loadingOperation && <DefaultLoading />}
+              {loadingOperation && <MagnifyingGlassLoading />}
             </CCardBody>
           </CCard>
         </CCol>
       </CRow>
-      <CRow className="animate__animated animate__pulse">
-        <CCol style={{ position: 'relative' }}>
-          <CWidgetStatsF
-            style={{ borderRadius: 10 }}
-            className="mb-3"
-            color="transparent"
-            padding={false}
-            icon={
-              <lord-icon
-                src="https://cdn.lordicon.com/zsaomnmb.json"
-                trigger="hover"
-                colors="primary:#e8308c,secondary:#2516c7,tertiary:#109121,quaternary:#3a3347"
-                style={{ width: '50px', height: '50px' }}
-              ></lord-icon>
-            }
-            title="Senior High"
-            value=<CountUp end={totalData.senior_high} />
-          />
-          {loadingTotal && <WidgetLoading />}
-        </CCol>
-        <CCol style={{ position: 'relative' }}>
-          <CWidgetStatsF
-            style={{ borderRadius: 10 }}
-            className="mb-3"
-            color="transparent"
-            padding={false}
-            icon={
-              <lord-icon
-                src="https://cdn.lordicon.com/zsaomnmb.json"
-                trigger="hover"
-                colors="primary:#e88c30,secondary:#16c72e,tertiary:#30c9e8,quaternary:#3a3347"
-                style={{ width: '50px', height: '50px' }}
-              ></lord-icon>
-            }
-            title="College"
-            value=<CountUp end={totalData.college} />
-          />
-          {loadingTotal && <WidgetLoading />}
-        </CCol>
-        <CCol style={{ position: 'relative' }}>
-          <CWidgetStatsF
-            style={{ borderRadius: 10 }}
-            className="mb-3"
-            variant="outline"
-            color="transparent"
-            padding={false}
-            icon={
-              <lord-icon
-                src="https://cdn.lordicon.com/zsaomnmb.json"
-                trigger="hover"
-                style={{ width: '50px', height: '50px' }}
-              ></lord-icon>
-            }
-            title="TVET"
-            value=<CountUp end={totalData.tvet} />
-          />
+      {!loadingTotal ? (
+        <CRow>
+          <CCol>
+            <CWidgetStatsF
+              style={{ borderRadius: 10 }}
+              className="mb-3"
+              color="transparent"
+              padding={false}
+              icon={
+                <lord-icon
+                  src="https://cdn.lordicon.com/zsaomnmb.json"
+                  trigger="hover"
+                  colors="primary:#e8308c,secondary:#2516c7,tertiary:#109121,quaternary:#3a3347"
+                  style={{ width: '50px', height: '50px' }}
+                ></lord-icon>
+              }
+              title="Senior High"
+              value=<CountUp end={totalData.senior_high} />
+            />
+          </CCol>
+          <CCol>
+            <CWidgetStatsF
+              style={{ borderRadius: 10 }}
+              className="mb-3"
+              color="transparent"
+              padding={false}
+              icon={
+                <lord-icon
+                  src="https://cdn.lordicon.com/zsaomnmb.json"
+                  trigger="hover"
+                  colors="primary:#e88c30,secondary:#16c72e,tertiary:#30c9e8,quaternary:#3a3347"
+                  style={{ width: '50px', height: '50px' }}
+                ></lord-icon>
+              }
+              title="College"
+              value=<CountUp end={totalData.college} />
+            />
+          </CCol>
+          <CCol>
+            <CWidgetStatsF
+              style={{ borderRadius: 10 }}
+              className="mb-3"
+              variant="outline"
+              color="transparent"
+              padding={false}
+              icon={
+                <lord-icon
+                  src="https://cdn.lordicon.com/zsaomnmb.json"
+                  trigger="hover"
+                  style={{ width: '50px', height: '50px' }}
+                ></lord-icon>
+              }
+              title="TVET"
+              value=<CountUp end={totalData.tvet} />
+            />
+          </CCol>
+        </CRow>
+      ) : (
+        <CRow className="animate__animated animate__pulse">
+          <CCol>
+            <div className="card mb-3" style={{ borderRadius: '10px' }}>
+              <div className="card-body d-flex align-items-center p-0">
+                <div className="me-3 text-white bg-transparent p-4">
+                  <Skeleton variant="circular" height={55} width={55} />
+                </div>
+                <div>
+                  <div className="fs-6 fw-semibold text-transparent">
+                    <p>
+                      <Skeleton variant="rectangular" width={30} />
+                    </p>
+                  </div>
+                  <div className="text-medium-emphasis text-uppercase fw-semibold small">
+                    <p>
+                      <Skeleton variant="rectangular" width={100} />
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CCol>
+          <CCol>
+            <div className="card mb-3" style={{ borderRadius: '10px' }}>
+              <div className="card-body d-flex align-items-center p-0">
+                <div className="me-3 text-white bg-transparent p-4">
+                  <Skeleton variant="circular" height={55} width={55} />
+                </div>
+                <div>
+                  <div className="fs-6 fw-semibold text-transparent">
+                    <p>
+                      <Skeleton variant="rectangular" width={30} />
+                    </p>
+                  </div>
+                  <div className="text-medium-emphasis text-uppercase fw-semibold small">
+                    <p>
+                      <Skeleton variant="rectangular" width={100} />
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CCol>
+          <CCol>
+            <div className="card mb-3" style={{ borderRadius: '10px' }}>
+              <div className="card-body d-flex align-items-center p-0">
+                <div className="me-3 text-white bg-transparent p-4">
+                  <Skeleton variant="circular" height={55} width={55} />
+                </div>
+                <div>
+                  <div className="fs-6 fw-semibold text-transparent">
+                    <p>
+                      <Skeleton variant="rectangular" width={30} />
+                    </p>
+                  </div>
+                  <div className="text-medium-emphasis text-uppercase fw-semibold small">
+                    <p>
+                      <Skeleton variant="rectangular" width={100} />
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CCol>
+        </CRow>
+      )}
+      {!loadingTotal ? (
+        <CRow>
+          <CCol>
+            <CTable>
+              <CTableHead>
+                <CTableRow>
+                  <CTableHeaderCell scope="col">Scholarship Type</CTableHeaderCell>
 
-          {loadingTotal && <WidgetLoading />}
-        </CCol>
-      </CRow>
-      <CRow>
-        <CCol style={{ position: 'relative' }}>
-          <MaterialReactTable
-            columns={column}
-            data={totalStatusData}
-            enableRowVirtualization
-            enableColumnVirtualization
-            state={{
-              isLoading: loading,
-              isSaving: loading,
-              showLoadingOverlay: loading,
-              showProgressBars: loading,
-              showSkeletons: loading,
-            }}
-            muiCircularProgressProps={{
-              color: 'secondary',
-              thickness: 5,
-              size: 55,
-            }}
-            muiSkeletonProps={{
-              animation: 'pulse',
-              height: 28,
-            }}
-            enableColumnResizing
-            enableFullScreenToggle={false}
-            enableHiding={false}
-            enableTopToolbar={false}
-            enableBottomToolbar={false}
-            enableDensityToggle={false}
-            enableColumnActions={false}
-            enableColumnFilters={false}
-            enablePagination={false}
-            enableSorting={false}
-            enableGrouping={false}
-            enableSelectAll={true}
-            columnFilterDisplayMode="popover"
-            paginationDisplayMode="pages"
-            positionToolbarAlertBanner="bottom"
-            enableStickyHeader
-            enableStickyFooter
-            selectAllMode="all"
-            initialState={{ density: 'compact' }}
-          />
-          {loadingTotal && <DefaultLoading />}
-        </CCol>
-      </CRow>
-      <CRow className="justify-content-center mt-4">
-        <CCol md={12}>
-          <CCard>
-            <CCardBody>
-              <p className="text-medium-emphasis small">
-                A chart that shows the application status for each address.
-              </p>
+                  <CTableHeaderCell scope="col">Approved</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Pending</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Disapproved</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Archived</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Voided</CTableHeaderCell>
+                </CTableRow>
+              </CTableHead>
+              <CTableBody>
+                {totalStatusData.map((data, index) => (
+                  <CTableRow key={index}>
+                    <CTableHeaderCell scope="row">
+                      {index === 0 && 'Senior High'}
+                      {index === 1 && 'College'}
+                      {index === 2 && 'Tvet'}
+                    </CTableHeaderCell>
+                    <CTableDataCell>{data.approved}</CTableDataCell>
+                    <CTableDataCell>{data.pending}</CTableDataCell>
+                    <CTableDataCell>{data.disapproved}</CTableDataCell>
+                    <CTableDataCell>{data.archived}</CTableDataCell>
+                    <CTableDataCell>{data.void}</CTableDataCell>
+                  </CTableRow>
+                ))}
+              </CTableBody>
+            </CTable>
+          </CCol>
+        </CRow>
+      ) : (
+        <CRow>
+          <CCol>
+            <Skeleton
+              variant="rounded"
+              width={'100%'}
+              className="my-1"
+              animation="wave"
+              height={30}
+            />
+            <Skeleton
+              variant="rounded"
+              width={'100%'}
+              className="my-1"
+              animation="wave"
+              height={30}
+            />
+            <Skeleton
+              variant="rounded"
+              width={'100%'}
+              className="my-1"
+              animation="wave"
+              height={30}
+            />
+            <Skeleton
+              variant="rounded"
+              width={'100%'}
+              className="my-1"
+              animation="wave"
+              height={30}
+            />
+          </CCol>
+        </CRow>
+      )}
+      {!loadingChart ? (
+        <CRow className="justify-content-center mt-4">
+          <CCol md={12}>
+            <CCard>
+              <CCardBody>
+                <p className="text-medium-emphasis small">
+                  A chart that shows the application status for each address.
+                </p>
 
-              <CNav variant="pills" layout="justified">
-                <CNavItem role="presentation">
-                  <CNavLink
-                    active={activeKey === 1}
-                    component="button"
-                    role="tab"
-                    aria-controls="senior-high-tab-pane"
-                    aria-selected={activeKey === 1}
-                    onClick={() => {
-                      setActiveKey(1)
-                      toast.dismiss()
-                    }}
+                <CNav variant="pills" layout="justified">
+                  <CNavItem role="presentation">
+                    <CNavLink
+                      active={activeKey === 1}
+                      component="button"
+                      role="tab"
+                      aria-controls="senior-high-tab-pane"
+                      aria-selected={activeKey === 1}
+                      onClick={() => {
+                        setActiveKey(1)
+                        toast.dismiss()
+                      }}
+                    >
+                      Senior High
+                    </CNavLink>
+                  </CNavItem>
+                  <CNavItem role="presentation">
+                    <CNavLink
+                      active={activeKey === 2}
+                      component="button"
+                      role="tab"
+                      aria-controls="college-tab-pane"
+                      aria-selected={activeKey === 2}
+                      onClick={() => {
+                        setActiveKey(2)
+                        toast.dismiss()
+                      }}
+                    >
+                      College
+                    </CNavLink>
+                  </CNavItem>
+                  <CNavItem role="presentation">
+                    <CNavLink
+                      active={activeKey === 3}
+                      component="button"
+                      role="tab"
+                      aria-controls="tvet-tab-pane"
+                      aria-selected={activeKey === 3}
+                      onClick={() => {
+                        setActiveKey(3)
+                        toast.dismiss()
+                      }}
+                    >
+                      Tvet
+                    </CNavLink>
+                  </CNavItem>
+                </CNav>
+                <CTabContent>
+                  <CTabPane
+                    role="tabpanel"
+                    aria-labelledby="senior-high-tab-pane"
+                    visible={activeKey === 1}
+                    style={{ position: 'relative' }}
                   >
-                    Senior High
-                  </CNavLink>
-                </CNavItem>
-                <CNavItem role="presentation">
-                  <CNavLink
-                    active={activeKey === 2}
-                    component="button"
-                    role="tab"
-                    aria-controls="college-tab-pane"
-                    aria-selected={activeKey === 2}
-                    onClick={() => {
-                      setActiveKey(2)
-                      toast.dismiss()
-                    }}
+                    <CChart
+                      type="bar"
+                      data={
+                        statusAddressChartData.senior_high === undefined
+                          ? []
+                          : statusAddressChartData.senior_high
+                      }
+                    />
+                  </CTabPane>
+                  <CTabPane
+                    role="tabpanel"
+                    aria-labelledby="college-tab-pane"
+                    visible={activeKey === 2}
+                    style={{ position: 'relative' }}
                   >
-                    College
-                  </CNavLink>
-                </CNavItem>
-                <CNavItem role="presentation">
-                  <CNavLink
-                    active={activeKey === 3}
-                    component="button"
-                    role="tab"
-                    aria-controls="tvet-tab-pane"
-                    aria-selected={activeKey === 3}
-                    onClick={() => {
-                      setActiveKey(3)
-                      toast.dismiss()
-                    }}
+                    <CChart
+                      type="bar"
+                      data={
+                        statusAddressChartData.college === undefined
+                          ? []
+                          : statusAddressChartData.college
+                      }
+                    />
+                  </CTabPane>
+                  <CTabPane
+                    role="tabpanel"
+                    aria-labelledby="tvet-tab-pane"
+                    visible={activeKey === 3}
+                    style={{ position: 'relative' }}
                   >
-                    Tvet
-                  </CNavLink>
-                </CNavItem>
-              </CNav>
-              <CTabContent>
-                <CTabPane
-                  role="tabpanel"
-                  aria-labelledby="senior-high-tab-pane"
-                  visible={activeKey === 1}
-                  style={{ position: 'relative' }}
-                >
-                  <CChart
-                    type="bar"
-                    data={
-                      statusAddressChartData.senior_high === undefined
-                        ? []
-                        : statusAddressChartData.senior_high
-                    }
-                  />
-                </CTabPane>
-                <CTabPane
-                  role="tabpanel"
-                  aria-labelledby="college-tab-pane"
-                  visible={activeKey === 2}
-                  style={{ position: 'relative' }}
-                >
-                  <CChart
-                    type="bar"
-                    data={
-                      statusAddressChartData.college === undefined
-                        ? []
-                        : statusAddressChartData.college
-                    }
-                  />
-                </CTabPane>
-                <CTabPane
-                  role="tabpanel"
-                  aria-labelledby="tvet-tab-pane"
-                  visible={activeKey === 3}
-                  style={{ position: 'relative' }}
-                >
-                  <CChart
-                    type="bar"
-                    data={
-                      statusAddressChartData.tvet === undefined ? [] : statusAddressChartData.tvet
-                    }
-                  />
-                </CTabPane>
-                {loadingChart && <DefaultLoading />}
-              </CTabContent>
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
-      <CRow className="mt-2">
-        <CCol md={6}>
-          {onlineUser && (
+                    <CChart
+                      type="bar"
+                      data={
+                        statusAddressChartData.tvet === undefined ? [] : statusAddressChartData.tvet
+                      }
+                    />
+                  </CTabPane>
+                  {loadingChart && <DefaultLoading />}
+                </CTabContent>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
+      ) : (
+        <CRow className="justify-content-center mt-4">
+          <CCol md={12}>
+            <CCard>
+              <CCardBody>
+                <p className="text-medium-emphasis small">
+                  <Skeleton variant="rectangular" width={400} />
+                </p>
+
+                <CNav variant="pills" layout="justified">
+                  <CNavItem className="nav-item px-3" role="presentation">
+                    <Skeleton variant="rounded" height={35} />
+                  </CNavItem>
+                  <CNavItem className="nav-item px-3" role="presentation">
+                    <Skeleton variant="rounded" height={35} />
+                  </CNavItem>
+                  <CNavItem className="nav-item px-3" role="presentation">
+                    <Skeleton variant="rounded" height={35} />
+                  </CNavItem>
+                </CNav>
+
+                <CTabContent>
+                  <div className="d-grid gap-2 d-md-flex mt-2 justify-content-md-center">
+                    <Skeleton variant="rounded" height={10} width={110} />
+                    <Skeleton variant="rounded" height={10} width={110} />
+                    <Skeleton variant="rounded" height={10} width={110} />
+                  </div>
+                  <div className="container-fluid px-3 pt-2">
+                    <Skeleton variant="rounded" height={400} />
+                  </div>
+                </CTabContent>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
+      )}
+
+      {!loadingOnline ? (
+        <CRow className="mt-2">
+          <CCol md={6}>
             <CCard className="mb-4">
               <CCardHeader>Online Users</CCardHeader>
-
               <CCardBody>
                 <CTable small striped bordered responsive hover className="text-center">
                   <CTableRow>
@@ -688,12 +817,34 @@ const Dashboard = ({ cardTitle }) => {
                     </CTableRow>
                   ))}
                 </CTable>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
+      ) : (
+        <CRow className="mt-2">
+          <CCol md={6}>
+            <CCard className="mb-4">
+              <CCardHeader>
+                <Skeleton variant="rectangular" width={100} />
+              </CCardHeader>
+
+              <CCardBody>
+                <div className="d-grid gap-5 d-md-flex mt-2 justify-content-md-center">
+                  <Skeleton variant="rounded" height={20} width={80} />
+                  <Skeleton variant="rounded" height={20} width={80} />
+                  <Skeleton variant="rounded" height={20} width={80} />
+                  <Skeleton variant="rounded" height={20} width={80} />
+                </div>
+                <div className="container-fluid px-3 pt-2">
+                  <Skeleton variant="rounded" width={'100%'} height={500} />
+                </div>
                 {loadingOperation && <DefaultLoading />}
               </CCardBody>
             </CCard>
-          )}
-        </CCol>
-      </CRow>
+          </CCol>
+        </CRow>
+      )}
     </>
   )
 }
