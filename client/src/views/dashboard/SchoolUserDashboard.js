@@ -1,20 +1,9 @@
 import React, { useState, useEffect } from 'react'
-
 import {
-  CButton,
   CCard,
   CCardBody,
-  CCardHeader,
   CCol,
-  CForm,
-  CFormSelect,
-  CFormText,
-  CNav,
-  CNavItem,
-  CNavLink,
   CRow,
-  CTabContent,
-  CTabPane,
   CTable,
   CTableBody,
   CTableCaption,
@@ -26,28 +15,13 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilChartLine } from '@coreui/icons'
-import MaterialReactTable from 'material-react-table'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCancel, faEye, faFilter } from '@fortawesome/free-solid-svg-icons'
-import { useFormik } from 'formik'
 import { ToastContainer, toast } from 'react-toastify'
 import { CChart } from '@coreui/react-chartjs'
 import { jwtDecode } from 'jwt-decode'
 import 'animate.css'
-import {
-  SchoolYear,
-  Semester,
-  api,
-  decrypted,
-  DefaultLoading,
-  WidgetLoading,
-  handleError,
-  requiredField,
-  RequiredFieldNote,
-} from 'src/components/SystemConfiguration'
-import * as Yup from 'yup'
+import { api, DefaultLoading, WidgetLoading, handleError } from 'src/components/SystemConfiguration'
 import CountUp from 'react-countup'
-import { Link, Navigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 const Dashboard = ({ cardTitle }) => {
   const [loadingTotal, setLoadingTotal] = useState(true)
@@ -55,10 +29,8 @@ const Dashboard = ({ cardTitle }) => {
   const [loadingChart, setLoadingChart] = useState(false)
   const [totalStatusData, setTotalStatusData] = useState([])
   const [totalData, setTotalData] = useState([])
-  const [validated, setValidated] = useState(false)
   const [loadingOperation, setLoadingOperation] = useState(true)
   const [statusAddressChartData, setStatusAddressChartData] = useState([])
-  const [activeKey, setActiveKey] = useState(1)
   const [user, setUser] = useState([])
 
   useEffect(() => {
