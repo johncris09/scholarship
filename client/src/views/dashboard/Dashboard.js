@@ -119,7 +119,6 @@ const Dashboard = ({ cardTitle }) => {
     ])
       .then((responses) => {
         const newData = responses.map((response) => response.data)
-        console.info(newData)
         setTotalStatusData(newData)
       })
       .catch((error) => {
@@ -509,7 +508,7 @@ const Dashboard = ({ cardTitle }) => {
           </CCol>
         </CRow>
       ) : (
-        <CRow className="animate__animated animate__pulse">
+        <CRow>
           <CCol>
             <div className="card mb-3" style={{ borderRadius: '10px' }}>
               <div className="card-body d-flex align-items-center p-0">
