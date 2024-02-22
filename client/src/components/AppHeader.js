@@ -14,7 +14,7 @@ import { cilMenu } from '@coreui/icons'
 
 import { AppBreadcrumb } from './index'
 import { AppHeaderDropdown } from './header/index'
-import { Typography } from '@mui/material'
+import { Skeleton, Typography } from '@mui/material'
 import { DefaultLoading, api } from './SystemConfiguration'
 
 const AppHeader = () => {
@@ -53,24 +53,26 @@ const AppHeader = () => {
 
         <CHeaderBrand className="toggleHide  " style={{ fontSize: 15 }}>
           <>
-            {!fetchConfigLoading && (
+            {!fetchConfigLoading ? (
               <>
                 School Year: {config.current_sy} | Semester: {config.current_semester}
               </>
+            ) : (
+              <Skeleton variant="rectangular" width={360} />
             )}
-            {fetchConfigLoading && <DefaultLoading />}
           </>
         </CHeaderBrand>
         <CHeaderBrand className="mx-auto  d-md-none" to="/#">
           <Typography variant="h6">Oroquieta City Scholarship System</Typography>
           <Typography variant="h6" className="current-view">
             <>
-              {!fetchConfigLoading && (
+              {!fetchConfigLoading ? (
                 <>
                   School Year: {config.current_sy} | Semester: {config.current_semester}
                 </>
+              ) : (
+                <Skeleton variant="rectangular" width={250} />
               )}
-              {fetchConfigLoading && <DefaultLoading />}
             </>
           </Typography>
         </CHeaderBrand>

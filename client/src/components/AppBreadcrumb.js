@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import React from 'react'
+import { useLocation, useParams } from 'react-router-dom'
 
 import routes from '../routes'
 
-import { CBadge, CBreadcrumb, CBreadcrumbItem, CFormText, CSpinner } from '@coreui/react'
-import { useSelector } from 'react-redux'
-import { DefaultLoading, api, toSentenceCase } from './SystemConfiguration'
+import { CBreadcrumb, CBreadcrumbItem } from '@coreui/react'
+import { toSentenceCase } from './SystemConfiguration'
 import { jwtDecode } from 'jwt-decode'
 
 const AppBreadcrumb = () => {
@@ -15,7 +14,6 @@ const AppBreadcrumb = () => {
   if (isTokenExist) {
     user = jwtDecode(localStorage.getItem('scholarshipToken'))
   }
-  const isProduction = false
   const currentLocation = useLocation().pathname
 
   const getRouteName = (pathname, routes) => {
@@ -73,12 +71,6 @@ const AppBreadcrumb = () => {
           )
         })}
       </CBreadcrumb>
-
-      <div className="float-end">
-        <CBadge color={isProduction ? 'success ' : 'danger'} className="border border-light pb-2">
-          <CSpinner size="sm" variant="grow" /> {isProduction ? ' Live ' : ' Development'}
-        </CBadge>
-      </div>
     </>
   )
 }

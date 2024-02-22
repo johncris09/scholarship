@@ -1,14 +1,12 @@
 import React, { useState } from 'react'
-import { CAvatar, CDropdown, CDropdownItem, CDropdownMenu, CDropdownToggle } from '@coreui/react'
-import { cilAccountLogout, cilUser } from '@coreui/icons'
+import { CDropdown, CDropdownItem, CDropdownMenu, CDropdownToggle, CSpinner } from '@coreui/react'
+import { cilAccountLogout } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
-
-import avatar from './../../assets/images/avatars/user.png'
 import { useNavigate } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
-import { DefaultLoading, WholePageLoading, WidgetLoading, api } from '../SystemConfiguration'
-import { ToastContainer, toast } from 'react-toastify'
+import { WholePageLoading, api } from '../SystemConfiguration'
 
+const isProduction = true
 const AppHeaderDropdown = () => {
   const navigate = useNavigate()
   const [operationLoading, setOperationLoading] = useState(false)
@@ -39,16 +37,22 @@ const AppHeaderDropdown = () => {
       <CDropdown variant="nav-item">
         <CDropdownToggle placement="bottom-end" className="py-0" caret={false}>
           <lord-icon
+            className="position-relative"
             src="https://cdn.lordicon.com/zfmcashd.json"
             trigger="hover"
             style={{ width: '50px', height: '50px' }}
-          ></lord-icon>
+          >
+            <CSpinner
+              position="bottom-end"
+              color={isProduction ? 'success ' : 'danger'}
+              className="border border-light pb-2"
+              size="sm"
+              variant="grow"
+              style={{ marginTop: 35, marginLeft: 30, zIndex: 2 }}
+            />
+          </lord-icon>
         </CDropdownToggle>
         <CDropdownMenu className="pt-0" placement="bottom-end">
-          {/* <CDropdownItem href="#/profile">
-          <CIcon icon={cilUser} className="me-2" />
-          Profile
-        </CDropdownItem> */}
           <CDropdownItem href="#/login" onClick={handleLogout}>
             <CIcon icon={cilAccountLogout} className="me-2" />
             Logout
