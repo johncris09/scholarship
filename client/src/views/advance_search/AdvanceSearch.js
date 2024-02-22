@@ -197,10 +197,6 @@ const Search = ({ cardTitle }) => {
       accessorFn: (row) => `${row.app_year_number}-${row.app_sem_number}-${row.app_id_number}`,
     },
     {
-      accessorKey: 'ctc',
-      header: 'CTC',
-    },
-    {
       accessorKey: 'availment',
       header: 'Availment',
     },
