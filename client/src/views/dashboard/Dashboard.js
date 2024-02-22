@@ -577,7 +577,7 @@ const Dashboard = ({ cardTitle }) => {
       {!loadingTotal ? (
         <CRow>
           <CCol>
-            <CTable>
+            <CTable responsive>
               <CTableHead>
                 <CTableRow>
                   <CTableHeaderCell scope="col">Scholarship Type</CTableHeaderCell>
