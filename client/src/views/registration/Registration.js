@@ -288,7 +288,7 @@ const Registration = ({ cardTitle }) => {
   const verificationForm = useFormik({
     initialValues: {
       verify_by: 'lastname',
-      search_value: 'xxxx',
+      search_value: '',
     },
     validationSchema: verificationFormValidationSchema,
     onSubmit: async (values) => {
@@ -302,6 +302,33 @@ const Registration = ({ cardTitle }) => {
           if (response.data.length === 1) {
             var id = response.data[0].id
             fetchApplicationDetails(id)
+            applicantDetailsForm.setFieldValue('id', response.data[0].id)
+            applicantDetailsForm.setFieldValue(
+              'reference_number',
+              response.data[0].reference_number,
+            )
+            applicantDetailsForm.setFieldValue('lastname', response.data[0].lastname)
+            applicantDetailsForm.setFieldValue('firstname', response.data[0].firstname)
+            applicantDetailsForm.setFieldValue('middlename', response.data[0].middlename)
+            applicantDetailsForm.setFieldValue('suffix', response.data[0].suffix)
+            applicantDetailsForm.setFieldValue('barangay', response.data[0].address)
+            applicantDetailsForm.setFieldValue('birthdate', response.data[0].birthdate)
+            applicantDetailsForm.setFieldValue('age', calculateAge(response.data[0].birthdate))
+            applicantDetailsForm.setFieldValue('civil_status', response.data[0].civil_status)
+            applicantDetailsForm.setFieldValue('sex', response.data[0].sex)
+            applicantDetailsForm.setFieldValue('contact_number', response.data[0].contact_number)
+            applicantDetailsForm.setFieldValue('email_address', response.data[0].email_address)
+            applicantDetailsForm.setFieldValue('father_name', response.data[0].father_name)
+            applicantDetailsForm.setFieldValue(
+              'father_occupation',
+              response.data[0].father_occupation,
+            )
+            applicantDetailsForm.setFieldValue('mother_name', response.data[0].mother_name)
+            applicantDetailsForm.setFieldValue(
+              'mother_occupation',
+              response.data[0].mother_occupation,
+            )
+            applicantDetailsForm.setFieldValue('address', response.data[0].barangay_id)
           }
           setRowSelection({})
           newApplicantForm.resetForm()
@@ -486,7 +513,6 @@ const Registration = ({ cardTitle }) => {
   }
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    console.info(name)
     if (name === 'birthdate') {
       applicantDetailsForm.setFieldValue('age', calculateAge(value))
     }
@@ -698,7 +724,7 @@ const Registration = ({ cardTitle }) => {
     },
   })
 
-  const computeResult = () => {
+  const generateReferenceNumber = () => {
     const scholarshipType = getFirstLetters(newApplicantForm.values.scholarship_type) || ''
     const firstname = getFirstLetters(newApplicantForm.values.firstname) || ''
     const lastname = getFirstLetters(newApplicantForm.values.lastname) || ''
@@ -975,7 +1001,9 @@ const Registration = ({ cardTitle }) => {
                     <CRow>
                       <CCol>
                         <CFormLabel>Reference #</CFormLabel>
-                        <h4 className="text-danger text-decoration-underline">{computeResult()}</h4>
+                        <h4 className="text-danger text-decoration-underline">
+                          {generateReferenceNumber()}
+                        </h4>
                       </CCol>
                     </CRow>
 
@@ -1474,26 +1502,6 @@ const Registration = ({ cardTitle }) => {
                             </CFormText>
                           )}
                       </CCol>
-
-                      {/* {newApplicantForm.values.scholarship_type !== 'senior_high' && (
-                        <>
-                          <CCol md={3}>
-                            <CFormInput
-                              type="text"
-                              label={requiredField('CTC #')}
-                              name="ctc"
-                              onChange={handleInputNewApplicantForm}
-                              value={newApplicantForm.values.ctc}
-                              required
-                            />
-                            {newApplicantForm.touched.ctc && newApplicantForm.errors.ctc && (
-                              <CFormText className="text-danger">
-                                {newApplicantForm.errors.ctc}
-                              </CFormText>
-                            )}
-                          </CCol>
-                        </>
-                      )} */}
                     </CRow>
 
                     <CRow className="mt-4">
@@ -1522,7 +1530,7 @@ const Registration = ({ cardTitle }) => {
                       <h6>
                         Reference #:{' '}
                         <span style={{ textDecoration: 'underline', color: 'red', fontSize: 20 }}>
-                          {searchResult[0].reference_number}
+                          {applicantDetailsForm.values.reference_number}
                         </span>
                       </h6>
                     </div>
@@ -1530,9 +1538,10 @@ const Registration = ({ cardTitle }) => {
                 </CRow>
                 <CRow className="my-1 mt-4">
                   <h3 style={{ textDecoration: 'underline' }}>
-                    {toSentenceCase(searchResult[0].lastname)},{' '}
-                    {toSentenceCase(searchResult[0].firstname)}{' '}
-                    {toSentenceCase(searchResult[0].middlename)} {searchResult[0].suffix}
+                    {toSentenceCase(applicantDetailsForm.values.lastname)},{' '}
+                    {toSentenceCase(applicantDetailsForm.values.firstname)}{' '}
+                    {toSentenceCase(applicantDetailsForm.values.middlename)}{' '}
+                    {applicantDetailsForm.values.suffix}
                   </h3>
                 </CRow>
 
@@ -1541,7 +1550,7 @@ const Registration = ({ cardTitle }) => {
                     <CFormText>Addresss</CFormText>
                     <CFormInput
                       type="text"
-                      value={searchResult[0].address}
+                      value={applicantDetailsForm.values.barangay}
                       className="border-0 border-bottom border-bottom-1"
                       readOnly
                     />
@@ -1550,7 +1559,7 @@ const Registration = ({ cardTitle }) => {
                     <CFormText>Birthdate</CFormText>
                     <CFormInput
                       type="text"
-                      value={searchResult[0].birthdate}
+                      value={applicantDetailsForm.values.birthdate}
                       className="border-0 border-bottom border-bottom-1"
                       readOnly
                     />
@@ -1559,7 +1568,7 @@ const Registration = ({ cardTitle }) => {
                     <CFormText>Age</CFormText>
                     <CFormInput
                       type="text"
-                      value={calculateAge(searchResult[0].birthdate)}
+                      value={calculateAge(applicantDetailsForm.values.birthdate)}
                       className="border-0 border-bottom border-bottom-1"
                       readOnly
                     />
@@ -1571,7 +1580,7 @@ const Registration = ({ cardTitle }) => {
                     <CFormText>Civil Status</CFormText>
                     <CFormInput
                       type="text"
-                      value={toSentenceCase(searchResult[0].civil_status)}
+                      value={toSentenceCase(applicantDetailsForm.values.civil_status)}
                       className="border-0 border-bottom border-bottom-1"
                       readOnly
                     />
@@ -1580,7 +1589,7 @@ const Registration = ({ cardTitle }) => {
                     <CFormText>Sex</CFormText>
                     <CFormInput
                       type="text"
-                      value={toSentenceCase(searchResult[0].sex)}
+                      value={toSentenceCase(applicantDetailsForm.values.sex)}
                       className="border-0 border-bottom border-bottom-1"
                       readOnly
                     />
@@ -1589,7 +1598,7 @@ const Registration = ({ cardTitle }) => {
                     <CFormText>Contact #</CFormText>
                     <CFormInput
                       type="text"
-                      value={searchResult[0].contact_number}
+                      value={applicantDetailsForm.values.contact_number}
                       className="border-0 border-bottom border-bottom-1"
                       readOnly
                     />
@@ -1598,7 +1607,7 @@ const Registration = ({ cardTitle }) => {
                     <CFormText>Email Address</CFormText>
                     <CFormInput
                       type="text"
-                      value={searchResult[0].email_address}
+                      value={applicantDetailsForm.values.email_address}
                       className="border-0 border-bottom border-bottom-1"
                       readOnly
                     />
@@ -1609,7 +1618,7 @@ const Registration = ({ cardTitle }) => {
                     <CFormText>Father&apos;s Name</CFormText>
                     <CFormInput
                       type="text"
-                      value={toSentenceCase(searchResult[0].father_name)}
+                      value={toSentenceCase(applicantDetailsForm.values.father_name)}
                       className="border-0 border-bottom border-bottom-1"
                       readOnly
                     />
@@ -1618,7 +1627,7 @@ const Registration = ({ cardTitle }) => {
                     <CFormText>Father&apos;s Occupation</CFormText>
                     <CFormInput
                       type="text"
-                      value={toSentenceCase(searchResult[0].father_occupation)}
+                      value={toSentenceCase(applicantDetailsForm.values.father_occupation)}
                       className="border-0 border-bottom border-bottom-1"
                       readOnly
                     />
@@ -1629,7 +1638,7 @@ const Registration = ({ cardTitle }) => {
                     <CFormText>Mother&apos;s Name</CFormText>
                     <CFormInput
                       type="text"
-                      value={toSentenceCase(searchResult[0].mother_name)}
+                      value={toSentenceCase(applicantDetailsForm.values.mother_name)}
                       className="border-0 border-bottom border-bottom-1"
                       readOnly
                     />
@@ -1638,11 +1647,30 @@ const Registration = ({ cardTitle }) => {
                     <CFormText>Mother&apos;s Occupation</CFormText>
                     <CFormInput
                       type="text"
-                      value={toSentenceCase(searchResult[0].mother_occupation)}
+                      value={toSentenceCase(applicantDetailsForm.values.mother_occupation)}
                       className="border-0 border-bottom border-bottom-1"
                       readOnly
                     />
                   </CCol>
+                </CRow>
+                <CRow className="mb-5 mt-2">
+                  <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <CButton
+                      onClick={() => {
+                        setApplicantDetailsModal(true)
+                      }}
+                      color="primary"
+                      variant="outline"
+                      className="me-md-2"
+                    >
+                      <lord-icon
+                        src="https://cdn.lordicon.com/zfzufhzk.json"
+                        trigger="hover"
+                        style={{ width: '20px', height: '20px', paddingTop: '5px' }}
+                      ></lord-icon>
+                      Edit
+                    </CButton>
+                  </div>
                 </CRow>
               </>
               <>
@@ -1689,23 +1717,23 @@ const Registration = ({ cardTitle }) => {
 
                         addNewApplicationDetailsForm.setFieldValue(
                           'scholarship_id',
-                          applicantDetails.id,
+                          searchResult[0].id,
                         )
                         addNewApplicationDetailsForm.setFieldValue(
                           'reference_number',
-                          applicantDetails.reference_number,
+                          searchResult[0].reference_number,
                         )
                         addNewApplicationDetailsForm.setFieldValue(
                           'lastname',
-                          applicantDetails.lastname,
+                          searchResult[0].lastname,
                         )
                         addNewApplicationDetailsForm.setFieldValue(
                           'firstname',
-                          applicantDetails.firstname,
+                          searchResult[0].firstname,
                         )
                         addNewApplicationDetailsForm.setFieldValue(
                           'middlename',
-                          applicantDetails.middlename,
+                          searchResult[0].middlename,
                         )
                       }}
                     >
@@ -1715,6 +1743,281 @@ const Registration = ({ cardTitle }) => {
                 />
 
                 {/* {fetchApplicationDetailsLoading && <DefaultLoading />} */}
+              </>
+              <>
+                <>
+                  <CModal
+                    alignment="center"
+                    size="xl"
+                    backdrop="static"
+                    visible={applicantDetailsModal}
+                    onClose={() => setApplicantDetailsModal(false)}
+                  >
+                    <CModalHeader onClose={() => setApplicantDetailsModal(false)}>
+                      <CModalTitle> Edit Profile</CModalTitle>
+                    </CModalHeader>
+
+                    <CForm
+                      id="form"
+                      className="row g-3 needs-validation"
+                      noValidate
+                      onSubmit={applicantDetailsForm.handleSubmit}
+                    >
+                      <CModalBody>
+                        <RequiredFieldNote />
+                        <CRow className="my-3">
+                          <CCol>
+                            <CFormInput
+                              type="text"
+                              label={requiredField('Reference #')}
+                              name="reference_number"
+                              onChange={handleInputChange}
+                              value={applicantDetailsForm.values.reference_number}
+                              required
+                              style={{ fontSize: 20 }}
+                              className="text-end"
+                            />
+                            {applicantDetailsForm.touched.reference_number &&
+                              applicantDetailsForm.errors.reference_number && (
+                                <CFormText className="text-danger">
+                                  {applicantDetailsForm.errors.reference_number}
+                                </CFormText>
+                              )}
+                          </CCol>
+                        </CRow>
+                        <CRow className="my-3">
+                          <CCol md={3}>
+                            <CFormInput
+                              type="text"
+                              label={requiredField('Last Name')}
+                              name="lastname"
+                              onChange={handleInputChange}
+                              value={applicantDetailsForm.values.lastname}
+                              required
+                            />
+                            {applicantDetailsForm.touched.lastname &&
+                              applicantDetailsForm.errors.lastname && (
+                                <CFormText className="text-danger">
+                                  {applicantDetailsForm.errors.lastname}
+                                </CFormText>
+                              )}
+                          </CCol>
+                          <CCol md={3}>
+                            <CFormInput
+                              type="text"
+                              label={requiredField('First Name')}
+                              name="firstname"
+                              onChange={handleInputChange}
+                              value={applicantDetailsForm.values.firstname}
+                              required
+                            />
+                            {applicantDetailsForm.touched.firstname &&
+                              applicantDetailsForm.errors.firstname && (
+                                <CFormText className="text-danger">
+                                  {applicantDetailsForm.errors.firstname}
+                                </CFormText>
+                              )}
+                          </CCol>
+                          <CCol md={3}>
+                            <CFormInput
+                              type="text"
+                              label="Middle Name"
+                              name="middlename"
+                              onChange={handleInputChange}
+                              value={applicantDetailsForm.values.middlename}
+                              required
+                            />
+                          </CCol>
+                          <CCol md={3}>
+                            <CFormInput
+                              type="text"
+                              label="Suffix"
+                              name="suffix"
+                              onChange={handleInputChange}
+                              value={applicantDetailsForm.values.suffix}
+                            />
+                          </CCol>
+                        </CRow>
+                        <CRow className="my-3">
+                          <CCol md={6}>
+                            <CFormLabel>
+                              {
+                                <>
+                                  {fetchAddressLoading && <CSpinner size="sm" />}
+                                  {requiredField(' Address')}
+                                </>
+                              }
+                            </CFormLabel>
+                            <Select
+                              ref={selectAddressIputRef}
+                              value={address.find(
+                                (option) => option.value === applicantDetailsForm.values.address,
+                              )}
+                              onChange={handleSelectAddress}
+                              options={address}
+                              name="barangay_id"
+                              isSearchable
+                              placeholder="Search..."
+                              isClearable
+                            />
+                            {applicantDetailsForm.touched.address &&
+                              applicantDetailsForm.errors.address && (
+                                <CFormText className="text-danger">
+                                  {applicantDetailsForm.errors.address}
+                                </CFormText>
+                              )}
+                          </CCol>
+                          <CCol md={4}>
+                            <CFormInput
+                              type="date"
+                              label={requiredField('Birthdate')}
+                              name="birthdate"
+                              onChange={handleInputChange}
+                              value={applicantDetailsForm.values.birthdate}
+                            />
+                            {applicantDetailsForm.touched.birthdate &&
+                              applicantDetailsForm.errors.birthdate && (
+                                <CFormText className="text-danger">
+                                  {applicantDetailsForm.errors.birthdate}
+                                </CFormText>
+                              )}
+                          </CCol>
+                          <CCol md={2}>
+                            <CFormInput
+                              type="text"
+                              label="Age"
+                              name="age"
+                              style={{ textAlign: 'right' }}
+                              className="border-0 border-bottom border-bottom-1 "
+                              value={applicantDetailsForm.values.age}
+                              readOnly
+                            />
+                          </CCol>
+                        </CRow>
+
+                        <CRow className="my-3">
+                          <CCol md={3}>
+                            <CFormSelect
+                              label={requiredField('Civil Status')}
+                              name="civil_status"
+                              onChange={handleInputChange}
+                              value={applicantDetailsForm.values.civil_status}
+                              required
+                            >
+                              <option value="">Select</option>
+                              {CivilStatus.map((civil_status, index) => (
+                                <option key={index} value={civil_status}>
+                                  {civil_status}
+                                </option>
+                              ))}
+                            </CFormSelect>
+                            {applicantDetailsForm.touched.civil_status &&
+                              applicantDetailsForm.errors.civil_status && (
+                                <CFormText className="text-danger">
+                                  {applicantDetailsForm.errors.civil_status}
+                                </CFormText>
+                              )}
+                          </CCol>
+                          <CCol md={3}>
+                            <CFormSelect
+                              label={requiredField('Sex')}
+                              name="sex"
+                              onChange={handleInputChange}
+                              value={applicantDetailsForm.values.sex}
+                              required
+                            >
+                              <option value="">Select</option>
+                              {Sex.map((sex, index) => (
+                                <option key={index} value={sex}>
+                                  {sex}
+                                </option>
+                              ))}
+                            </CFormSelect>
+                            {applicantDetailsForm.touched.sex &&
+                              applicantDetailsForm.errors.sex && (
+                                <CFormText className="text-danger">
+                                  {applicantDetailsForm.errors.sex}
+                                </CFormText>
+                              )}
+                          </CCol>
+                          <CCol md={3}>
+                            <CFormInput
+                              type="text"
+                              label="Contact #"
+                              name="contact_number"
+                              onChange={handleInputChange}
+                              value={applicantDetailsForm.values.contact_number}
+                            />
+                          </CCol>
+                          <CCol md={3}>
+                            <CFormInput
+                              type="text"
+                              label="Facebook/Others"
+                              name="email_address"
+                              onChange={handleInputChange}
+                              value={applicantDetailsForm.values.email_address}
+                            />
+                          </CCol>
+                        </CRow>
+                        <CRow className="my-3">
+                          <CCol md={6}>
+                            <CFormInput
+                              type="text"
+                              label="Father's Name"
+                              name="father_name"
+                              onChange={handleInputChange}
+                              value={applicantDetailsForm.values.father_name}
+                            />
+                          </CCol>
+                          <CCol md={6}>
+                            <CFormInput
+                              type="text"
+                              label="Occupation"
+                              name="father_occupation"
+                              onChange={handleInputChange}
+                              value={applicantDetailsForm.values.father_occupation}
+                            />
+                          </CCol>
+                        </CRow>
+
+                        <CRow className="my-3">
+                          <CCol md={6}>
+                            <CFormInput
+                              type="text"
+                              label="Mother's Name"
+                              name="mother_name"
+                              onChange={handleInputChange}
+                              value={applicantDetailsForm.values.mother_name}
+                            />
+                          </CCol>
+                          <CCol md={6}>
+                            <CFormInput
+                              type="text"
+                              label="Occupation"
+                              name="mother_occupation"
+                              onChange={handleInputChange}
+                              value={applicantDetailsForm.values.mother_occupation}
+                            />
+                          </CCol>
+                        </CRow>
+                      </CModalBody>
+
+                      {operationLoading && <DefaultLoading />}
+
+                      <CModalFooter>
+                        <CButton color="primary" type="submit">
+                          <lord-icon
+                            src="https://cdn.lordicon.com/oqdmuxru.json"
+                            trigger="hover"
+                            colors="primary:#ffffff"
+                            style={{ width: '20px', height: '20px', paddingTop: '3px' }}
+                          ></lord-icon>{' '}
+                          Update
+                        </CButton>
+                      </CModalFooter>
+                    </CForm>
+                  </CModal>
+                </>
               </>
             </CCardBody>
           </CCard>
@@ -2020,6 +2323,7 @@ const Registration = ({ cardTitle }) => {
                           variant="contained"
                           shape="rounded-pill"
                           onClick={() => {
+                            console.info(applicantDetailsForm)
                             setApplicationDetailsModalVisible(true)
                             addNewApplicationDetailsForm.resetForm()
                             addNewApplicationDetailsForm.setFieldValue(
