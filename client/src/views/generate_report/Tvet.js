@@ -12,6 +12,7 @@ import {
   CFormInput,
   CFormLabel,
   CFormSelect,
+  CInputGroup,
   CModal,
   CRow,
   CSpinner,
@@ -53,6 +54,9 @@ const Tvet = () => {
   const [course, setCourse] = useState([])
   const [address, setAddress] = useState([])
   const [fetchAddressLoading, setFetchAddressLoading] = useState([])
+  const [rowsPerPage, setRowsPerPage] = useState(20) // DEFAULT ROWS PER PAGE
+  const [totalChunks, setTotalChunks] = useState(2)
+  const [chunks, setChunks] = useState([])
 
   useEffect(() => {
     fetchSchool()
@@ -225,8 +229,26 @@ const Tvet = () => {
     csvExporter.generateCsv(exportedData)
   }
 
+  const handleRowsPerPageChange = (e) => {
+    const { value } = e.target
+    setRowsPerPage(value)
+  }
   const handlePrintData = () => {
+    const dividedArray = chunkArray(data, parseInt(rowsPerPage))
+
+    setChunks(dividedArray)
+    setTotalChunks(parseInt(dividedArray.length))
+
     setPrintPreviewModalVisible(true)
+  }
+
+  const chunkArray = (arr, size) => {
+    const slice = []
+    for (let i = 0; i < arr.length; i += size) {
+      slice.push(arr.slice(i, i + size))
+    }
+
+    return slice
   }
 
   Font.register({
@@ -369,14 +391,6 @@ const Tvet = () => {
     },
   })
   const col = ['no', 'name', 'address', 'course', 'year_level', 'school', 'availment']
-  const ROWS_PER_PAGE = 20
-  const chunks = []
-
-  for (let i = 0; i < data.length; i += ROWS_PER_PAGE) {
-    chunks.push(data.slice(i, i + ROWS_PER_PAGE))
-  }
-
-  const totalChunks = chunks.length
 
   return (
     <>
@@ -612,12 +626,29 @@ const Tvet = () => {
                       flexWrap: 'wrap',
                     }}
                   >
-                    <CButton className="btn-info text-white" onClick={handleExportData} size="sm">
-                      <FontAwesomeIcon icon={faFileExcel} /> Export to Excel
-                    </CButton>
-                    <CButton color="primary" variant="outline" onClick={handlePrintData} size="sm">
-                      <FontAwesomeIcon icon={faPrint} /> Print
-                    </CButton>
+                    <CInputGroup className="mb-3">
+                      <CButton className="btn-info text-white" onClick={handleExportData} size="sm">
+                        <FontAwesomeIcon icon={faFileExcel} /> Export to Excel
+                      </CButton>
+                      <CFormInput
+                        type="number"
+                        size="sm"
+                        style={{ width: 60 }}
+                        name="rows_per_page"
+                        onChange={handleRowsPerPageChange}
+                        value={rowsPerPage}
+                        required
+                      />
+
+                      <CButton
+                        color="primary"
+                        variant="outline"
+                        onClick={handlePrintData}
+                        size="sm"
+                      >
+                        <FontAwesomeIcon icon={faPrint} /> Print
+                      </CButton>
+                    </CInputGroup>
                   </Box>
                 </>
               )}
@@ -730,7 +761,7 @@ const Tvet = () => {
                         <>
                           {c === 'no' && (
                             <Text key={rowIndex} style={{ width: `${40 / col.length}%` }}>
-                              {index * ROWS_PER_PAGE + rowIndex + 1}
+                              {index * rowsPerPage + rowIndex + 1}
                             </Text>
                           )}
                           {c === 'name' && (

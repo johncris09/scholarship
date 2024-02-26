@@ -12,6 +12,7 @@ import {
   CFormInput,
   CFormLabel,
   CFormSelect,
+  CInputGroup,
   CModal,
   CRow,
   CSpinner,
@@ -53,6 +54,9 @@ const SeniorHigh = () => {
   const [strand, setStrand] = useState([])
   const [address, setAddress] = useState([])
   const [fetchAddressLoading, setFetchAddressLoading] = useState([])
+  const [rowsPerPage, setRowsPerPage] = useState(35) // DEFAULT ROWS PER PAGE
+  const [totalChunks, setTotalChunks] = useState(2)
+  const [chunks, setChunks] = useState([])
 
   useEffect(() => {
     fetchSchool()
@@ -229,8 +233,26 @@ const SeniorHigh = () => {
     csvExporter.generateCsv(exportedData)
   }
 
+  const handleRowsPerPageChange = (e) => {
+    const { value } = e.target
+    setRowsPerPage(value)
+  }
   const handlePrintData = () => {
+    const dividedArray = chunkArray(data, parseInt(rowsPerPage))
+
+    setChunks(dividedArray)
+    setTotalChunks(parseInt(dividedArray.length))
+
     setPrintPreviewModalVisible(true)
+  }
+
+  const chunkArray = (arr, size) => {
+    const slice = []
+    for (let i = 0; i < arr.length; i += size) {
+      slice.push(arr.slice(i, i + size))
+    }
+
+    return slice
   }
 
   Font.register({
@@ -374,14 +396,6 @@ const SeniorHigh = () => {
   })
   const col = ['no', 'name', 'address', 'strand', 'grade_level', 'school', 'availment']
 
-  const ROWS_PER_PAGE = 35
-  const chunks = []
-
-  for (let i = 0; i < data.length; i += ROWS_PER_PAGE) {
-    chunks.push(data.slice(i, i + ROWS_PER_PAGE))
-  }
-
-  const totalChunks = chunks.length
   return (
     <>
       <ToastContainer />
@@ -615,12 +629,29 @@ const SeniorHigh = () => {
                       flexWrap: 'wrap',
                     }}
                   >
-                    <CButton className="btn-info text-white" onClick={handleExportData} size="sm">
-                      <FontAwesomeIcon icon={faFileExcel} /> Export to Excel
-                    </CButton>
-                    <CButton color="primary" variant="outline" onClick={handlePrintData} size="sm">
-                      <FontAwesomeIcon icon={faPrint} /> Print
-                    </CButton>
+                    <CInputGroup className="mb-3">
+                      <CButton className="btn-info text-white" onClick={handleExportData} size="sm">
+                        <FontAwesomeIcon icon={faFileExcel} /> Export to Excel
+                      </CButton>
+                      <CFormInput
+                        type="number"
+                        size="sm"
+                        style={{ width: 60 }}
+                        name="rows_per_page"
+                        onChange={handleRowsPerPageChange}
+                        value={rowsPerPage}
+                        required
+                      />
+
+                      <CButton
+                        color="primary"
+                        variant="outline"
+                        onClick={handlePrintData}
+                        size="sm"
+                      >
+                        <FontAwesomeIcon icon={faPrint} /> Print
+                      </CButton>
+                    </CInputGroup>
                   </Box>
                 </>
               )}
@@ -733,7 +764,7 @@ const SeniorHigh = () => {
                         <>
                           {c === 'no' && (
                             <Text key={rowIndex} style={{ width: `${40 / col.length}%` }}>
-                              {index * ROWS_PER_PAGE + rowIndex + 1}
+                              {index * rowsPerPage + rowIndex + 1}
                             </Text>
                           )}
                           {c === 'name' && (
@@ -810,155 +841,6 @@ const SeniorHigh = () => {
           </Document>
         </PDFViewer>
       </CModal>
-
-      {/* <CModal
-        size="lg"
-        alignment="center"
-        visible={printPreviewModalVisible}
-        onClose={() => setPrintPreviewModalVisible(false)}
-      >
-        <PDFViewer width="100%" height="800px%">
-          <Document
-            size="A4"
-            author={process.env.REACT_APP_DEVELOPER}
-            title="Senior High Applicants"
-            keywords="document, pdf"
-            subject={title}
-            creator={process.env.REACT_APP_DEVELOPER}
-            producer={process.env.REACT_APP_DEVELOPER}
-            pdfVersion="1.3"
-          >
-            {chunks.map((chunk, index) => (
-              <Page key={index} style={styles.page}>
-                <View style={styles.header}>
-                  <Image src={logo} style={styles.logo} alt="logo" />
-                  <Text style={styles.country}>Republic of the Philippines</Text>
-                  <Text style={styles.office}>Office of the City Mayor</Text>
-                  <Text style={styles.city}>Oroqueita City</Text>
-                  <Text style={styles.citytag}>City of Goodlife</Text>
-                </View>
-                <View style={styles.description}>
-                  <Text>{title}</Text>
-                </View>
-                <View></View>
-                <View style={styles.table}>
-                  <View style={styles.tableRow}>
-                    <Text
-                      style={{
-                        ...styles.tableHeader,
-                        width: `${maxWidths.counter}ch`,
-                        borderLeft: 0.5,
-                        borderLeftColor: '#bfbfbf',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      No.
-                    </Text>
-                    <Text style={{ ...styles.tableHeader, width: `${maxWidths.name}ch` }}>
-                      Name
-                    </Text>
-                    <Text style={{ ...styles.tableHeader, width: `${maxWidths.address}ch` }}>
-                      Address
-                    </Text>
-                    <Text style={{ ...styles.tableHeader, width: `${maxWidths.course}ch` }}>
-                      Strand
-                    </Text>
-                    <Text style={{ ...styles.tableHeader, width: `${maxWidths.grade_level}ch` }}>
-                      Grade Level
-                    </Text>
-                    <Text style={{ ...styles.tableHeader, width: `${maxWidths.school}ch` }}>
-                      School
-                    </Text>
-                    <Text style={{ ...styles.tableHeader, width: `${maxWidths.ctc_number}ch` }}>
-                      CTC No.
-                    </Text>
-                    <Text style={{ ...styles.tableHeader, width: `${maxWidths.availment}ch` }}>
-                      Availment
-                    </Text>
-                  </View>
-                  {chunk.map((row, rowIndex) => (
-                    <View style={styles.tableRow} key={rowIndex}>
-                      <Text
-                        style={{
-                          ...styles.tableCell,
-                          width: `${maxWidths.counter}ch`,
-                          borderLeft: 0.5,
-                          borderLeftColor: '#bfbfbf',
-                        }}
-                      >
-                        {index * ROWS_PER_PAGE + rowIndex + 1}
-                      </Text>
-                      <Text
-                        style={{
-                          ...styles.tableCell,
-                          width: `${maxWidths.name}ch`,
-                          textAlign: 'left',
-                        }}
-                      >
-                        {`${row.lastname}, ${row.firstname} ${row.middlename} ${row.AppSuffix}`}
-                      </Text>
-                      <Text style={{ ...styles.tableCell, width: `${maxWidths.address}ch` }}>
-                        {row.address}
-                      </Text>
-                      <Text style={{ ...styles.tableCell, width: `${maxWidths.course}ch` }}>
-                        {row.strand}
-                      </Text>
-
-                      <Text style={{ ...styles.tableCell, width: `${maxWidths.grade_level}ch` }}>
-                        {row.grade_level}
-                      </Text>
-                      <Text style={{ ...styles.tableCell, width: `${maxWidths.school}ch` }}>
-                        {row.school}
-                      </Text>
-                      <Text style={{ ...styles.tableCell, width: `${maxWidths.ctc_number}ch` }}>
-                        {row.AppCTC}
-                      </Text>
-                      <Text style={{ ...styles.tableCell, width: `${maxWidths.availment}ch` }}>
-                        {row.availment}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-
-                <View>
-                  {index === totalChunks - 1 && (
-                    <>
-                      <View style={styles.recommended}>
-                        <Text>Recommended for Approval:</Text>
-                        <Text style={{ marginRight: 180 }}>Approved:</Text>
-                      </View>
-                      <View style={styles.inBehalf}>
-                        <Text>In behalf of the City Scholarship Screening Committee</Text>
-                        <View style={styles.cityMayor}>
-                          <Text>{cityMayor}</Text>
-                          <Text style={{ textAlign: 'center', fontSize: 10 }}>City Mayor</Text>
-                        </View>
-                      </View>
-                      <View style={styles.chairpersion}>
-                        <Text>{commiteeChairperson}</Text>
-                        <Text style={{ fontSize: 10 }}>Commitee Chairperson</Text>
-                      </View>
-                    </>
-                  )}
-                </View>
-
-                <Text
-                  style={styles.pageNumber}
-                  render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
-                  fixed
-                />
-                <View style={styles.footer}>
-                  <Text>
-                    Printed by: {`${user.firstname}  ${user.middlename}. ${user.lastname}`}
-                  </Text>
-
-                  <Text>Printed on: {new Date().toLocaleString()}</Text>
-                </View>
-             Document>
-            ))}
-          </Document>
-        </PDFViewer>
-      </CModal> */}
     </>
   )
 }
