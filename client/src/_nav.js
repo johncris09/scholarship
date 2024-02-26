@@ -104,11 +104,11 @@ const _nav = (userInfo) => {
             name: 'Current List View',
             to: '/configuration/config',
           },
-          {
-            component: CNavItem,
-            name: 'System Sequence',
-            to: '/configuration/system_sequence',
-          },
+          // {
+          //   component: CNavItem,
+          //   name: 'System Sequence',
+          //   to: '/configuration/system_sequence',
+          // },
         ],
       },
       {
