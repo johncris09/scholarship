@@ -8,7 +8,7 @@ class AdvanceSearchModel extends CI_Model
     public function search($searchValue)
     {
 
-        $this->db->select('*');
+        $this->db->select('scholarship.*,  barangay.id as barangay_id, barangay.barangay as address');
         $this->db->from('scholarship');
 
         $this->db->like('reference_number', $searchValue);
@@ -28,6 +28,8 @@ class AdvanceSearchModel extends CI_Model
         $this->db->or_like('mother_occupation', $searchValue);
         $this->db->or_like("CONCAT(firstname, ' ', lastname, ' ', middlename)", $searchValue);
         $this->db->or_like("CONCAT(lastname, ', ', firstname, ' ', middlename)", $searchValue);
+        $this->db->join('barangay', 'scholarship.address = barangay.id');
+
 
 
 
