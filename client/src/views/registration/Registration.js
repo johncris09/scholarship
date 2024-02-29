@@ -91,7 +91,7 @@ const Registration = ({ cardTitle }) => {
     fetchTvetCourse()
     fetchAddress()
     fetchApplicationNumber()
-    const appNumber = setInterval(fetchApplicationNumber, 1000) // Example: Update every 5 seconds
+    const appNumber = setInterval(fetchApplicationNumber, 500)
     return () => clearInterval(appNumber)
   }, [endPoint])
 
@@ -2054,102 +2054,33 @@ const Registration = ({ cardTitle }) => {
                   enableGrouping
                   enableStickyHeader
                   enableStickyFooter
-                  // enableRowActions
-                  // getRowId={(row) => row.id}
-                  // muiTableBodyRowProps={({ row }) => ({
-                  //   onClick: async () => {
-                  //     applicantDetailsForm.setFieldValue('id', row.original.id)
-                  //     applicantDetailsForm.setFieldValue(
-                  //       'reference_number',
-                  //       row.original.reference_number,
-                  //     )
-                  //     applicantDetailsForm.setFieldValue('lastname', row.original.lastname)
-                  //     applicantDetailsForm.setFieldValue('firstname', row.original.firstname)
-                  //     applicantDetailsForm.setFieldValue('middlename', row.original.middlename)
-                  //     applicantDetailsForm.setFieldValue('suffix', row.original.suffix)
-                  //     applicantDetailsForm.setFieldValue('barangay', row.original.address)
-                  //     applicantDetailsForm.setFieldValue('birthdate', row.original.birthdate)
-                  //     applicantDetailsForm.setFieldValue(
-                  //       'age',
-                  //       calculateAge(row.original.birthdate),
-                  //     )
-                  //     applicantDetailsForm.setFieldValue('civil_status', row.original.civil_status)
-                  //     applicantDetailsForm.setFieldValue('sex', row.original.sex)
-                  //     applicantDetailsForm.setFieldValue(
-                  //       'contact_number',
-                  //       row.original.contact_number,
-                  //     )
-                  //     applicantDetailsForm.setFieldValue(
-                  //       'email_address',
-                  //       row.original.email_address,
-                  //     )
-                  //     applicantDetailsForm.setFieldValue('father_name', row.original.father_name)
-                  //     applicantDetailsForm.setFieldValue(
-                  //       'father_occupation',
-                  //       row.original.father_occupation,
-                  //     )
-                  //     applicantDetailsForm.setFieldValue('mother_name', row.original.mother_name)
-                  //     applicantDetailsForm.setFieldValue(
-                  //       'mother_occupation',
-                  //       row.original.mother_occupation,
-                  //     )
-                  //     applicantDetailsForm.setFieldValue('address', row.original.barangay_id)
-
-                  //     fetchApplicationDetails(row.original.id)
-
-                  //     setRowSelection((prev) => {
-                  //       return {
-                  //         [row.id]: !prev[row.id],
-                  //       }
-                  //     })
-                  //   },
-                  //   selected: rowSelection[row.id],
-                  //   sx: {
-                  //     cursor: 'pointer',
-                  //   },
-                  // })}
-                  // state
                   initialState={{
                     density: 'compact',
                   }}
+                  enableExpandAll={false}
+                  muiExpandButtonProps={({ row, table }) => ({
+                    onClick: () => table.setExpanded({ [row.id]: !row.getIsExpanded() }), //only 1 detail panel open at a time
+                    sx: {
+                      transform: row.getIsExpanded() ? 'rotate(180deg)' : 'rotate(-90deg)',
+                      transition: 'transform 0.2s',
+                    },
+                  })}
                   renderDetailPanel={({ row }) => {
-                    // Check if row.original.id exists, if yes, render DetailPanelContent, otherwise render null
-                    if (row.original.id) {
-                      const fetchData = async () => {
-                        return api
-                          .get('verify', {
-                            params: {
-                              verify_by: verificationForm.values.verify_by,
-                              search_value: verificationForm.values.search_value,
-                            },
-                          })
-                          .then((response) => {
-                            setSearchResult(response.data)
-                          })
-                          .catch((error) => {
-                            console.info(error)
-                          })
-                      }
-
-                      fetchData()
-                      return (
-                        <Box
-                          sx={{
-                            alignItems: 'center',
-                            display: 'flex',
-                            justifyContent: 'space-around',
-                            left: '30px',
-                            maxWidth: '900px',
-                            position: 'sticky',
-                            width: '100%',
-                          }}
-                        >
-                          <AppDetails id={row.original.id} />
-                        </Box>
-                      )
-                    } else {
-                      return null // If row.original.id doesn't exist, return null
-                    }
+                    return row.original.id ? (
+                      <Box
+                        sx={{
+                          alignItems: 'center',
+                          display: 'flex',
+                          justifyContent: 'space-around',
+                          left: '30px',
+                          maxWidth: '1200px',
+                          position: 'sticky',
+                          width: '100%',
+                        }}
+                      >
+                        <AppDetails id={row.original.id} />
+                      </Box>
+                    ) : null
                   }}
                 />
               </CCardBody>
