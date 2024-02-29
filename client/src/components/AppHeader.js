@@ -51,7 +51,7 @@ const AppHeader = () => {
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
 
-        <CHeaderBrand className="toggleHide  " style={{ fontSize: 15 }}>
+        <CHeaderBrand className="toggleHide _currentView" style={{ fontSize: 15 }}>
           <>
             {!fetchConfigLoading ? (
               <>
@@ -62,7 +62,7 @@ const AppHeader = () => {
             )}
           </>
         </CHeaderBrand>
-        <CHeaderBrand className="mx-auto  d-md-none" to="/#">
+        <CHeaderBrand className="mx-auto  d-md-none _currentView" to="/#">
           <Typography variant="h6">Oroquieta City Scholarship System</Typography>
           <Typography variant="h6" className="current-view">
             <>

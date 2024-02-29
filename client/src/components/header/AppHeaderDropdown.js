@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
 import { WholePageLoading, api } from '../SystemConfiguration'
 
-const isProduction = true
+const isProduction = false
 const AppHeaderDropdown = () => {
   const navigate = useNavigate()
   const [operationLoading, setOperationLoading] = useState(false)
@@ -34,8 +34,8 @@ const AppHeaderDropdown = () => {
   }
   return (
     <>
-      <CDropdown variant="nav-item">
-        <CDropdownToggle placement="bottom-end" className="py-0" caret={false}>
+      <CDropdown className="_avatar" variant="nav-item">
+        <CDropdownToggle placement="bottom-end" className="py-0 " caret={false}>
           <lord-icon
             className="position-relative"
             src="https://cdn.lordicon.com/zfmcashd.json"
