@@ -999,7 +999,7 @@ const Registration = ({ cardTitle }) => {
                     </CRow>
 
                     <CRow>
-                      <CCol>
+                      <CCol md={12}>
                         <CFormLabel>Reference #</CFormLabel>
                         <h4 className="text-danger text-decoration-underline">
                           {generateReferenceNumber()}
@@ -1008,7 +1008,7 @@ const Registration = ({ cardTitle }) => {
                     </CRow>
 
                     <CRow className="my-1 mt-4">
-                      <CCol>
+                      <CCol md={3}>
                         <CFormInput
                           type="text"
                           label={requiredField('Last Name')}
@@ -1023,7 +1023,7 @@ const Registration = ({ cardTitle }) => {
                           </CFormText>
                         )}
                       </CCol>
-                      <CCol>
+                      <CCol md={3}>
                         <CFormInput
                           type="text"
                           feedbackInvalid="First Name is required."
@@ -1040,7 +1040,7 @@ const Registration = ({ cardTitle }) => {
                             </CFormText>
                           )}
                       </CCol>
-                      <CCol>
+                      <CCol md={3}>
                         <CFormInput
                           type="text"
                           label="Middle Name"
@@ -1050,7 +1050,7 @@ const Registration = ({ cardTitle }) => {
                           required
                         />
                       </CCol>
-                      <CCol>
+                      <CCol md={3}>
                         <CFormInput
                           type="text"
                           label="Suffix"
@@ -1118,7 +1118,7 @@ const Registration = ({ cardTitle }) => {
                       </CCol>
                     </CRow>
                     <CRow className="my-3">
-                      <CCol>
+                      <CCol md={3}>
                         <CFormSelect
                           label={requiredField('Civil Status')}
                           name="civil_status"
@@ -1140,7 +1140,7 @@ const Registration = ({ cardTitle }) => {
                             </CFormText>
                           )}
                       </CCol>
-                      <CCol>
+                      <CCol md={3}>
                         <CFormSelect
                           label={requiredField('Sex')}
                           name="sex"
@@ -1161,7 +1161,7 @@ const Registration = ({ cardTitle }) => {
                           </CFormText>
                         )}
                       </CCol>
-                      <CCol>
+                      <CCol md={3}>
                         <CFormInput
                           type="text"
                           label="Contact #"
@@ -1170,7 +1170,7 @@ const Registration = ({ cardTitle }) => {
                           value={newApplicantForm.values.contact_number}
                         />
                       </CCol>
-                      <CCol>
+                      <CCol md={3}>
                         <CFormInput
                           type="text"
                           label="Facebook/Others"
@@ -1434,7 +1434,7 @@ const Registration = ({ cardTitle }) => {
                     </CRow>
 
                     <CRow className="my-1">
-                      <CCol>
+                      <CCol md={6}>
                         {newApplicantForm.values.scholarship_type === 'senior_high' && (
                           <>
                             <CFormSelect
@@ -1486,7 +1486,7 @@ const Registration = ({ cardTitle }) => {
                           </>
                         )}
                       </CCol>
-                      <CCol>
+                      <CCol md={6}>
                         <CFormInput
                           type="number"
                           label={requiredField('Availment')}
