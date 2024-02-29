@@ -544,7 +544,7 @@ const AppDetails = ({ id }) => {
         <div className="m-2">
           <h5>Application Details</h5>
         </div>
-        <CTable>
+        <CTable responsive>
           <CTableBody>
             <CTableRow>
               <CTableHeaderCell scope="row">Reference #</CTableHeaderCell>
