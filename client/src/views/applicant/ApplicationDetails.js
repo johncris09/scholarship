@@ -346,7 +346,7 @@ const Applicant = ({ cardTitle }) => {
     semester: Yup.string().required('Semester is required'),
     school_year: Yup.string().required('School Year is required'),
     availment: Yup.string().required('Availment is required'),
-    ctc: Yup.string().required('CTC # is required'),
+    // ctc: Yup.string().required('CTC # is required'),
     app_status: Yup.string().required('Application Status is required'),
   })
 
@@ -383,6 +383,7 @@ const Applicant = ({ cardTitle }) => {
       await api
         .put('applicant/update_applicant_details/' + values.id, values)
         .then((response) => {
+          console.info(response.data)
           toast.success(response.data.message)
           setApplicationDetailsModalVisible(false)
           fetchApplicationDetails(applicationDetailsForm.values.scholarship_id)
@@ -770,7 +771,7 @@ const Applicant = ({ cardTitle }) => {
           onClose={() => setApplicationDetailsModalVisible(false)}
         >
           <CModalHeader onClose={() => setApplicationDetailsModalVisible(false)}>
-            <CModalTitle>Update Applicant Detail</CModalTitle>
+            <CModalTitle>Update Applicant Details</CModalTitle>
           </CModalHeader>
           <CModalBody>
             <>
