@@ -52,4 +52,10 @@ class SystemSequenceModel extends CI_Model
 		return $query->row();
 	}
 
+    function getLatestAppNumber($data){ 
+        $query = $this->db->where($data)
+        ->get($this->table);
+    return $query->row();
+    }
+
 }
