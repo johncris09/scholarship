@@ -44,6 +44,11 @@ import MaterialReactTable from 'material-react-table'
 import { Button, Skeleton } from '@mui/material'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import {
+  ApplicationIDNumber,
+  ApplicationSemNumber,
+  ApplicationYearNumber,
+} from './ApplicationNumber'
 
 const AppDetails = ({ id }) => {
   const selectStrandInputRef = useRef()
@@ -86,33 +91,33 @@ const AppDetails = ({ id }) => {
     fetchCourse()
     fetchTvetCourse()
     fetchAddress()
-    fetchApplicationNumber()
+    // fetchApplicationNumber()
     fetchData()
     fetchApplicationDetails(id)
 
-    const appNumber = setInterval(fetchApplicationNumber, 1000) // Example: Update every 5 seconds
-    return () => clearInterval(appNumber)
+    // const appNumber = setInterval(fetchApplicationNumber, 1000) // Example: Update every 5 seconds
+    // return () => clearInterval(appNumber)
   }, [endPoint])
 
-  const fetchApplicationNumber = async () => {
-    // setApplicationNumberLoading(true)
-    await api
-      .get('system_sequence/' + endPoint)
-      .then((response) => {
-        addNewApplicationDetailsForm.setFieldValue('app_year_number', response.data.seq_year)
-        addNewApplicationDetailsForm.setFieldValue('app_sem_number', response.data.seq_sem)
-        addNewApplicationDetailsForm.setFieldValue(
-          'app_id_number',
-          parseInt(response.data.seq_appno) + 1,
-        )
-      })
-      .catch((error) => {
-        console.error('Error fetching data:', error)
-      })
-    // .finally(() => {
-    //   setApplicationNumberLoading(false)
-    // })
-  }
+  // const fetchApplicationNumber = async () => {
+  //   // setApplicationNumberLoading(true)
+  //   await api
+  //     .get('system_sequence/' + endPoint)
+  //     .then((response) => {
+  //       addNewApplicationDetailsForm.setFieldValue('app_year_number', response.data.seq_year)
+  //       addNewApplicationDetailsForm.setFieldValue('app_sem_number', response.data.seq_sem)
+  //       addNewApplicationDetailsForm.setFieldValue(
+  //         'app_id_number',
+  //         parseInt(response.data.seq_appno) + 1,
+  //       )
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error fetching data:', error)
+  //     })
+  //   // .finally(() => {
+  //   //   setApplicationNumberLoading(false)
+  //   // })
+  // }
   const fetchConfig = () => {
     api
       .get('config')
@@ -498,9 +503,9 @@ const AppDetails = ({ id }) => {
       middlename: '',
       reference_number: '',
       scholarship_id: '',
-      app_year_number: '',
-      app_sem_number: '',
-      app_id_number: '',
+      // app_year_number: '',
+      // app_sem_number: '',
+      // app_id_number: '',
       scholarship_type: 'senior_high',
       school: '',
       strand: '',
@@ -766,6 +771,8 @@ const AppDetails = ({ id }) => {
                   'middlename',
                   applicantDetailsForm.values.middlename,
                 )
+
+                setEndPoint('shs_appno')
               }}
             >
               <FontAwesomeIcon style={{ marginRight: 5 }} icon={faPlus} /> Add New Record
@@ -1053,7 +1060,7 @@ const AppDetails = ({ id }) => {
         >
           <CModalHeader onClose={() => setApplicationDetailsModalVisible(false)}>
             <CModalTitle>
-              Add New Record for `{toSentenceCase(addNewApplicationDetailsForm.values.lastname)},{' '}
+              Add New Record for`{toSentenceCase(addNewApplicationDetailsForm.values.lastname)},{' '}
               {toSentenceCase(addNewApplicationDetailsForm.values.firstname)}{' '}
               {toSentenceCase(addNewApplicationDetailsForm.values.middlename)}`
             </CModalTitle>
@@ -1113,9 +1120,12 @@ const AppDetails = ({ id }) => {
                       }
                     </CFormLabel>
                     <h4 className="text-danger text-decoration-underline">
-                      {addNewApplicationDetailsForm.values.app_year_number}-
+                      <ApplicationYearNumber endPointType={endPoint} />-
+                      <ApplicationSemNumber endPointType={endPoint} />-
+                      <ApplicationIDNumber endPointType={endPoint} />
+                      {/* {addNewApplicationDetailsForm.values.app_year_number}-
                       {addNewApplicationDetailsForm.values.app_sem_number}-
-                      {addNewApplicationDetailsForm.values.app_id_number}
+                      {addNewApplicationDetailsForm.values.app_id_number} */}
                     </h4>
 
                     <CInputGroup className="mb-3 ">
