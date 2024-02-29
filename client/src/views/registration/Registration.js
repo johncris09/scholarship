@@ -46,6 +46,11 @@ import { Box, Button } from '@mui/material'
 import MaterialReactTable from 'material-react-table'
 import moment from 'moment/moment'
 import AppDetails from './AppDetails'
+import {
+  ApplicationIDNumber,
+  ApplicationSemNumber,
+  ApplicationYearNumber,
+} from './ApplicationNumber'
 const Registration = ({ cardTitle }) => {
   const selectAddressIputRef = useRef()
   const selectSeniorHighSchoolInputRef = useRef()
@@ -90,9 +95,9 @@ const Registration = ({ cardTitle }) => {
     fetchCourse()
     fetchTvetCourse()
     fetchAddress()
-    fetchApplicationNumber()
-    const appNumber = setInterval(fetchApplicationNumber, 500)
-    return () => clearInterval(appNumber)
+    // fetchApplicationNumber()
+    // const appNumber = setInterval(fetchApplicationNumber, 100)
+    // return () => clearInterval(appNumber)
   }, [endPoint])
 
   const fetchConfig = () => {
@@ -660,11 +665,11 @@ const Registration = ({ cardTitle }) => {
       otherwise: (schema) => schema,
     }),
     availment: Yup.string().required('Availment is required'),
-    ctc: Yup.string().when('scholarship_type', {
-      is: (value) => value !== 'senior_high',
-      then: (schema) => schema.required('CTC # is required'),
-      otherwise: (schema) => schema,
-    }),
+    // ctc: Yup.string().when('scholarship_type', {
+    //   is: (value) => value !== 'senior_high',
+    //   then: (schema) => schema.required('CTC # is required'),
+    //   otherwise: (schema) => schema,
+    // }),
   })
 
   // form used to add application details for applicant
@@ -685,9 +690,9 @@ const Registration = ({ cardTitle }) => {
       father_occupation: '',
       mother_name: '',
       mother_occupation: '',
-      app_year_number: '',
-      app_sem_number: '',
-      app_id_number: '',
+      // app_year_number: '',
+      // app_sem_number: '',
+      // app_id_number: '',
       scholarship_type: 'senior_high',
       school: '',
       strand: '',
@@ -709,11 +714,13 @@ const Registration = ({ cardTitle }) => {
         .then((response) => {
           toast.success(response.data.message)
 
-          // reset
-          selectStrandInputRef.current.clearValue()
-          selectSeniorHighSchoolInputRef.current.clearValue()
-
+          if (values.scholarship_type === 'senior_high') {
+            selectStrandInputRef.current.clearValue()
+            selectSeniorHighSchoolInputRef.current.clearValue()
+          }
+          // reset form
           newApplicantForm.resetForm()
+          setEndPoint('shs_appno')
         })
         .catch((error) => {
           toast.error(handleError(error))
@@ -732,7 +739,9 @@ const Registration = ({ cardTitle }) => {
       newApplicantForm.values.birthdate === ''
         ? ''
         : moment(newApplicantForm.values.birthdate).format('MMDDYY')
-    return `${scholarshipType}${newApplicantForm.values.app_sem_number}-${config.current_sy.replace(
+
+    let current_semester = config.current_semester
+    return `${scholarshipType}${current_semester.replace(/\D+/g, '')}-${config.current_sy.replace(
       /SY: 20|-20/g,
       '',
     )}-${firstname}${lastname}-${birthdate}`
@@ -950,9 +959,12 @@ const Registration = ({ cardTitle }) => {
                           }
                         </CFormLabel>
                         <h4 className="text-danger text-decoration-underline">
-                          {newApplicantForm.values.app_year_number}-
+                          <ApplicationYearNumber endPointType={endPoint} />-
+                          <ApplicationSemNumber endPointType={endPoint} />-
+                          <ApplicationIDNumber endPointType={endPoint} />
+                          {/* {newApplicantForm.values.app_year_number}-
                           {newApplicantForm.values.app_sem_number}-
-                          {newApplicantForm.values.app_id_number}
+                          {newApplicantForm.values.app_id_number} */}
                         </h4>
 
                         <CInputGroup className="mb-3 ">
@@ -1003,6 +1015,7 @@ const Registration = ({ cardTitle }) => {
                         <CFormLabel>Reference #</CFormLabel>
                         <h4 className="text-danger text-decoration-underline">
                           {generateReferenceNumber()}
+                          {/* {JSON.stringify(generateReferenceNumber())} */}
                         </h4>
                       </CCol>
                     </CRow>
@@ -1735,6 +1748,7 @@ const Registration = ({ cardTitle }) => {
                           'middlename',
                           searchResult[0].middlename,
                         )
+                        setEndPoint('shs_appno')
                       }}
                     >
                       <FontAwesomeIcon icon={faPlus} /> Add New Record
@@ -2159,9 +2173,12 @@ const Registration = ({ cardTitle }) => {
                       }
                     </CFormLabel>
                     <h4 className="text-danger text-decoration-underline">
-                      {addNewApplicationDetailsForm.values.app_year_number}-
+                      <ApplicationYearNumber endPointType={endPoint} />-
+                      <ApplicationSemNumber endPointType={endPoint} />-
+                      <ApplicationIDNumber endPointType={endPoint} />
+                      {/* {addNewApplicationDetailsForm.values.app_year_number}-
                       {addNewApplicationDetailsForm.values.app_sem_number}-
-                      {addNewApplicationDetailsForm.values.app_id_number}
+                      {addNewApplicationDetailsForm.values.app_id_number} */}
                     </h4>
 
                     <CInputGroup className="mb-3 ">

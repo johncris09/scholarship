@@ -58,18 +58,19 @@ class Applicant extends RestController
         $system_sequence = new SystemSequenceModel;
 
         $requestData = json_decode($this->input->raw_input_stream, true);
-
+        $app_number = $this->getApplicationNumber($requestData['scholarship_type']);
+        
 
         $query_sem = $this->db->query('SELECT current_semester FROM  config where id = 1')->row();
         $query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->row();
- 
+
         $data = [];
         if ($requestData['scholarship_type'] == "senior_high") {
             $data = array(
                 'scholarship_id' => $requestData['scholarship_id'],
-                'app_year_number' => $requestData['app_year_number'],
-                'app_sem_number' => $requestData['app_sem_number'],
-                'app_id_number' => $requestData['app_id_number'],
+                'app_year_number' => $app_number->seq_year,
+                'app_sem_number' => $app_number->seq_sem,
+                'app_id_number' => (int) $app_number->seq_appno + 1,
                 'school' => $requestData['school'],
                 'strand' => $requestData['strand'],
                 'grade_level' => $requestData['grade_level'],
@@ -82,7 +83,7 @@ class Applicant extends RestController
             $result = $senior_high->insert($data);
 
             $appno_data = array(
-                'seq_appno' => $requestData['app_id_number'],
+                'seq_appno' => (int) $app_number->seq_appno + 1,
             );
             $system_sequence->update(1, $appno_data);
 
@@ -90,9 +91,9 @@ class Applicant extends RestController
         } else if ($requestData['scholarship_type'] == "college") {
             $data = array(
                 'scholarship_id' => $requestData['scholarship_id'],
-                'app_year_number' => $requestData['app_year_number'],
-                'app_sem_number' => $requestData['app_sem_number'],
-                'app_id_number' => $requestData['app_id_number'],
+                'app_year_number' => $app_number->seq_year,
+                'app_sem_number' => $app_number->seq_sem,
+                'app_id_number' => (int) $app_number->seq_appno + 1,
                 'school' => $requestData['school'],
                 'course' => $requestData['course'],
                 'unit' => $requestData['unit'],
@@ -109,16 +110,16 @@ class Applicant extends RestController
 
 
             $appno_data = array(
-                'seq_appno' => $requestData['app_id_number'],
+                'seq_appno' => (int) $app_number->seq_appno + 1,
             );
             $system_sequence->update(2, $appno_data);
 
         } else if ($requestData['scholarship_type'] == "tvet") {
             $data = array(
                 'scholarship_id' => $requestData['scholarship_id'],
-                'app_year_number' => $requestData['app_year_number'],
-                'app_sem_number' => $requestData['app_sem_number'],
-                'app_id_number' => $requestData['app_id_number'],
+                'app_year_number' => $app_number->seq_year,
+                'app_sem_number' => $app_number->seq_sem,
+                'app_id_number' => (int) $app_number->seq_appno + 1,
                 'school' => $requestData['school'],
                 'course' => $requestData['course'],
                 'hour_number' => $requestData['hourNumber'],
@@ -133,7 +134,7 @@ class Applicant extends RestController
             $result = $tvet->insert($data);
 
             $appno_data = array(
-                'seq_appno' => $requestData['app_id_number'],
+                'seq_appno' => (int) $app_number->seq_appno + 1,
             );
             $system_sequence->update(3, $appno_data);
 
@@ -154,6 +155,23 @@ class Applicant extends RestController
         }
     }
 
+    private function getApplicationNumber($scholarship_type)
+    {
+
+        $system_sequence = new SystemSequenceModel;
+        if ($scholarship_type === 'college') {
+            $type = 'college_appno';
+        } else if ($scholarship_type === 'tvet') {
+            $type = 'tvet_appno';
+        } else if ($scholarship_type === 'senior_high') {
+            $type = 'shs_appno';
+        }
+
+        $result = $system_sequence->getLatestAppNumber(['seq_name' => $type]);
+        return $result;
+
+    }
+
     public function insert_new_applicant_post()
     {
         $model = new ScholarshipModel;
@@ -166,9 +184,11 @@ class Applicant extends RestController
         $query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->row();
 
         $requestData = json_decode($this->input->raw_input_stream, true);
+        
+        $app_number = $this->getApplicationNumber($requestData['scholarship_type']);
 
-
-        $reference_number = ucwords($requestData['scholarship_type'][0]) . '' . $requestData['app_sem_number'] . '-' . str_replace(["SY: 20", "-20"], "", $query_sy->current_sy) . '-' . $this->getFirstLetters($requestData['firstname']) . '' . $this->getFirstLetters($requestData['lastname']) . '' . date('-mdy', strtotime($requestData['birthdate']));
+        $reference_number = ucwords($requestData['scholarship_type'][0]) . '' . preg_replace("/\D+/", "",$query_sem->current_semester)
+            . '-' . str_replace(["SY: 20", "-20"], "", $query_sy->current_sy) . '-' . $this->getFirstLetters($requestData['firstname']) . '' . $this->getFirstLetters($requestData['lastname']) . '' . date('-mdy', strtotime($requestData['birthdate']));
 
 
         $data = array(
@@ -187,7 +207,7 @@ class Applicant extends RestController
             'father_occupation' => $requestData['father_occupation'],
             'mother_name' => $requestData['mother_name'],
             'mother_occupation' => $requestData['mother_occupation']
-        );
+        ); 
 
         $insertApplicant = $model->insertNewApplicant($data);
 
@@ -195,9 +215,9 @@ class Applicant extends RestController
         if ($requestData['scholarship_type'] == "senior_high") {
             $data = array(
                 'scholarship_id' => $insertApplicant,
-                'app_year_number' => $requestData['app_year_number'],
-                'app_sem_number' => $requestData['app_sem_number'],
-                'app_id_number' => $requestData['app_id_number'],
+                'app_year_number' => $app_number->seq_year,
+                'app_sem_number' => $app_number->seq_sem,
+                'app_id_number' => (int) $app_number->seq_appno + 1,
                 'school' => $requestData['school'],
                 'strand' => $requestData['strand'],
                 'grade_level' => $requestData['grade_level'],
@@ -212,7 +232,7 @@ class Applicant extends RestController
             $result = $senior_high->insert($data);
 
             $appno_data = array(
-                'seq_appno' => $requestData['app_id_number'],
+                'seq_appno' => (int) $app_number->seq_appno + 1,
             );
             $system_sequence->update(1, $appno_data);
 
@@ -220,9 +240,9 @@ class Applicant extends RestController
         } else if ($requestData['scholarship_type'] == "college") {
             $data = array(
                 'scholarship_id' => $insertApplicant,
-                'app_year_number' => $requestData['app_year_number'],
-                'app_sem_number' => $requestData['app_sem_number'],
-                'app_id_number' => $requestData['app_id_number'],
+                'app_year_number' => $app_number->seq_year,
+                'app_sem_number' => $app_number->seq_sem,
+                'app_id_number' => (int) $app_number->seq_appno + 1,
                 'school' => $requestData['school'],
                 'course' => $requestData['course'],
                 'unit' => $requestData['unit'],
@@ -240,16 +260,16 @@ class Applicant extends RestController
 
 
             $appno_data = array(
-                'seq_appno' => $requestData['app_id_number'],
+                'seq_appno' => (int) $app_number->seq_appno + 1,
             );
             $system_sequence->update(2, $appno_data);
 
         } else if ($requestData['scholarship_type'] == "tvet") {
             $data = array(
                 // 'scholarship_id' => $insertApplicant,
-                'app_year_number' => $requestData['app_year_number'],
-                'app_sem_number' => $requestData['app_sem_number'],
-                'app_id_number' => $requestData['app_id_number'],
+                'app_year_number' => $app_number->seq_year,
+                'app_sem_number' => $app_number->seq_sem,
+                'app_id_number' => (int) $app_number->seq_appno + 1,
                 'school' => $requestData['school'],
                 'course' => $requestData['course'],
                 'hour_number' => $requestData['hourNumber'],
@@ -264,8 +284,9 @@ class Applicant extends RestController
 
             $result = $tvet->insert($data);
 
+
             $appno_data = array(
-                'seq_appno' => $requestData['app_id_number'],
+                'seq_appno' => (int) $app_number->seq_appno + 1,
             );
             $system_sequence->update(3, $appno_data);
 
