@@ -368,9 +368,9 @@ const Dashboard = ({ cardTitle }) => {
           },
 
           {
-            element: '._currentView',
-            title: 'Current SY and Semester',
-            intro: `Displaying the current <b>School Year</b> and <b>Semester</b>. This will serve as a global filter in all display. You can change it in <code> System Configuration > Current List View</code>.`,
+            element: '.rbt-input-main',
+            title: 'Search Applicant',
+            intro: `Search for applicant information here.`,
             position: 'bottom',
             tooltipClass: 'myTooltipClass',
             highlightClass: 'myHighlightClass',
@@ -439,6 +439,14 @@ const Dashboard = ({ cardTitle }) => {
             title: 'Online Users',
             intro: 'Displaying the active/inactive users.',
             position: 'left',
+            tooltipClass: 'myTooltipClass',
+            highlightClass: 'myHighlightClass',
+          },
+          {
+            element: '._currentView',
+            title: 'Current SY and Semester',
+            intro: `Displaying the current <b>School Year</b> and <b>Semester</b>. This will serve as a global filter in all display. You can change it in <code> System Configuration > Current List View</code>.`,
+            position: 'bottom',
             tooltipClass: 'myTooltipClass',
             highlightClass: 'myHighlightClass',
           },
