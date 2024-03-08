@@ -19,12 +19,17 @@ import {
   CModalTitle,
   CRow,
   CSpinner,
+  CTable,
+  CTableBody,
+  CTableDataCell,
+  CTableHeaderCell,
+  CTableRow,
 } from '@coreui/react'
 import MaterialReactTable from 'material-react-table'
 import { useFormik } from 'formik'
 import Select from 'react-select'
 import { ToastContainer, toast } from 'react-toastify'
-import { Box, IconButton, Tooltip } from '@mui/material'
+import { Box, IconButton, Skeleton, Tooltip } from '@mui/material'
 import { EditSharp } from '@mui/icons-material'
 import {
   CivilStatus,
@@ -86,7 +91,7 @@ const Applicant = ({ cardTitle }) => {
     fetchCourse()
     fetchAddress()
     fetchTvetCourse()
-  }, [])
+  }, [id])
 
   const fetchAddress = async () => {
     await api
@@ -112,7 +117,27 @@ const Applicant = ({ cardTitle }) => {
     api
       .get('applicant/' + id)
       .then((response) => {
-        setData(response.data)
+        console.info(response.data)
+        // applicationDetailsForm.setValues(response.data)
+        applicantDetailsForm.setValues({
+          id: response.data.id,
+          reference_number: response.data.reference_number,
+          lastname: response.data.lastname,
+          firstname: response.data.firstname,
+          middlename: response.data.middlename,
+          suffix: response.data.suffix,
+          address: response.data.barangay_id,
+          barangay: response.data.address,
+          birthdate: response.data.birthdate,
+          civil_status: response.data.civil_status,
+          sex: response.data.sex,
+          contact_number: response.data.contact_number,
+          email_address: response.data.email_address,
+          father_name: response.data.father_name,
+          father_occupation: response.data.father_occupation,
+          mother_name: response.data.mother_name,
+          mother_occupation: response.data.mother_occupation,
+        })
       })
       .catch((error) => {
         toast.error(handleError(error))
@@ -419,6 +444,7 @@ const Applicant = ({ cardTitle }) => {
 
   const handleSelectAddress = (selectedOption) => {
     applicantDetailsForm.setFieldValue('address', selectedOption ? selectedOption.value : '')
+    applicantDetailsForm.setFieldValue('barangay', selectedOption ? selectedOption.label : '')
   }
   const validationSchema = Yup.object().shape({
     reference_number: Yup.string().required('Reference # is required'),
@@ -431,12 +457,14 @@ const Applicant = ({ cardTitle }) => {
   })
   const applicantDetailsForm = useFormik({
     initialValues: {
+      id: '',
       reference_number: '',
       lastname: '',
       firstname: '',
       middlename: '',
       suffix: '',
       address: '',
+      barangay: '',
       birthdate: '',
       civil_status: '',
       sex: '',
@@ -450,7 +478,7 @@ const Applicant = ({ cardTitle }) => {
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       await api
-        .put('applicant/update/' + id, values)
+        .put('applicant/update/' + values.id, values)
         .then((response) => {
           toast.success(response.data.message)
           setApplicantDetailsModal(false)
@@ -478,182 +506,156 @@ const Applicant = ({ cardTitle }) => {
           {cardTitle}
         </CCardHeader>
         <CCardBody>
-          <>
-            <CRow className="justify-content-end">
-              <CCol>
-                <div className="text-end">
-                  <h6>
-                    Reference #:{' '}
-                    <span style={{ textDecoration: 'underline', color: 'red', fontSize: 20 }}>
-                      {data.reference_number}
-                    </span>
-                  </h6>
-                </div>
-              </CCol>
-            </CRow>
-            <CRow className="my-1 mt-4">
-              <h3 style={{ textDecoration: 'underline' }}>
-                {toSentenceCase(data.lastname)}, {toSentenceCase(data.firstname)}{' '}
-                {toSentenceCase(data.middlename)} {data.suffix}
-              </h3>
-            </CRow>
-            <CRow className="my-1">
-              <CCol md={8}>
-                <CFormText>Addresss</CFormText>
-                <CFormInput
-                  type="text"
-                  value={data.address}
-                  className="border-0 border-bottom border-bottom-1"
-                  readOnly
-                />
-              </CCol>
-              <CCol md={2}>
-                <CFormText>Birthdate</CFormText>
-                <CFormInput
-                  type="text"
-                  value={data.birthdate}
-                  className="border-0 border-bottom border-bottom-1"
-                  readOnly
-                />
-              </CCol>
-              <CCol md={2}>
-                <CFormText>Age</CFormText>
-                <CFormInput
-                  type="text"
-                  value={calculateAge(data.birthdate)}
-                  className="border-0 border-bottom border-bottom-1"
-                  readOnly
-                />
-              </CCol>
-            </CRow>
-
-            <CRow className="my-1">
-              <CCol md={3}>
-                <CFormText>Civil Status</CFormText>
-                <CFormInput
-                  type="text"
-                  value={toSentenceCase(data.civil_status)}
-                  className="border-0 border-bottom border-bottom-1"
-                  readOnly
-                />
-              </CCol>
-              <CCol md={3}>
-                <CFormText>Sex</CFormText>
-                <CFormInput
-                  type="text"
-                  value={toSentenceCase(data.sex)}
-                  className="border-0 border-bottom border-bottom-1"
-                  readOnly
-                />
-              </CCol>
-              <CCol md={3}>
-                <CFormText>Contact #</CFormText>
-                <CFormInput
-                  type="text"
-                  value={data.contact_number}
-                  className="border-0 border-bottom border-bottom-1"
-                  readOnly
-                />
-              </CCol>
-              <CCol md={3}>
-                <CFormText>Email Address</CFormText>
-                <CFormInput
-                  type="text"
-                  value={data.email_address}
-                  className="border-0 border-bottom border-bottom-1"
-                  readOnly
-                />
-              </CCol>
-            </CRow>
-            <CRow className="my-1  ">
-              <CCol md={6}>
-                <CFormText>Father&apos;s Name</CFormText>
-                <CFormInput
-                  type="text"
-                  value={toSentenceCase(data.father_name)}
-                  className="border-0 border-bottom border-bottom-1"
-                  readOnly
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormText>Father&apos;s Occupation</CFormText>
-                <CFormInput
-                  type="text"
-                  value={toSentenceCase(data.father_occupation)}
-                  className="border-0 border-bottom border-bottom-1"
-                  readOnly
-                />
-              </CCol>
-            </CRow>
-            <CRow className="my-1">
-              <CCol md={6}>
-                <CFormText>Mother&apos;s Name</CFormText>
-                <CFormInput
-                  type="text"
-                  value={toSentenceCase(data.mother_name)}
-                  className="border-0 border-bottom border-bottom-1"
-                  readOnly
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormText>Mother&apos;s Occupation</CFormText>
-                <CFormInput
-                  type="text"
-                  value={toSentenceCase(data.mother_occupation)}
-                  className="border-0 border-bottom border-bottom-1"
-                  readOnly
-                />
-              </CCol>
-            </CRow>
-            <CRow className="mb-5 mt-2">
-              <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                <CButton
-                  onClick={() => {
-                    setFetchDataLoading(true)
-                    api
-                      .get('applicant/' + id)
-                      .then((response) => {
-                        applicantDetailsForm.setValues({
-                          reference_number: response.data.reference_number,
-                          lastname: toSentenceCase(response.data.lastname),
-                          firstname: toSentenceCase(response.data.firstname),
-                          middlename: toSentenceCase(response.data.middlename),
-                          suffix: response.data.suffix,
-                          address: response.data.barangay_id,
-                          birthdate: response.data.birthdate,
-                          civil_status: toSentenceCase(response.data.civil_status),
-                          sex: response.data.sex,
-                          contact_number: response.data.contact_number,
-                          email_address: response.data.email_address,
-                          father_name: toSentenceCase(response.data.father_name),
-                          father_occupation: toSentenceCase(response.data.father_occupation),
-                          mother_name: toSentenceCase(response.data.mother_name),
-                          mother_occupation: toSentenceCase(response.data.mother_occupation),
-                        })
-
+          <CTable responsive>
+            <CTableBody>
+              <CTableRow>
+                <CTableHeaderCell scope="row">Reference #</CTableHeaderCell>
+                <CTableDataCell colSpan={7} style={{ color: 'red' }}>
+                  <strong>
+                    {fetchDataLoading ? (
+                      <Skeleton variant="rounded" width={150} />
+                    ) : (
+                      applicantDetailsForm.values.reference_number
+                    )}
+                  </strong>
+                </CTableDataCell>
+              </CTableRow>
+              <CTableRow>
+                <CTableHeaderCell scope="row">Name</CTableHeaderCell>
+                <CTableDataCell colSpan={7}>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={200} />
+                  ) : (
+                    <>
+                      {toSentenceCase(applicantDetailsForm.values.lastname)},{' '}
+                      {toSentenceCase(applicantDetailsForm.values.firstname)}{' '}
+                      {toSentenceCase(applicantDetailsForm.values.middlename)}{' '}
+                      {toSentenceCase(applicantDetailsForm.values.suffix)}
+                    </>
+                  )}
+                </CTableDataCell>
+              </CTableRow>
+              <CTableRow>
+                <CTableHeaderCell scope="row">Address</CTableHeaderCell>
+                <CTableDataCell colSpan={3}>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={100} />
+                  ) : (
+                    applicantDetailsForm.values.barangay
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell scope="row">Birthdate</CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={100} />
+                  ) : (
+                    applicantDetailsForm.values.birthdate
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell scope="row">Age</CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={20} />
+                  ) : (
+                    calculateAge(applicantDetailsForm.values.birthdate)
+                  )}
+                </CTableDataCell>
+              </CTableRow>
+              <CTableRow>
+                <CTableHeaderCell scope="row">Civil Status</CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={50} />
+                  ) : (
+                    applicantDetailsForm.values.civil_status
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell scope="row">Sex</CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={80} />
+                  ) : (
+                    applicantDetailsForm.values.sex
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell scope="row">Contact #</CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={100} />
+                  ) : (
+                    applicantDetailsForm.values.contact_number
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell scope="row">Email Address</CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={150} />
+                  ) : (
+                    applicantDetailsForm.values.email_address
+                  )}
+                </CTableDataCell>
+              </CTableRow>
+              <CTableRow>
+                <CTableHeaderCell scope="row">Father&apos;s Name</CTableHeaderCell>
+                <CTableDataCell colSpan={3}>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={200} />
+                  ) : (
+                    applicantDetailsForm.values.father_name
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell scope="row">Father&apos;s Occupation</CTableHeaderCell>
+                <CTableDataCell colSpan={3}>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={200} />
+                  ) : (
+                    applicantDetailsForm.values.father_occupation
+                  )}
+                </CTableDataCell>
+              </CTableRow>
+              <CTableRow>
+                <CTableHeaderCell scope="row">Mother&apos;s Name</CTableHeaderCell>
+                <CTableDataCell colSpan={3}>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={200} />
+                  ) : (
+                    applicantDetailsForm.values.mother_name
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell scope="row">Mother&apos;s Occupation</CTableHeaderCell>
+                <CTableDataCell colSpan={3}>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={200} />
+                  ) : (
+                    applicantDetailsForm.values.mother_occupation
+                  )}
+                </CTableDataCell>
+              </CTableRow>
+              <CTableRow>
+                <CTableDataCell align="right" colSpan={9}>
+                  <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <CButton
+                      onClick={() => {
                         setApplicantDetailsModal(true)
-                      })
-                      .catch((error) => {
-                        toast.error(handleError(error))
-                      })
-                      .finally(() => {
-                        setFetchDataLoading(false)
-                      })
-                  }}
-                  color="primary"
-                  variant="outline"
-                  className="me-md-2"
-                >
-                  <lord-icon
-                    src="https://cdn.lordicon.com/zfzufhzk.json"
-                    trigger="hover"
-                    style={{ width: '20px', height: '20px', paddingTop: '5px' }}
-                  ></lord-icon>
-                  Edit
-                </CButton>
-              </div>
-            </CRow>
-          </>
+                      }}
+                      color="primary"
+                      variant="outline"
+                      className="px-3"
+                      size="sm"
+                    >
+                      <lord-icon
+                        src="https://cdn.lordicon.com/zfzufhzk.json"
+                        trigger="hover"
+                        style={{ width: '20px', height: '20px', paddingTop: '5px' }}
+                      ></lord-icon>
+                      Edit
+                    </CButton>
+                  </div>
+                </CTableDataCell>
+              </CTableRow>
+            </CTableBody>
+          </CTable>
+
           <>
             <MaterialReactTable
               columns={column}
