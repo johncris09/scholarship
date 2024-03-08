@@ -22,9 +22,6 @@ import {
   CTableRow,
   CWidgetStatsF,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import { cilChartLine } from '@coreui/icons'
-import MaterialReactTable from 'material-react-table'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCancel, faCircle, faEye, faFilter } from '@fortawesome/free-solid-svg-icons'
 import { useFormik } from 'formik'
@@ -36,9 +33,7 @@ import {
   SchoolYear,
   Semester,
   api,
-  decrypted,
   DefaultLoading,
-  WidgetLoading,
   handleError,
   requiredField,
   RequiredFieldNote,
@@ -49,7 +44,7 @@ import * as Yup from 'yup'
 import CountUp from 'react-countup'
 import { Skeleton } from '@mui/material'
 import 'intro.js/introjs.css'
-import { Steps, Hints } from 'intro.js-react'
+import { Steps } from 'intro.js-react'
 const Dashboard = ({ cardTitle }) => {
   const [loading, setLoading] = useState(false)
   const [onlineUser, setOnlineUser] = useState([])
@@ -357,10 +352,6 @@ const Dashboard = ({ cardTitle }) => {
       header: 'Void',
     },
   ]
-  const handleExit = () => {
-    console.log('Tour exited')
-    // Additional actions you want to perform when the tour is exited
-  }
 
   return (
     <>
