@@ -669,7 +669,7 @@ const College = () => {
           <Document
             size="A4"
             author={process.env.REACT_APP_DEVELOPER}
-            title="Senior High Applicants"
+            title="College Applicants"
             keywords="document, pdf"
             subject={title}
             creator={process.env.REACT_APP_DEVELOPER}
