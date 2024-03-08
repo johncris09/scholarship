@@ -2079,6 +2079,7 @@ const Registration = ({ cardTitle }) => {
                       transition: 'transform 0.2s',
                     },
                   })}
+                  autoResetExpanded={true}
                   renderDetailPanel={({ row }) => {
                     return row.original.id ? (
                       <Box
