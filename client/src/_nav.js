@@ -39,12 +39,12 @@ const _nav = (userInfo) => {
         to: '/applicant',
         icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
       },
-      {
-        component: CNavItem,
-        name: 'Advance Search',
-        to: '/advance_search',
-        icon: <CIcon icon={cilMagnifyingGlass} customClassName="nav-icon" />,
-      },
+      // {
+      //   component: CNavItem,
+      //   name: 'Advance Search',
+      //   to: '/advance_search',
+      //   icon: <CIcon icon={cilMagnifyingGlass} customClassName="nav-icon" />,
+      // },
       {
         component: CNavGroup,
         name: 'Manage Application',
