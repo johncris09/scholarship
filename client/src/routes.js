@@ -18,6 +18,8 @@ const GenerateReport = React.lazy(() => import('./views/generate_report/Generate
 const Applicant = React.lazy(() => import('./views/applicant/Applicant'))
 const ApplicationDetails = React.lazy(() => import('./views/applicant/ApplicationDetails'))
 
+const SearchResult = React.lazy(() => import('./views/search_result/SearchResult'))
+
 // School
 const SeniorHighSchool = React.lazy(() => import('./views/school/SeniorHighSchool'))
 const CollegeSchool = React.lazy(() => import('./views/school/CollegeSchool'))
@@ -65,6 +67,12 @@ const routes = [
     user: ['4BSVYawhFI8j779vM8q1', 'KmOlD4kHZC93Yp8Jirhc'],
     name: 'Application Details',
     element: ApplicationDetails,
+  },
+  {
+    path: '/search/:id',
+    user: ['4BSVYawhFI8j779vM8q1', 'KmOlD4kHZC93Yp8Jirhc'],
+    name: 'Search Result',
+    element: SearchResult,
   },
   // { path: '/registration', name: 'Registration', element: Registration },
   {
