@@ -217,7 +217,13 @@ const Tvet = () => {
   const handleExportData = () => {
     const exportedData = data.map((item) => {
       return {
-        Name: `${item.colLastName}, ${item.colFirstName} ${item.colMI}`,
+        Name: `${toSentenceCase(item.lastname)}, ${toSentenceCase(item.firstname)} ${
+          item.middlename.length === 1
+            ? item.middlename + '.'
+            : item.middlename.length > 1
+            ? item.middlename.substring(0, 1) + '.'
+            : ''
+        } ${item.suffix}`,
         Address: item.colAddress,
         Course: item.colCourse,
         'Year Level': item.colYearLevel,
@@ -766,11 +772,15 @@ const Tvet = () => {
                           )}
                           {c === 'name' && (
                             <Text key={rowIndex} style={{ width: `${250 / col.length}%` }}>
-                              {`${toSentenceCase(rowData.lastname)},  ${toSentenceCase(
+                              {`${toSentenceCase(rowData.lastname)}, ${toSentenceCase(
                                 rowData.firstname,
-                              )}. ${toSentenceCase(rowData.middlename)} ${toSentenceCase(
-                                rowData.suffix,
-                              )}`}
+                              )} ${
+                                rowData.middlename.length === 1
+                                  ? rowData.middlename + '.'
+                                  : rowData.middlename.length > 1
+                                  ? rowData.middlename.substring(0, 1) + '.'
+                                  : ''
+                              } ${rowData.suffix}`}
                             </Text>
                           )}
                           {c === 'address' && (

@@ -217,9 +217,13 @@ const College = () => {
   const handleExportData = () => {
     const exportedData = data.map((item) => {
       return {
-        Name: `${toSentenceCase(item.lastname)}, ${toSentenceCase(item.firstname)} ${toSentenceCase(
-          item.middlename,
-        )} ${item.suffix}`,
+        Name: `${toSentenceCase(item.lastname)}, ${toSentenceCase(item.firstname)} ${
+          item.middlename.length === 1
+            ? item.middlename + '.'
+            : item.middlename.length > 1
+            ? item.middlename.substring(0, 1) + '.'
+            : ''
+        } ${item.suffix}`,
         Address: `${toSentenceCase(item.address)}`,
         Course: item.course,
         'Year Level': item.year_level,
@@ -767,11 +771,15 @@ const College = () => {
                           )}
                           {c === 'name' && (
                             <Text key={rowIndex} style={{ width: `${250 / col.length}%` }}>
-                              {`${toSentenceCase(rowData.lastname)},  ${toSentenceCase(
+                              {`${toSentenceCase(rowData.lastname)}, ${toSentenceCase(
                                 rowData.firstname,
-                              )}. ${toSentenceCase(rowData.middlename)} ${toSentenceCase(
-                                rowData.suffix,
-                              )}`}
+                              )} ${
+                                rowData.middlename.length === 1
+                                  ? rowData.middlename + '.'
+                                  : rowData.middlename.length > 1
+                                  ? rowData.middlename.substring(0, 1) + '.'
+                                  : ''
+                              } ${rowData.suffix}`}
                             </Text>
                           )}
                           {c === 'address' && (
