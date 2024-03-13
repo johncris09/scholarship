@@ -21,6 +21,7 @@ import {
   CFormLabel,
   CFormSelect,
   CFormText,
+  CFormTextarea,
   CInputGroup,
   CModal,
   CModalBody,
@@ -155,7 +156,11 @@ const SeniorHigh = () => {
     semester: Yup.string().required('Semester is required'),
     school_year: Yup.string().required('School Year is required'),
     availment: Yup.string().required('Availment is required'),
-    ctc: Yup.string().required('CTC # is required'),
+    reason: Yup.string().when('app_status', {
+      is: (value) => value === 'Disapproved',
+      then: (schema) => schema.required('Reason is required'),
+      otherwise: (schema) => schema,
+    }),
   })
   const applicationDetailsForm = useFormik({
     initialValues: {
@@ -173,8 +178,8 @@ const SeniorHigh = () => {
       semester: '',
       school_year: '',
       availment: '',
-      ctc: '',
       app_status: '',
+      reason: '',
     },
     validationSchema: applicationDetailsFormValidationSchema,
     onSubmit: async (values) => {
@@ -507,7 +512,7 @@ const SeniorHigh = () => {
             enableStickyFooter
             enableRowActions
             selectAllMode="all"
-            initialState={{ density: 'compact' }}
+            initialState={{ density: 'compact', pagination: { pageSize: 20000 } }}
             renderRowActionMenuItems={({ closeMenu, row }) => [
               <MenuItem
                 key={0}
@@ -521,7 +526,6 @@ const SeniorHigh = () => {
                     firstname: row.original.firstname,
                     middlename: row.original.middlename,
                     availment: row.original.availment,
-                    ctc: row.original.ctc,
                     app_year_number: row.original.app_year_number,
                     app_sem_number: row.original.app_sem_number,
                     app_id_number: row.original.app_id_number,
@@ -531,6 +535,7 @@ const SeniorHigh = () => {
                     grade_level: row.original.grade_level,
                     school_year: row.original.school_year,
                     app_status: row.original.app_status,
+                    reason: row.original.reason === null ? '' : row.original.reason,
                   })
 
                   setApplicationDetailsModalVisible(true)
@@ -664,282 +669,280 @@ const SeniorHigh = () => {
             </CModalTitle>
           </CModalHeader>
           <CModalBody>
-            <>
-              <CForm
-                id="form"
-                className="row g-3 needs-validation"
-                noValidate
-                onSubmit={applicationDetailsForm.handleSubmit}
-              >
-                <CRow className="justify-content-end mt-3">
-                  <CCol>
-                    <div className="text-end">
-                      <h6>
-                        Reference #:{' '}
-                        <span
-                          style={{
-                            textDecoration: 'underline',
-                            color: 'red',
-                            fontSize: 20,
-                          }}
-                        >
-                          {applicationDetailsForm.values.reference_number}
-                        </span>
-                      </h6>
-                    </div>
-                  </CCol>
-                </CRow>
+            <CForm
+              id="form"
+              className="row g-3 needs-validation"
+              noValidate
+              onSubmit={applicationDetailsForm.handleSubmit}
+            >
+              <CRow className="justify-content-end mt-3">
+                <CCol>
+                  <div className="text-end">
+                    <h6>
+                      Reference #:{' '}
+                      <span
+                        style={{
+                          textDecoration: 'underline',
+                          color: 'red',
+                          fontSize: 20,
+                        }}
+                      >
+                        {applicationDetailsForm.values.reference_number}
+                      </span>
+                    </h6>
+                  </div>
+                </CCol>
+              </CRow>
 
-                <CRow className="justify-content-between my-1">
-                  <CCol md={7} sm={6} xs={6} lg={8} xl={4}>
-                    <CFormLabel>{requiredField(' Application Number')}</CFormLabel>
-                    <h4 className="text-danger text-decoration-underline">
-                      {applicationDetailsForm.values.app_year_number}-
-                      {applicationDetailsForm.values.app_sem_number}-
-                      {applicationDetailsForm.values.app_id_number}
-                    </h4>
+              <CRow className="justify-content-between my-1">
+                <CCol md={7} sm={6} xs={6} lg={8} xl={4}>
+                  <CFormLabel>{requiredField(' Application Number')}</CFormLabel>
+                  <h4 className="text-danger text-decoration-underline">
+                    {applicationDetailsForm.values.app_year_number}-
+                    {applicationDetailsForm.values.app_sem_number}-
+                    {applicationDetailsForm.values.app_id_number}
+                  </h4>
 
-                    <CInputGroup className="mb-3 ">
-                      <CFormInput
-                        type="hidden"
-                        name="app_year_number"
-                        onChange={handleInputChange}
-                        value={applicationDetailsForm.values.app_year_number}
-                        className="text-center"
-                        placeholder="Year"
-                        aria-label="Year"
-                        required
-                        // readOnly
-                      />
-                      {/* <CInputGroupText className="bg-transparent font-weight-bolder">
-                                -
-                              </CInputGroupText> */}
-                      <CFormInput
-                        type="hidden"
-                        name="app_sem_number"
-                        onChange={handleInputChange}
-                        value={applicationDetailsForm.values.app_sem_number}
-                        className="text-center "
-                        placeholder="Semester"
-                        aria-label="Sem"
-                        required
-                        // readOnly
-                      />
-                      {/* <CInputGroupText className="bg-transparent font-weight-bolder">
-                                -
-                              </CInputGroupText> */}
-                      <CFormInput
-                        type="hidden"
-                        name="app_id_number"
-                        onChange={handleInputChange}
-                        value={applicationDetailsForm.values.app_id_number}
-                        className="text-center"
-                        placeholder="App No"
-                        aria-label="App No"
-                        required
-                        // readOnly
-                      />
-                    </CInputGroup>
-                  </CCol>
-                  <CCol md={4}>
-                    <CFormLabel>Application Status</CFormLabel>
-                    <CFormSelect
-                      feedbackInvalid="Status is required."
-                      name="app_status"
-                      onChange={handleInputChange}
-                      value={applicationDetailsForm.values.app_status}
-                      required
-                    >
-                      <option value="">Select</option>
-                      {StatusType.map((status, index) => (
-                        <option key={index} value={status}>
-                          {status}
-                        </option>
-                      ))}
-                    </CFormSelect>
-                    {applicationDetailsForm.touched.app_status &&
-                      applicationDetailsForm.errors.app_status && (
-                        <CFormText className="text-danger">
-                          {applicationDetailsForm.errors.app_status}
-                        </CFormText>
-                      )}
-                  </CCol>
-                </CRow>
-
-                <CRow className="my-1">
-                  {/* if senior high */}
-                  <>
-                    <CCol md={8}>
-                      <CFormLabel>
-                        {
-                          <>
-                            {fetchSeniorHighSchoolLoading && <CSpinner size="sm" />}
-                            {requiredField(' School')}
-                          </>
-                        }
-                      </CFormLabel>
-                      <Select
-                        ref={selectSchoolInputRef}
-                        value={school.find(
-                          (option) => option.value === applicationDetailsForm.values.school,
-                        )}
-                        onChange={handleSelectChange}
-                        options={school}
-                        name="school"
-                        isSearchable
-                        placeholder="Search..."
-                        isClearable
-                      />
-                      {applicationDetailsForm.touched.school &&
-                        applicationDetailsForm.errors.school && (
-                          <CFormText className="text-danger">
-                            {applicationDetailsForm.errors.school}
-                          </CFormText>
-                        )}
-                    </CCol>
-                    <CCol md={4}>
-                      <CFormLabel>
-                        {
-                          <>
-                            {fetchStrandLoading && <CSpinner size="sm" />}
-                            {requiredField(' Strand')}
-                          </>
-                        }
-                      </CFormLabel>
-                      <Select
-                        ref={selectStrandInputRef}
-                        value={strand.find(
-                          (option) => option.value === applicationDetailsForm.values.strand,
-                        )}
-                        onChange={handleSelectChange}
-                        options={strand}
-                        name="strand"
-                        isSearchable
-                        placeholder="Search..."
-                        isClearable
-                      />
-                      {applicationDetailsForm.touched.strand &&
-                        applicationDetailsForm.errors.strand && (
-                          <CFormText className="text-danger">
-                            {applicationDetailsForm.errors.strand}
-                          </CFormText>
-                        )}
-                    </CCol>
-                  </>
-                </CRow>
-
-                <CRow className="my-1">
-                  <CCol>
-                    <CFormSelect
-                      label={requiredField('Grade Level')}
-                      name="grade_level"
-                      onChange={handleInputChange}
-                      value={applicationDetailsForm.values.grade_level}
-                      required
-                    >
-                      <option value="">Select</option>
-                      {GradeLevel.map((grade_level, index) => (
-                        <option key={index} value={grade_level}>
-                          {grade_level}
-                        </option>
-                      ))}
-                    </CFormSelect>
-
-                    {applicationDetailsForm.touched.grade_level &&
-                      applicationDetailsForm.errors.grade_level && (
-                        <CFormText className="text-danger">
-                          {applicationDetailsForm.errors.grade_level}
-                        </CFormText>
-                      )}
-                  </CCol>
-                  <CCol>
-                    <CFormSelect
-                      label={requiredField('Semester')}
-                      name="semester"
-                      onChange={handleInputChange}
-                      value={applicationDetailsForm.values.semester}
-                      required
-                    >
-                      <option value="">Select</option>
-                      {Semester.map((semester, index) => (
-                        <option key={index} value={semester}>
-                          {semester}
-                        </option>
-                      ))}
-                    </CFormSelect>
-                    {applicationDetailsForm.touched.semester &&
-                      applicationDetailsForm.errors.semester && (
-                        <CFormText className="text-danger">
-                          {applicationDetailsForm.errors.semester}
-                        </CFormText>
-                      )}
-                  </CCol>
-                </CRow>
-                <CRow className="my-1">
-                  <CCol>
-                    <CFormSelect
-                      label={requiredField('School Year')}
-                      name="school_year"
-                      onChange={handleInputChange}
-                      value={applicationDetailsForm.values.school_year}
-                      required
-                    >
-                      <option value="">Select</option>
-                      {SchoolYear.map((school_year, index) => (
-                        <option key={index} value={school_year}>
-                          {school_year}
-                        </option>
-                      ))}
-                    </CFormSelect>
-                    {applicationDetailsForm.touched.school_year &&
-                      applicationDetailsForm.errors.school_year && (
-                        <CFormText className="text-danger">
-                          {applicationDetailsForm.errors.school_year}
-                        </CFormText>
-                      )}
-                  </CCol>
-                  <CCol>
+                  <CInputGroup className="mb-3 ">
                     <CFormInput
-                      type="number"
-                      label={requiredField('Availment')}
-                      name="availment"
+                      type="hidden"
+                      name="app_year_number"
                       onChange={handleInputChange}
-                      value={applicationDetailsForm.values.availment}
+                      value={applicationDetailsForm.values.app_year_number}
+                      className="text-center"
+                      placeholder="Year"
+                      aria-label="Year"
                       required
                     />
-                    {applicationDetailsForm.touched.availment &&
-                      applicationDetailsForm.errors.availment && (
-                        <CFormText className="text-danger">
-                          {applicationDetailsForm.errors.availment}
-                        </CFormText>
-                      )}
-                  </CCol>
-                  <CCol md={3}>
                     <CFormInput
-                      type="text"
-                      label={requiredField('CTC #')}
-                      name="ctc"
+                      type="hidden"
+                      name="app_sem_number"
                       onChange={handleInputChange}
-                      value={applicationDetailsForm.values.ctc}
+                      value={applicationDetailsForm.values.app_sem_number}
+                      className="text-center "
+                      placeholder="Semester"
+                      aria-label="Sem"
                       required
                     />
-                    {applicationDetailsForm.touched.ctc && applicationDetailsForm.errors.ctc && (
+
+                    <CFormInput
+                      type="hidden"
+                      name="app_id_number"
+                      onChange={handleInputChange}
+                      value={applicationDetailsForm.values.app_id_number}
+                      className="text-center"
+                      placeholder="App No"
+                      aria-label="App No"
+                      required
+                    />
+                  </CInputGroup>
+                </CCol>
+                <CCol md={4}>
+                  <CFormLabel>Application Status</CFormLabel>
+                  <CFormSelect
+                    feedbackInvalid="Status is required."
+                    name="app_status"
+                    onChange={handleInputChange}
+                    value={applicationDetailsForm.values.app_status}
+                    required
+                  >
+                    <option value="">Select</option>
+                    {StatusType.map((status, index) => (
+                      <option key={index} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </CFormSelect>
+                  {applicationDetailsForm.touched.app_status &&
+                    applicationDetailsForm.errors.app_status && (
                       <CFormText className="text-danger">
-                        {applicationDetailsForm.errors.ctc}
+                        {applicationDetailsForm.errors.app_status}
                       </CFormText>
                     )}
-                  </CCol>
-                </CRow>
+                </CCol>
+              </CRow>
 
-                <CRow className="mt-4">
-                  <div className="d-grid gap-2">
-                    <CButton color="primary" type="submit">
-                      Update Details
-                    </CButton>
-                  </div>
-                </CRow>
-              </CForm>
-            </>
+              <CRow className="my-1">
+                <>
+                  <CCol md={8}>
+                    <CFormLabel>
+                      {
+                        <>
+                          {fetchSeniorHighSchoolLoading && <CSpinner size="sm" />}
+                          {requiredField(' School')}
+                        </>
+                      }
+                    </CFormLabel>
+                    <Select
+                      ref={selectSchoolInputRef}
+                      value={school.find(
+                        (option) => option.value === applicationDetailsForm.values.school,
+                      )}
+                      onChange={handleSelectChange}
+                      options={school}
+                      name="school"
+                      isSearchable
+                      placeholder="Search..."
+                      isClearable
+                    />
+                    {applicationDetailsForm.touched.school &&
+                      applicationDetailsForm.errors.school && (
+                        <CFormText className="text-danger">
+                          {applicationDetailsForm.errors.school}
+                        </CFormText>
+                      )}
+                  </CCol>
+                  <CCol md={4}>
+                    <CFormLabel>
+                      {
+                        <>
+                          {fetchStrandLoading && <CSpinner size="sm" />}
+                          {requiredField(' Strand')}
+                        </>
+                      }
+                    </CFormLabel>
+                    <Select
+                      ref={selectStrandInputRef}
+                      value={strand.find(
+                        (option) => option.value === applicationDetailsForm.values.strand,
+                      )}
+                      onChange={handleSelectChange}
+                      options={strand}
+                      name="strand"
+                      isSearchable
+                      placeholder="Search..."
+                      isClearable
+                    />
+                    {applicationDetailsForm.touched.strand &&
+                      applicationDetailsForm.errors.strand && (
+                        <CFormText className="text-danger">
+                          {applicationDetailsForm.errors.strand}
+                        </CFormText>
+                      )}
+                  </CCol>
+                </>
+              </CRow>
+
+              <CRow className="my-1">
+                <CCol>
+                  <CFormSelect
+                    label={requiredField('Grade Level')}
+                    name="grade_level"
+                    onChange={handleInputChange}
+                    value={applicationDetailsForm.values.grade_level}
+                    required
+                  >
+                    <option value="">Select</option>
+                    {GradeLevel.map((grade_level, index) => (
+                      <option key={index} value={grade_level}>
+                        {grade_level}
+                      </option>
+                    ))}
+                  </CFormSelect>
+
+                  {applicationDetailsForm.touched.grade_level &&
+                    applicationDetailsForm.errors.grade_level && (
+                      <CFormText className="text-danger">
+                        {applicationDetailsForm.errors.grade_level}
+                      </CFormText>
+                    )}
+                </CCol>
+                <CCol>
+                  <CFormSelect
+                    label={requiredField('Semester')}
+                    name="semester"
+                    onChange={handleInputChange}
+                    value={applicationDetailsForm.values.semester}
+                    required
+                  >
+                    <option value="">Select</option>
+                    {Semester.map((semester, index) => (
+                      <option key={index} value={semester}>
+                        {semester}
+                      </option>
+                    ))}
+                  </CFormSelect>
+                  {applicationDetailsForm.touched.semester &&
+                    applicationDetailsForm.errors.semester && (
+                      <CFormText className="text-danger">
+                        {applicationDetailsForm.errors.semester}
+                      </CFormText>
+                    )}
+                </CCol>
+              </CRow>
+              <CRow className="my-1">
+                <CCol md={6}>
+                  <CFormSelect
+                    label={requiredField('School Year')}
+                    name="school_year"
+                    onChange={handleInputChange}
+                    value={applicationDetailsForm.values.school_year}
+                    required
+                  >
+                    <option value="">Select</option>
+                    {SchoolYear.map((school_year, index) => (
+                      <option key={index} value={school_year}>
+                        {school_year}
+                      </option>
+                    ))}
+                  </CFormSelect>
+                  {applicationDetailsForm.touched.school_year &&
+                    applicationDetailsForm.errors.school_year && (
+                      <CFormText className="text-danger">
+                        {applicationDetailsForm.errors.school_year}
+                      </CFormText>
+                    )}
+                </CCol>
+                <CCol md={6}>
+                  <CFormInput
+                    type="number"
+                    label={requiredField('Availment')}
+                    name="availment"
+                    onChange={handleInputChange}
+                    value={applicationDetailsForm.values.availment}
+                    required
+                  />
+                  {applicationDetailsForm.touched.availment &&
+                    applicationDetailsForm.errors.availment && (
+                      <CFormText className="text-danger">
+                        {applicationDetailsForm.errors.availment}
+                      </CFormText>
+                    )}
+                </CCol>
+              </CRow>
+
+              <CRow className="my-1">
+                <CCol md={12}>
+                  <CFormLabel>Reason (Optional)</CFormLabel>
+
+                  <CFormTextarea
+                    placeholder="Required only when application status set to disapproved"
+                    label="Reason (Optional)"
+                    name="reason"
+                    onChange={handleInputChange}
+                    style={{ height: '100px' }}
+                  >
+                    {applicationDetailsForm.values.reason}
+                  </CFormTextarea>
+
+                  {applicationDetailsForm.touched.reason &&
+                    applicationDetailsForm.errors.reason && (
+                      <CFormText className="text-danger">
+                        {applicationDetailsForm.errors.reason}
+                      </CFormText>
+                    )}
+                </CCol>
+              </CRow>
+
+              <CRow className="mt-4">
+                <div className="d-grid gap-2">
+                  <CButton color="primary" type="submit">
+                    Update Details
+                  </CButton>
+                </div>
+              </CRow>
+            </CForm>
+            {loadingOperation && <DefaultLoading />}
           </CModalBody>
         </CModal>
       </>

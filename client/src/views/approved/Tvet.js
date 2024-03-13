@@ -11,6 +11,7 @@ import {
   CFormLabel,
   CFormSelect,
   CFormText,
+  CFormTextarea,
   CInputGroup,
   CModal,
   CModalBody,
@@ -66,7 +67,7 @@ const Tvet = () => {
   const fetchSchool = () => {
     setFetchSchoolLoading(true)
     api
-      .get('college_school')
+      .get('tvet_school')
       .then((response) => {
         const formattedData = response.data.map((item) => {
           const value = item.id
@@ -87,7 +88,7 @@ const Tvet = () => {
   const fetchCourse = () => {
     setFetchCourseLoading(true)
     api
-      .get('course')
+      .get('tvet_course')
       .then((response) => {
         const formattedData = response.data.map((item) => {
           const value = item.id
@@ -136,11 +137,15 @@ const Tvet = () => {
     app_status: Yup.string().required('Application Status  is required'),
     school: Yup.string().required('School is required'),
     course: Yup.string().required('Course  is required'),
-    hourNumber: Yup.string().required('No. of hours is required'),
+    hourNumber: Yup.string().required('No. of days is required'),
     semester: Yup.string().required('Semester is required'),
     school_year: Yup.string().required('School Year is required'),
     availment: Yup.string().required('Availment is required'),
-    ctc: Yup.string().required('CTC # is required'),
+    reason: Yup.string().when('app_status', {
+      is: (value) => value === 'Disapproved',
+      then: (schema) => schema.required('Reason is required'),
+      otherwise: (schema) => schema,
+    }),
   })
   const applicationDetailsForm = useFormik({
     initialValues: {
@@ -155,12 +160,11 @@ const Tvet = () => {
       school: '',
       course: '',
       hourNumber: '',
-      year_level: '',
       semester: '',
       school_year: '',
       availment: '',
-      ctc: '',
       app_status: '',
+      reason: '',
     },
     validationSchema: applicationDetailsFormValidationSchema,
     onSubmit: async (values) => {
@@ -380,6 +384,7 @@ const Tvet = () => {
                     year_level: row.original.year_level,
                     school_year: row.original.school_year,
                     app_status: row.original.app_status,
+                    reason: row.original.reason === null ? '' : row.original.reason,
                   })
 
                   setApplicationDetailsModalVisible(true)
@@ -397,7 +402,7 @@ const Tvet = () => {
                 onClick={() => {
                   closeMenu()
 
-                  let id = row.original.ID
+                  let id = row.original.id
 
                   Swal.fire({
                     title: 'Are you sure?',
@@ -532,7 +537,6 @@ const Tvet = () => {
                         placeholder="Year"
                         aria-label="Year"
                         required
-                        // readOnly
                       />
                       <CFormInput
                         type="hidden"
@@ -543,7 +547,6 @@ const Tvet = () => {
                         placeholder="Semester"
                         aria-label="Sem"
                         required
-                        // readOnly
                       />
                       <CFormInput
                         type="hidden"
@@ -554,7 +557,6 @@ const Tvet = () => {
                         placeholder="App No"
                         aria-label="App No"
                         required
-                        // readOnly
                       />
                     </CInputGroup>
                   </CCol>
@@ -644,7 +646,7 @@ const Tvet = () => {
                     <CCol md={3}>
                       <CFormInput
                         type="number"
-                        label={requiredField('No. of hours')}
+                        label={requiredField('No. of days')}
                         name="hourNumber"
                         onChange={handleInputChange}
                         value={applicationDetailsForm.values.hourNumber}
@@ -661,30 +663,7 @@ const Tvet = () => {
                 </CRow>
 
                 <CRow className="my-1">
-                  <CCol>
-                    <CFormSelect
-                      label="Year Level"
-                      name="year_level"
-                      onChange={handleInputChange}
-                      value={applicationDetailsForm.values.year_level}
-                      required
-                    >
-                      <option value="">Select</option>
-                      {YearLevel.map((year_level, index) => (
-                        <option key={index} value={year_level}>
-                          {year_level}
-                        </option>
-                      ))}
-                    </CFormSelect>
-
-                    {applicationDetailsForm.touched.year_level &&
-                      applicationDetailsForm.errors.year_level && (
-                        <CFormText className="text-danger">
-                          {applicationDetailsForm.errors.year_level}
-                        </CFormText>
-                      )}
-                  </CCol>
-                  <CCol>
+                  <CCol md={4}>
                     <CFormSelect
                       label={requiredField('Semester')}
                       name="semester"
@@ -706,9 +685,7 @@ const Tvet = () => {
                         </CFormText>
                       )}
                   </CCol>
-                </CRow>
-                <CRow className="my-1">
-                  <CCol>
+                  <CCol md={4}>
                     <CFormSelect
                       label={requiredField('School Year')}
                       name="school_year"
@@ -730,7 +707,7 @@ const Tvet = () => {
                         </CFormText>
                       )}
                   </CCol>
-                  <CCol>
+                  <CCol md={4}>
                     <CFormInput
                       type="number"
                       label={requiredField('Availment')}
@@ -746,20 +723,25 @@ const Tvet = () => {
                         </CFormText>
                       )}
                   </CCol>
-                  <CCol md={3}>
-                    <CFormInput
-                      type="text"
-                      label={requiredField('CTC #')}
-                      name="ctc"
+                </CRow>
+                <CRow className="my-1">
+                  <CCol md={12}>
+                    <CFormTextarea
+                      placeholder="Required only when application status set to disapproved"
+                      label="Reason (Optional)"
+                      name="reason"
                       onChange={handleInputChange}
-                      value={applicationDetailsForm.values.ctc}
-                      required
-                    />
-                    {applicationDetailsForm.touched.ctc && applicationDetailsForm.errors.ctc && (
-                      <CFormText className="text-danger">
-                        {applicationDetailsForm.errors.ctc}
-                      </CFormText>
-                    )}
+                      style={{ height: '100px' }}
+                    >
+                      {applicationDetailsForm.values.reason}
+                    </CFormTextarea>
+
+                    {applicationDetailsForm.touched.reason &&
+                      applicationDetailsForm.errors.reason && (
+                        <CFormText className="text-danger">
+                          {applicationDetailsForm.errors.reason}
+                        </CFormText>
+                      )}
                   </CCol>
                 </CRow>
 
@@ -771,6 +753,7 @@ const Tvet = () => {
                   </div>
                 </CRow>
               </CForm>
+              {loadingOperation && <DefaultLoading />}
             </>
           </CModalBody>
         </CModal>

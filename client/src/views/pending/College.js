@@ -21,6 +21,7 @@ import {
   CFormLabel,
   CFormSelect,
   CFormText,
+  CFormTextarea,
   CInputGroup,
   CModal,
   CModalBody,
@@ -157,7 +158,11 @@ const College = () => {
     semester: Yup.string().required('Semester is required'),
     school_year: Yup.string().required('School Year is required'),
     availment: Yup.string().required('Availment is required'),
-    ctc: Yup.string().required('CTC # is required'),
+    reason: Yup.string().when('app_status', {
+      is: (value) => value === 'Disapproved',
+      then: (schema) => schema.required('Reason is required'),
+      otherwise: (schema) => schema,
+    }),
   })
   const applicationDetailsForm = useFormik({
     initialValues: {
@@ -176,8 +181,8 @@ const College = () => {
       semester: '',
       school_year: '',
       availment: '',
-      ctc: '',
       app_status: '',
+      reason: '',
     },
     validationSchema: applicationDetailsFormValidationSchema,
     onSubmit: async (values) => {
@@ -547,6 +552,7 @@ const College = () => {
                     year_level: row.original.year_level,
                     school_year: row.original.school_year,
                     app_status: row.original.app_status,
+                    reason: row.original.reason === null ? '' : row.original.reason,
                   })
 
                   setApplicationDetailsModalVisible(true)
@@ -724,11 +730,7 @@ const College = () => {
                         placeholder="Year"
                         aria-label="Year"
                         required
-                        // readOnly
                       />
-                      {/* <CInputGroupText className="bg-transparent font-weight-bolder">
-                                -
-                              </CInputGroupText> */}
                       <CFormInput
                         type="hidden"
                         name="app_sem_number"
@@ -738,11 +740,7 @@ const College = () => {
                         placeholder="Semester"
                         aria-label="Sem"
                         required
-                        // readOnly
                       />
-                      {/* <CInputGroupText className="bg-transparent font-weight-bolder">
-                                -
-                              </CInputGroupText> */}
                       <CFormInput
                         type="hidden"
                         name="app_id_number"
@@ -752,7 +750,6 @@ const College = () => {
                         placeholder="App No"
                         aria-label="App No"
                         required
-                        // readOnly
                       />
                     </CInputGroup>
                   </CCol>
@@ -908,7 +905,7 @@ const College = () => {
                   </CCol>
                 </CRow>
                 <CRow className="my-1">
-                  <CCol>
+                  <CCol md={6}>
                     <CFormSelect
                       label={requiredField('School Year')}
                       name="school_year"
@@ -930,7 +927,7 @@ const College = () => {
                         </CFormText>
                       )}
                   </CCol>
-                  <CCol>
+                  <CCol md={6}>
                     <CFormInput
                       type="number"
                       label={requiredField('Availment')}
@@ -946,31 +943,36 @@ const College = () => {
                         </CFormText>
                       )}
                   </CCol>
-                  <CCol md={3}>
-                    <CFormInput
-                      type="text"
-                      label={requiredField('CTC #')}
-                      name="ctc"
+                </CRow>
+                <CRow className="my-1">
+                  <CCol md={12}>
+                    <CFormTextarea
+                      placeholder="Required only when application status set to disapproved"
+                      label="Reason (Optional)"
+                      name="reason"
                       onChange={handleInputChange}
-                      value={applicationDetailsForm.values.ctc}
-                      required
-                    />
-                    {applicationDetailsForm.touched.ctc && applicationDetailsForm.errors.ctc && (
-                      <CFormText className="text-danger">
-                        {applicationDetailsForm.errors.ctc}
-                      </CFormText>
-                    )}
+                      style={{ height: '100px' }}
+                    >
+                      {applicationDetailsForm.values.reason}
+                    </CFormTextarea>
+
+                    {applicationDetailsForm.touched.reason &&
+                      applicationDetailsForm.errors.reason && (
+                        <CFormText className="text-danger">
+                          {applicationDetailsForm.errors.reason}
+                        </CFormText>
+                      )}
                   </CCol>
                 </CRow>
-
                 <CRow className="mt-4">
                   <div className="d-grid gap-2">
                     <CButton color="primary" type="submit">
-                      Submit
+                      Update Details
                     </CButton>
                   </div>
                 </CRow>
               </CForm>
+              {loadingOperation && <DefaultLoading />}
             </>
           </CModalBody>
         </CModal>
@@ -1028,423 +1030,6 @@ const College = () => {
           </CModalFooter>
         </CForm>
       </CModal>
-
-      {/* <CModal
-        fullscreen
-        backdrop="static"
-        visible={editModalVisible}
-        onClose={() => setEditModalVisible(false)}
-      >
-        <CModalHeader onClose={() => setEditModalVisible(false)}>
-          <CModalTitle>Edit Application</CModalTitle>
-        </CModalHeader>
-        <CForm
-          className="row g-3 needs-validation"
-          noValidate
-          validated={editValidated}
-          onSubmit={form.handleSubmit}
-          style={{ position: 'relative' }}
-        >
-          <CModalBody>
-            <CRow className="justify-content-between">
-              <CCol md={7} sm={6} xs={6} lg={4} xl={4}>
-                <CFormLabel>{requiredField('Application Number ')}</CFormLabel>
-                <CInputGroup className="mb-3 ">
-                  <CFormInput
-                    type="text"
-                    name="app_no_year"
-                    onChange={handleEditApplicationInputChange}
-                    value={form.values.app_no_year}
-                    className="text-center"
-                    placeholder="Year"
-                    aria-label="Year"
-                    required
-                    readOnly
-                  />
-                  <CInputGroupText className="bg-transparent font-weight-bolder">-</CInputGroupText>
-                  <CFormInput
-                    type="text"
-                    name="app_no_sem"
-                    onChange={handleEditApplicationInputChange}
-                    value={form.values.app_no_sem}
-                    className="text-center "
-                    placeholder="Semester"
-                    aria-label="Sem"
-                    required
-                    readOnly
-                  />
-                  <CInputGroupText className="bg-transparent font-weight-bolder">-</CInputGroupText>
-                  <CFormInput
-                    type="text"
-                    name="app_no_id"
-                    onChange={handleEditApplicationInputChange}
-                    value={form.values.app_no_id}
-                    className="text-center"
-                    placeholder="App No"
-                    aria-label="App No"
-                    required
-                    readOnly
-                  />
-                </CInputGroup>
-              </CCol>
-              <CCol md={4}>
-                <CFormSelect
-                  aria-label="Status"
-                  feedbackInvalid="Status is required."
-                  label={requiredField('Status')}
-                  name="status"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.status}
-                  required
-                >
-                  <option value="">Select</option>
-                  {StatusType.map((status, index) => (
-                    <option key={index} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-            </CRow>
-
-            <CRow className="my-2">
-              <CCol md={4}>
-                <CFormInput
-                  type="text"
-                  feedbackInvalid="Last Name is required."
-                  label={requiredField('Last Name')}
-                  name="lastname"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.lastname}
-                  required
-                />
-              </CCol>
-              <CCol md={4}>
-                <CFormInput
-                  type="text"
-                  feedbackInvalid="First Name is required."
-                  label={requiredField('First Name')}
-                  name="firstname"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.firstname}
-                  required
-                />
-              </CCol>
-              <CCol md={2}>
-                <CFormInput
-                  type="text"
-                  label="M.I"
-                  name="middle_initial"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.middle_initial}
-                />
-              </CCol>
-              <CCol md={2}>
-                <CFormInput
-                  type="text"
-                  label="Suffix"
-                  name="suffix"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.suffix}
-                />
-              </CCol>
-            </CRow>
-            <CRow className="my-2">
-              <CCol md={12}>
-                <CFormSelect
-                  aria-label="Address"
-                  feedbackInvalid="Address is required."
-                  label={requiredField('Address')}
-                  name="address"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.address}
-                  required
-                >
-                  <option value="">Select</option>
-                  {Address.map((address, index) => (
-                    <option key={index} value={address}>
-                      {address}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-            </CRow>
-            <CRow className="my-2">
-              <CCol md={3}>
-                <CFormInput
-                  type="date"
-                  feedbackInvalid="Date of Birth is required."
-                  label={requiredField('Date of Birth')}
-                  name="birthdate"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.birthdate}
-                  required
-                />
-              </CCol>
-              <CCol md={3}>
-                <CFormInput
-                  type="number"
-                  feedbackInvalid="Age is required."
-                  label={requiredField('Age')}
-                  name="age"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.age}
-                  required
-                  readOnly
-                />
-              </CCol>
-
-              <CCol md={3}>
-                <CFormSelect
-                  feedbackInvalid="Civil Status is required."
-                  label={requiredField('Civil Status')}
-                  name="civil_status"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.civil_status}
-                  required
-                >
-                  <option value="">Select</option>
-                  {CivilStatus.map((civil_status, index) => (
-                    <option key={index} value={civil_status}>
-                      {civil_status}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-
-              <CCol md={3}>
-                <CFormSelect
-                  type="text"
-                  feedbackInvalid="Sex is required."
-                  label={requiredField('Sex')}
-                  name="sex"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.sex}
-                  required
-                >
-                  <option value="">Select</option>
-                  {Sex.map((sex, index) => (
-                    <option key={index} value={sex}>
-                      {sex}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-            </CRow>
-
-            <CRow className="my-2">
-              <CCol md={3}>
-                <CFormInput
-                  type="text"
-                  label="Contact #"
-                  name="contact_number"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.contact_number}
-                />
-              </CCol>
-              <CCol md={3}>
-                <CFormInput
-                  type="text"
-                  feedbackInvalid="CTC # is required."
-                  label={requiredField('CTC #')}
-                  name="ctc_number"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.ctc_number}
-                  required
-                />
-              </CCol>
-
-              <CCol md={3}>
-                <CFormInput
-                  type="text"
-                  label="Facebook/Others"
-                  name="email_address"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.email_address}
-                />
-              </CCol>
-
-              <CCol md={3}>
-                <CFormInput
-                  type="number"
-                  feedbackInvalid="Availment is required."
-                  label={requiredField('Availment')}
-                  name="availment"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.availment}
-                  required
-                />
-              </CCol>
-            </CRow>
-
-            <CRow className="my-2">
-              <CCol md={3}>
-                <CFormSelect
-                  feedbackInvalid="School is required."
-                  label={requiredField('School')}
-                  name="school"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.school}
-                  required
-                >
-                  <option value="">Select</option>
-                  {school.map((school, index) => (
-                    <option key={index} value={school.colSchoolName}>
-                      {school.colSchoolName}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-              <CCol md={3}>
-                <CFormSelect
-                  feedbackInvalid="Course is required."
-                  label={requiredField('Course')}
-                  name="course"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.course}
-                  required
-                >
-                  <option value="">Select</option>
-                  {course.map((course, index) => (
-                    <option key={index} value={course.colCourse}>
-                      {course.colCourse}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-
-              <CCol md={6}>
-                <CFormInput
-                  type="text"
-                  label="School Address"
-                  name="school_address"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.school_address}
-                />
-              </CCol>
-            </CRow>
-
-            <CRow className="my-2">
-              <CCol md={3}>
-                <CFormSelect
-                  feedbackInvalid="Year Level is required."
-                  label={requiredField('Year Level')}
-                  name="year_level"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.year_level}
-                  required
-                >
-                  <option value="">Select</option>
-                  {YearLevel.map((year_level, index) => (
-                    <option key={index} value={year_level}>
-                      {year_level}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-              <CCol md={3}>
-                <CFormSelect
-                  feedbackInvalid="Semester is required."
-                  label={requiredField('Semester')}
-                  name="semester"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.semester}
-                  required
-                >
-                  <option value="">Select</option>
-                  {Semester.map((semester, index) => (
-                    <option key={index} value={semester}>
-                      {semester}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-
-              <CCol md={3}>
-                <CFormInput
-                  type="number"
-                  feedbackInvalid="Units is required."
-                  label={requiredField('Units')}
-                  name="units"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.units}
-                  required
-                />
-              </CCol>
-              <CCol md={3}>
-                <CFormSelect
-                  feedbackInvalid="School Year is required."
-                  label={requiredField('School Year')}
-                  name="school_year"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.school_year}
-                  required
-                >
-                  <option value="">Select</option>
-                  {SchoolYear.map((school_year, index) => (
-                    <option key={index} value={school_year}>
-                      {school_year}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-            </CRow>
-
-            <CRow className="my-2">
-              <CCol md={6}>
-                <CFormInput
-                  type="text"
-                  label="Father's Name"
-                  name="father_name"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.father_name}
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormInput
-                  type="text"
-                  label="Occupation"
-                  name="father_occupation"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.father_occupation}
-                />
-              </CCol>
-            </CRow>
-
-            <CRow className="my-2">
-              <CCol md={6}>
-                <CFormInput
-                  type="text"
-                  label="Mother's Name"
-                  name="mother_name"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.mother_name}
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormInput
-                  type="text"
-                  label="Occupation"
-                  name="mother_occupation"
-                  onChange={handleEditApplicationInputChange}
-                  value={form.values.mother_occupation}
-                />
-              </CCol>
-            </CRow>
-          </CModalBody>
-
-          {loadingOperation && <DefaultLoading />}
-
-          <CModalFooter>
-            <CButton color="secondary" onClick={() => setEditModalVisible(false)}>
-              Close
-            </CButton>
-            <CButton color="primary" type="submit">
-              Update
-            </CButton>
-          </CModalFooter>
-        </CForm>
-      </CModal> */}
     </>
   )
 }

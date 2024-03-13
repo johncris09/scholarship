@@ -10,6 +10,7 @@ import {
   CFormLabel,
   CFormSelect,
   CFormText,
+  CFormTextarea,
   CInputGroup,
   CModal,
   CModalBody,
@@ -138,7 +139,11 @@ const SeniorHigh = () => {
     semester: Yup.string().required('Semester is required'),
     school_year: Yup.string().required('School Year is required'),
     availment: Yup.string().required('Availment is required'),
-    ctc: Yup.string().required('CTC # is required'),
+    reason: Yup.string().when('app_status', {
+      is: (value) => value === 'Disapproved',
+      then: (schema) => schema.required('Reason is required'),
+      otherwise: (schema) => schema,
+    }),
   })
   const applicationDetailsForm = useFormik({
     initialValues: {
@@ -156,8 +161,8 @@ const SeniorHigh = () => {
       semester: '',
       school_year: '',
       availment: '',
-      ctc: '',
       app_status: '',
+      reason: '',
     },
     validationSchema: applicationDetailsFormValidationSchema,
     onSubmit: async (values) => {
@@ -484,6 +489,7 @@ const SeniorHigh = () => {
                     grade_level: row.original.grade_level,
                     school_year: row.original.school_year,
                     app_status: row.original.app_status,
+                    reason: row.original.reason === null ? '' : row.original.reason,
                   })
 
                   setApplicationDetailsModalVisible(true)
@@ -636,11 +642,7 @@ const SeniorHigh = () => {
                         placeholder="Year"
                         aria-label="Year"
                         required
-                        // readOnly
                       />
-                      {/* <CInputGroupText className="bg-transparent font-weight-bolder">
-                                -
-                              </CInputGroupText> */}
                       <CFormInput
                         type="hidden"
                         name="app_sem_number"
@@ -650,11 +652,7 @@ const SeniorHigh = () => {
                         placeholder="Semester"
                         aria-label="Sem"
                         required
-                        // readOnly
                       />
-                      {/* <CInputGroupText className="bg-transparent font-weight-bolder">
-                                -
-                              </CInputGroupText> */}
                       <CFormInput
                         type="hidden"
                         name="app_id_number"
@@ -664,7 +662,6 @@ const SeniorHigh = () => {
                         placeholder="App No"
                         aria-label="App No"
                         required
-                        // readOnly
                       />
                     </CInputGroup>
                   </CCol>
@@ -803,7 +800,7 @@ const SeniorHigh = () => {
                   </CCol>
                 </CRow>
                 <CRow className="my-1">
-                  <CCol>
+                  <CCol md={6}>
                     <CFormSelect
                       label={requiredField('School Year')}
                       name="school_year"
@@ -825,7 +822,7 @@ const SeniorHigh = () => {
                         </CFormText>
                       )}
                   </CCol>
-                  <CCol>
+                  <CCol md={6}>
                     <CFormInput
                       type="number"
                       label={requiredField('Availment')}
@@ -841,23 +838,28 @@ const SeniorHigh = () => {
                         </CFormText>
                       )}
                   </CCol>
-                  <CCol md={3}>
-                    <CFormInput
-                      type="text"
-                      label={requiredField('CTC #')}
-                      name="ctc"
-                      onChange={handleInputChange}
-                      value={applicationDetailsForm.values.ctc}
-                      required
-                    />
-                    {applicationDetailsForm.touched.ctc && applicationDetailsForm.errors.ctc && (
-                      <CFormText className="text-danger">
-                        {applicationDetailsForm.errors.ctc}
-                      </CFormText>
-                    )}
-                  </CCol>
                 </CRow>
 
+                <CRow className="my-1">
+                  <CCol md={12}>
+                    <CFormTextarea
+                      placeholder="Required only when application status set to disapproved"
+                      label="Reason (Optional)"
+                      name="reason"
+                      onChange={handleInputChange}
+                      style={{ height: '100px' }}
+                    >
+                      {applicationDetailsForm.values.reason}
+                    </CFormTextarea>
+
+                    {applicationDetailsForm.touched.reason &&
+                      applicationDetailsForm.errors.reason && (
+                        <CFormText className="text-danger">
+                          {applicationDetailsForm.errors.reason}
+                        </CFormText>
+                      )}
+                  </CCol>
+                </CRow>
                 <CRow className="mt-4">
                   <div className="d-grid gap-2">
                     <CButton color="primary" type="submit">
@@ -866,6 +868,7 @@ const SeniorHigh = () => {
                   </div>
                 </CRow>
               </CForm>
+              {loadingOperation && <DefaultLoading />}
             </>
           </CModalBody>
         </CModal>
