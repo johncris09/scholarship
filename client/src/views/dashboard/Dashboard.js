@@ -44,7 +44,7 @@ import * as Yup from 'yup'
 import CountUp from 'react-countup'
 import { Skeleton } from '@mui/material'
 import 'intro.js/introjs.css'
-import { Steps } from 'intro.js-react'
+
 const Dashboard = ({ cardTitle }) => {
   const [loading, setLoading] = useState(false)
   const [onlineUser, setOnlineUser] = useState([])
@@ -356,116 +356,7 @@ const Dashboard = ({ cardTitle }) => {
   return (
     <>
       <ToastContainer />
-      <Steps
-        enabled={true}
-        steps={[
-          {
-            title: 'Welcome',
-            intro: `Hello, We're excited to have you on board. <br /><br /> To help you get started, let's take a quick tour together.`,
-            position: 'right',
-            tooltipClass: 'myTooltipClass',
-            highlightClass: 'myHighlightClass',
-          },
 
-          {
-            element: '.rbt-input-main',
-            title: 'Search Applicant',
-            intro: `Search for applicant information here.`,
-            position: 'bottom',
-            tooltipClass: 'myTooltipClass',
-            highlightClass: 'myHighlightClass',
-          },
-          {
-            element: '._avatar',
-            title: 'Avatar',
-            intro: `You can logout here.`,
-            position: 'bottom',
-            tooltipClass: 'myTooltipClass',
-            highlightClass: 'myHighlightClass',
-          },
-          {
-            element: '#filter',
-            title: 'Filter',
-            hint: 'test 2',
-            intro:
-              'Use the filters to display information according to the semester and school year.',
-            position: 'right',
-            tooltipClass: 'myTooltipClass',
-            highlightClass: 'myHighlightClass',
-          },
-          {
-            element: '#totalDataSeniorHigh',
-            title: 'Total Senior High',
-            intro: 'Total number of applicant(s) in Senior High.',
-            position: 'right',
-            tooltipClass: 'myTooltipClass',
-            highlightClass: 'myHighlightClass',
-          },
-          {
-            element: '#totalDataCollege',
-            title: 'Total College',
-            intro: 'Total number of applicant(s) in College.',
-            position: 'right',
-            tooltipClass: 'myTooltipClass',
-            highlightClass: 'myHighlightClass',
-          },
-          {
-            element: '#totalDataTvet',
-            title: 'Total Tvet',
-            intro: 'Total number of applicant(s) in Tvet.',
-            position: 'right',
-            tooltipClass: 'myTooltipClass',
-            highlightClass: 'myHighlightClass',
-          },
-          {
-            element: '#totalStatusData',
-            title: 'Total Number by application status',
-            intro: 'Total number of applicants depending on their application status.',
-            position: 'left',
-            tooltipClass: 'myTooltipClass',
-            highlightClass: 'myHighlightClass',
-          },
-          {
-            element: '#chart',
-            title: 'Chart',
-            intro:
-              'Displaying the total number of pending, approved, and disapproved applications for each unique address.',
-            position: 'left',
-            tooltipClass: 'myTooltipClass',
-            highlightClass: 'myHighlightClass',
-          },
-          {
-            element: '#onlineUser',
-            title: 'Online Users',
-            intro: 'Displaying the active/inactive users.',
-            position: 'left',
-            tooltipClass: 'myTooltipClass',
-            highlightClass: 'myHighlightClass',
-          },
-          {
-            element: '._currentView',
-            title: 'Current SY and Semester',
-            intro: `Displaying the current <b>School Year</b> and <b>Semester</b>. This will serve as a global filter in all display. You can change it in <code> System Configuration > Current List View</code>.`,
-            position: 'bottom',
-            tooltipClass: 'myTooltipClass',
-            highlightClass: 'myHighlightClass',
-          },
-          {
-            intro: 'Get started now! 😊',
-            position: 'left',
-            tooltipClass: 'myTooltipClass',
-            highlightClass: 'myHighlightClass',
-          },
-        ]}
-        initialStep={0}
-        exitOnEsc={true}
-        showProgress={true}
-        onExit={() => {}}
-        options={{
-          keyboardNavigation: true,
-          dontShowAgain: true,
-        }}
-      />
       <h5>Welcome {user.firstname},</h5>
       <CRow className="justify-content-center mt-2">
         <CCol md={12}>
