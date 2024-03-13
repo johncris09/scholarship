@@ -146,8 +146,8 @@
     width: 240px !important;
   }
 }
- 
- 
+
+
 
 @media screen and (min-width: 388px) and (max-width: 397px) {
 
@@ -345,4 +345,46 @@
   left: -25px;
   top: 30px;
   transform: rotate(45deg);
+}
+
+#app-details-form table input {
+  border: 0 !important;
+  border-bottom: 0.5px solid rgb(194, 194, 194) !important;
+  padding: 0px 5px !important;
+  outline: 'none';
+  border-bottom-left-radius: 10px !important;
+  border-bottom-right-radius: 10px !important;
+  border-top-left-radius: 10px !important;
+  border-top-right-radius: 10px !important;
+}
+
+
+#app-details-form table select {
+  border: 0 !important;
+  border-bottom: 0.5px solid rgb(194, 194, 194) !important;
+  padding: 0px 5px !important;
+  outline: 'none';
+  border-bottom-left-radius: 10px !important;
+  border-bottom-right-radius: 10px !important;
+  border-top-left-radius: 10px !important;
+  border-top-right-radius: 10px !important;
+}
+
+#app-details-form table .css-13cymwt-control {
+  padding: 0px 5px !important;
+  border-bottom-left-radius: 10px !important;
+  border-bottom-right-radius: 10px !important;
+  border-top-left-radius: 10px !important;
+  border-top-right-radius: 10px !important;
+}
+
+#new-app-form input {
+  border-radius: 50px;
+}
+
+#new-app-form select {
+  border-radius: 50px;
+}
+#new-app-form .css-13cymwt-control {
+  border-radius: 50px;
 }
