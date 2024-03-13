@@ -71,6 +71,7 @@ const AppHeader = () => {
         </CHeaderToggler>
         <CHeaderNav className="me-auto" id="async-search" style={{ position: 'relative' }}>
           <AsyncTypeahead
+            id="async-search-input"
             ref={typeAheadRef}
             align="justify"
             filterBy={filterBy}
