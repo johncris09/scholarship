@@ -355,7 +355,7 @@ const Applicant = ({ cardTitle }) => {
     }),
     hourNumber: Yup.string().when('scholarship_type', {
       is: (value) => value === 'tvet',
-      then: (schema) => schema.required('No. of hours is required'),
+      then: (schema) => schema.required('No. of days is required'),
       otherwise: (schema) => schema,
     }),
     grade_level: Yup.string().when('scholarship_type', {
@@ -399,7 +399,6 @@ const Applicant = ({ cardTitle }) => {
       semester: '',
       school_year: '',
       availment: '',
-      // ctc: '',
       app_status: '',
     },
     validationSchema: applicationDetailsFormValidationSchema,
@@ -682,7 +681,6 @@ const Applicant = ({ cardTitle }) => {
               enableGrouping
               enableStickyHeader
               enableStickyFooter
-              enableRowActions
               initialState={{
                 density: 'compact',
                 pagination: { pageSize: 20 },
@@ -691,6 +689,7 @@ const Applicant = ({ cardTitle }) => {
                   right: ['app_status'],
                 },
               }}
+              enableRowActions
               renderRowActions={({ row, table }) => (
                 <Box sx={{ display: 'flex', flexWrap: 'nowrap' }}>
                   <Tooltip title="Edit">
@@ -1092,7 +1091,7 @@ const Applicant = ({ cardTitle }) => {
                       <CCol md={3}>
                         <CFormInput
                           type="number"
-                          label={requiredField('No. of hours')}
+                          label={requiredField('No. of days')}
                           name="hourNumber"
                           onChange={handleInputChange}
                           value={applicationDetailsForm.values.hourNumber}
