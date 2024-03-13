@@ -99,7 +99,6 @@ class SeniorHigh extends RestController
 			'app_year_number' => $requestData['app_year_number'],
 			'app_id_number' => $requestData['app_id_number'],
 			'app_sem_number' => $requestData['app_sem_number'],
-			'ctc' => $requestData['ctc'],
 			'availment' => $requestData['availment'],
 			'school' => $requestData['school'],
 			'strand' => $requestData['strand'],
@@ -107,6 +106,7 @@ class SeniorHigh extends RestController
 			'semester' => $requestData['semester'],
 			'school_year' => $requestData['school_year'],
 			'app_status' => $requestData['app_status'],
+			'reason' => $requestData['reason'],
 		);
 
 
@@ -180,10 +180,10 @@ class SeniorHigh extends RestController
 
 		if (isset($requestData['reason'])) {
 			$data['reason'] = $requestData['reason'];
-		} 
- 
+		}
+
 		$result = $seniorhigh->bulk_status_update($data, $ids);
-		 
+
 		if ($result > 0) {
 			$this->response([
 				'status' => true,
