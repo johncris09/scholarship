@@ -71,15 +71,16 @@ class Tvet extends RestController
             'app_year_number' => $requestData['app_year_number'],
             'app_id_number' => $requestData['app_id_number'],
             'app_sem_number' => $requestData['app_sem_number'],
-            'ctc' => $requestData['ctc'],
+            // 'ctc' => $requestData['ctc'],
             'availment' => $requestData['availment'],
             'school' => $requestData['school'],
             'course' => $requestData['course'],
             'hour_number' => $requestData['hourNumber'],
-            'year_level' => $requestData['year_level'],
+            // 'year_level' => $requestData['year_level'],
             'semester' => $requestData['semester'],
             'school_year' => $requestData['school_year'],
             'app_status' => $requestData['app_status'],
+            'reason' => $requestData['reason'],
         );
 
         $update_result = $tvet->update($id, $data);
@@ -439,6 +440,8 @@ class Tvet extends RestController
     public function insert_post()
     {
 
+
+
         $tvet = new TvetModel;
         $system_sequence = new SystemSequenceModel;
 
@@ -474,30 +477,32 @@ class Tvet extends RestController
             'colManager' => 'Active'
         );
 
-
-
-
+        $this->response($data, RestController::HTTP_OK);
         $result = $tvet->insert($data);
+        $this->response($result, RestController::HTTP_OK);
+        // if ($result > 0) {
 
-        if ($result > 0) {
+        //     // update the system app no
+        //     $appno_data = array(
+        //         'seq_appno' => $requestData['app_no_id'],
+        //     );
+        //     $system_sequence->update(3, $appno_data);
 
-            // update the system app no
-            $appno_data = array(
-                'seq_appno' => $requestData['app_no_id'],
-            );
-            $system_sequence->update(3, $appno_data);
+        //     $this->response([
+        //         'status' => true,
+        //         'message' => 'Successfully Inserted.'
+        //     ], RestController::HTTP_OK);
+        // } else {
 
-            $this->response([
-                'status' => true,
-                'message' => 'Successfully Inserted.'
-            ], RestController::HTTP_OK);
-        } else {
+        //     $this->response([
+        //         'status' => false,
+        //         'message' => 'Failed to create new data.'
 
-            $this->response([
-                'status' => false,
-                'message' => 'Failed to create new data.'
-            ], RestController::HTTP_BAD_REQUEST);
-        }
+        //     ], RestController::HTTP_OK);
+        // }
+
+
+
     }
 
     public function bulk_insert_post()

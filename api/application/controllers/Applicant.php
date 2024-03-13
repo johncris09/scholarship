@@ -59,7 +59,7 @@ class Applicant extends RestController
 
         $requestData = json_decode($this->input->raw_input_stream, true);
         $app_number = $this->getApplicationNumber($requestData['scholarship_type']);
-        
+
 
         $query_sem = $this->db->query('SELECT current_semester FROM  config where id = 1')->row();
         $query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->row();
@@ -121,9 +121,9 @@ class Applicant extends RestController
                 'app_sem_number' => $app_number->seq_sem,
                 'app_id_number' => (int) $app_number->seq_appno + 1,
                 'school' => $requestData['school'],
-                'course' => $requestData['course'],
+                'course' => $requestData['tvetCourse'],
                 'hour_number' => $requestData['hourNumber'],
-                'year_level' => $requestData['year_level'],
+                // 'year_level' => $requestData['year_level'],
                 'semester' => $query_sem->current_semester,
                 'school_year' => $query_sy->current_sy,
                 'availment' => $requestData['availment'],
@@ -172,6 +172,8 @@ class Applicant extends RestController
 
     }
 
+
+    // Fresh Applicant
     public function insert_new_applicant_post()
     {
         $model = new ScholarshipModel;
@@ -184,10 +186,10 @@ class Applicant extends RestController
         $query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->row();
 
         $requestData = json_decode($this->input->raw_input_stream, true);
-        
+
         $app_number = $this->getApplicationNumber($requestData['scholarship_type']);
 
-        $reference_number = ucwords($requestData['scholarship_type'][0]) . '' . preg_replace("/\D+/", "",$query_sem->current_semester)
+        $reference_number = ucwords($requestData['scholarship_type'][0]) . '' . preg_replace("/\D+/", "", $query_sem->current_semester)
             . '-' . str_replace(["SY: 20", "-20"], "", $query_sy->current_sy) . '-' . $this->getFirstLetters($requestData['firstname']) . '' . $this->getFirstLetters($requestData['lastname']) . '' . date('-mdy', strtotime($requestData['birthdate']));
 
 
@@ -207,7 +209,7 @@ class Applicant extends RestController
             'father_occupation' => $requestData['father_occupation'],
             'mother_name' => $requestData['mother_name'],
             'mother_occupation' => $requestData['mother_occupation']
-        ); 
+        );
 
         $insertApplicant = $model->insertNewApplicant($data);
 
@@ -266,7 +268,7 @@ class Applicant extends RestController
 
         } else if ($requestData['scholarship_type'] == "tvet") {
             $data = array(
-                // 'scholarship_id' => $insertApplicant,
+                'scholarship_id' => $insertApplicant,
                 'app_year_number' => $app_number->seq_year,
                 'app_sem_number' => $app_number->seq_sem,
                 'app_id_number' => (int) $app_number->seq_appno + 1,
@@ -440,7 +442,7 @@ class Applicant extends RestController
                 'school' => $requestData['school'],
                 'course' => $requestData['tvetCourse'],
                 'hour_number' => $requestData['hourNumber'],
-                'year_level' => $requestData['year_level'],
+                // 'year_level' => $requestData['year_level'],
                 'semester' => $requestData['semester'],
                 'school_year' => $requestData['school_year'],
                 'availment' => $requestData['availment'],
