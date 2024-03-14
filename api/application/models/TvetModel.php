@@ -584,7 +584,7 @@ class TvetModel extends CI_Model
 			$this->db->where($data);
 		}
 
-		$this->db->order_by('lastname, irstname', 'asc');
+		$this->db->order_by('lastname, firstname', 'asc');
 
 		$query = $this->db->get();
 		return $query->result();
