@@ -33,12 +33,12 @@ const _nav = (userInfo) => {
         to: '/registration',
         icon: <CIcon icon={cilPlus} customClassName="nav-icon" />,
       },
-      {
-        component: CNavItem,
-        name: 'Applicant',
-        to: '/applicant',
-        icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
-      },
+      // {
+      //   component: CNavItem,
+      //   name: 'Applicant',
+      //   to: '/applicant',
+      //   icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
+      // },
       // {
       //   component: CNavItem,
       //   name: 'Advance Search',
