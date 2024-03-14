@@ -67,6 +67,7 @@ const ManageApplication = ({
   const selectCourseInputRef = useRef()
   const selectStrandInputRef = useRef()
   const [data, setData] = useState([])
+
   const [validated, setValidated] = useState(false)
   const [bulkApprovedValidated, setBulkApprovedValidated] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -148,8 +149,8 @@ const ManageApplication = ({
         setFetchCourseLoading(false)
       })
   }
-  const fetchData = () => {
-    api
+  const fetchData = async () => {
+    await api
       .get(scholarship_type + '/get_by_status', {
         params: {
           status: app_status,
@@ -166,7 +167,6 @@ const ManageApplication = ({
         setLoadingOperation(false)
       })
   }
-
   const handleInputChange = (e) => {
     const { name, value } = e.target
     filterForm.setFieldValue(name, value)
@@ -262,12 +262,13 @@ const ManageApplication = ({
     },
   })
 
-  const handleViewAllData = () => {
+  const handleViewAllData = async () => {
     setLoading(true)
-    api
+    filterForm.resetForm()
+    await api
       .get(scholarship_type + '/get_all_by_status', {
         params: {
-          status: 'void',
+          status: app_status,
         },
       })
       .then((response) => {
@@ -300,12 +301,11 @@ const ManageApplication = ({
         .get(scholarship_type + '/filter_by_status', {
           params: {
             ...values,
-            status: 'void',
+            status: app_status,
           },
         })
         .then((response) => {
           setData(response.data)
-          setValidated(false)
         })
         .catch((error) => {
           toast.error(handleError(error))
@@ -611,7 +611,7 @@ const ManageApplication = ({
               </div>
             </CRow>
           </CForm>
-          {loadingOperation && <DefaultLoading />}
+          {/* {loadingOperation && <DefaultLoading />} */}
           <hr />
         </CCol>
       </CRow>
@@ -776,30 +776,13 @@ const ManageApplication = ({
                       </CButton>
                     )}
                   </CInputGroup>
-
-                  {/* <CButton
-                    className="btn-info text-white"
-                    onClick={() => handleExportSeniorHighData(data)}
-                    size="sm"
-                  >
-                    <FontAwesomeIcon icon={faFileExcel} /> Export to Excel
-                  </CButton>
-                  <CButton
-                    disabled={!table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()}
-                    size="sm"
-                    onClick={() => handleExportSeniorHighRows(table.getSelectedRowModel().rows)}
-                    variant="outline"
-                  >
-                    <FontAwesomeIcon icon={faFileExcel} /> Export Selected Rows
-                  </CButton> */}
                 </Box>
               </>
             )}
           />
         </CCol>
+        {/* {loading && <DefaultLoading />} */}
       </CRow>
-
-      {loading && <DefaultLoading />}
 
       <>
         <CModal
