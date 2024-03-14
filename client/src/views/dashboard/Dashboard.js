@@ -39,6 +39,7 @@ import {
   RequiredFieldNote,
   toSentenceCase,
   MagnifyingGlassLoading,
+  WidgetLoading,
 } from 'src/components/SystemConfiguration'
 import * as Yup from 'yup'
 import CountUp from 'react-countup'
@@ -326,33 +327,6 @@ const Dashboard = ({ cardTitle }) => {
     },
   })
 
-  const column = [
-    {
-      accessorKey: 'type',
-      header: 'Scholarship Type',
-    },
-    {
-      accessorKey: 'approved',
-      header: 'Approved',
-    },
-    {
-      accessorKey: 'pending',
-      header: 'Pending',
-    },
-    {
-      accessorKey: 'disapproved',
-      header: 'Disapproved',
-    },
-    {
-      accessorKey: 'archived',
-      header: 'Archived',
-    },
-    {
-      accessorKey: 'void',
-      header: 'Void',
-    },
-  ]
-
   return (
     <>
       <ToastContainer />
@@ -443,7 +417,7 @@ const Dashboard = ({ cardTitle }) => {
                 </CRow>
               </CForm>
 
-              {loadingOperation && <MagnifyingGlassLoading />}
+              {loadingOperation && <WidgetLoading />}
             </CCardBody>
           </CCard>
         </CCol>
