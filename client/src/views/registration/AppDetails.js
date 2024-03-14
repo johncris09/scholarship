@@ -12,7 +12,7 @@ import {
   requiredField,
   toSentenceCase,
 } from 'src/components/SystemConfiguration'
-
+import './../../assets/css/custom.css'
 import * as Yup from 'yup'
 import { useFormik } from 'formik'
 import Select from 'react-select'
@@ -43,12 +43,13 @@ import { toast } from 'react-toastify'
 import MaterialReactTable from 'material-react-table'
 import { Button, Skeleton } from '@mui/material'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faPenAlt, faPencil, faPlus } from '@fortawesome/free-solid-svg-icons'
 import {
   ApplicationIDNumber,
   ApplicationSemNumber,
   ApplicationYearNumber,
 } from './ApplicationNumber'
+import BasicInfo from './BasicInfo'
 
 const AppDetails = ({ id }) => {
   const selectStrandInputRef = useRef()
@@ -347,7 +348,7 @@ const AppDetails = ({ id }) => {
     },
     {
       accessorKey: 'unit',
-      header: 'Unit',
+      header: 'Unit/# of Days',
     },
     {
       accessorKey: 'year_level',
@@ -479,7 +480,7 @@ const AppDetails = ({ id }) => {
     }),
     hourNumber: Yup.string().when('scholarship_type', {
       is: (value) => value === 'tvet',
-      then: (schema) => schema.required('No. of hours is required'),
+      then: (schema) => schema.required('No. of days is required'),
       otherwise: (schema) => schema,
     }),
     grade_level: Yup.string().when('scholarship_type', {
@@ -488,7 +489,7 @@ const AppDetails = ({ id }) => {
       otherwise: (schema) => schema,
     }),
     year_level: Yup.string().when('scholarship_type', {
-      is: (value) => value !== 'senior_high',
+      is: (value) => value === 'college',
       then: (schema) => schema.required('Year Level is required'),
       otherwise: (schema) => schema,
     }),
@@ -530,7 +531,7 @@ const AppDetails = ({ id }) => {
           addNewApplicationDetailsForm.resetForm()
         })
         .catch((error) => {
-          toast.error(handleError(error))
+          toast.error('Application already exist!')
         })
         .finally(() => {
           setOperationLoading(false)
@@ -540,7 +541,6 @@ const AppDetails = ({ id }) => {
 
   const handleSelectChange = (selectedOption, ref) => {
     addNewApplicationDetailsForm.setFieldValue(ref.name, selectedOption ? selectedOption.value : '')
-
     applicantDetailsForm.setFieldValue(ref.name, selectedOption ? selectedOption.value : '')
   }
   return (
@@ -549,155 +549,446 @@ const AppDetails = ({ id }) => {
         <div className="m-2">
           <h5>Application Details</h5>
         </div>
-        <CTable responsive>
-          <CTableBody>
-            <CTableRow>
-              <CTableHeaderCell scope="row">Reference #</CTableHeaderCell>
-              <CTableDataCell colSpan={7} style={{ color: 'red' }}>
-                <strong>
+        <BasicInfo id={id} />
+        {/* <CForm
+          id="app-details-form"
+          className=" row g-3 needs-validation"
+          noValidate
+          onSubmit={applicantDetailsForm.handleSubmit}
+          style={{ position: 'relative' }}
+        >
+          <div className="d-grid gap-2 d-md-block" style={{ marginLeft: 8 }}>
+            <CButton color="primary" type="submit" size="sm" shape="rounded-pill" variant="outline">
+              <FontAwesomeIcon icon={faPencil} /> Update Basic Info
+            </CButton>
+          </div>
+          <CTable responsive>
+            <CTableBody>
+              <CTableRow>
+                <CTableHeaderCell style={{ whiteSpace: 'nowrap' }} scope="row">
+                  Reference #
+                </CTableHeaderCell>
+                <CTableDataCell colSpan={7} style={{ color: 'red' }}>
+                  <strong>
+                    {fetchDataLoading ? (
+                      <Skeleton variant="rounded" width={150} />
+                    ) : (
+                      applicantDetailsForm.values.reference_number
+                    )}
+                  </strong>
+                </CTableDataCell>
+              </CTableRow>
+
+              <CTableRow>
+                <CTableHeaderCell style={{ whiteSpace: 'nowrap' }} scope="row">
+                  Last Name
+                </CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={80} />
+                  ) : (
+                    <>
+                      <CFormInput
+                        type="text"
+                        name="lastname"
+                        onChange={handleInputChange}
+                        value={applicantDetailsForm.values.lastname}
+                        required
+                        style={{
+                          width: '200px',
+                        }}
+                      />
+                      {applicantDetailsForm.touched.lastname &&
+                        applicantDetailsForm.errors.lastname && (
+                          <CFormText className="text-danger">
+                            {applicantDetailsForm.errors.lastname}
+                          </CFormText>
+                        )}
+                    </>
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell style={{ whiteSpace: 'nowrap' }} scope="row">
+                  First Name
+                </CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={80} />
+                  ) : (
+                    <>
+                      <CFormInput
+                        type="text"
+                        name="firstname"
+                        onChange={handleInputChange}
+                        value={applicantDetailsForm.values.firstname}
+                        required
+                        style={{
+                          width: '200px',
+                        }}
+                      />
+                      {applicantDetailsForm.touched.firstname &&
+                        applicantDetailsForm.errors.firstname && (
+                          <CFormText className="text-danger">
+                            {applicantDetailsForm.errors.firstname}
+                          </CFormText>
+                        )}
+                    </>
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell style={{ whiteSpace: 'nowrap' }} scope="row">
+                  Middle Name
+                </CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={80} />
+                  ) : (
+                    <>
+                      <CFormInput
+                        type="text"
+                        name="middlename"
+                        onChange={handleInputChange}
+                        value={applicantDetailsForm.values.middlename}
+                        required
+                        style={{
+                          width: '100px',
+                        }}
+                      />
+                      {applicantDetailsForm.touched.middlename &&
+                        applicantDetailsForm.errors.middlename && (
+                          <CFormText className="text-danger">
+                            {applicantDetailsForm.errors.middlename}
+                          </CFormText>
+                        )}
+                    </>
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell style={{ whiteSpace: 'nowrap' }} scope="row">
+                  Suffix
+                </CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={50} />
+                  ) : (
+                    <>
+                      <CFormInput
+                        type="text"
+                        name="suffix"
+                        onChange={handleInputChange}
+                        value={applicantDetailsForm.values.suffix}
+                        required
+                        style={{
+                          width: '100px',
+                        }}
+                      />
+                      {applicantDetailsForm.touched.suffix &&
+                        applicantDetailsForm.errors.suffix && (
+                          <CFormText className="text-danger">
+                            {applicantDetailsForm.errors.suffix}
+                          </CFormText>
+                        )}
+                    </>
+                  )}
+                </CTableDataCell>
+              </CTableRow>
+
+              <CTableRow>
+                <CTableHeaderCell style={{ whiteSpace: 'nowrap' }} scope="row">
+                  Address
+                </CTableHeaderCell>
+                <CTableDataCell colSpan={3}>
                   {fetchDataLoading ? (
                     <Skeleton variant="rounded" width={150} />
                   ) : (
-                    applicantDetailsForm.values.reference_number
+                    <>
+                      <Select
+                        ref={selectAddressIputRef}
+                        value={address.find(
+                          (option) => option.value === applicantDetailsForm.values.address,
+                        )}
+                        onChange={handleSelectAddress}
+                        options={address}
+                        name="barangay_id"
+                        isSearchable
+                        placeholder="Search..."
+                        isClearable
+                      />
+                      {applicantDetailsForm.touched.address &&
+                        applicantDetailsForm.errors.address && (
+                          <CFormText className="text-danger">
+                            {applicantDetailsForm.errors.address}
+                          </CFormText>
+                        )}
+                    </>
                   )}
-                </strong>
-              </CTableDataCell>
-            </CTableRow>
-            <CTableRow>
-              <CTableHeaderCell scope="row">Name</CTableHeaderCell>
-              <CTableDataCell colSpan={7}>
-                {fetchDataLoading ? (
-                  <Skeleton variant="rounded" width={200} />
-                ) : (
-                  <>
-                    {toSentenceCase(applicantDetailsForm.values.lastname)},{' '}
-                    {toSentenceCase(applicantDetailsForm.values.firstname)}{' '}
-                    {toSentenceCase(applicantDetailsForm.values.middlename)}{' '}
-                    {toSentenceCase(applicantDetailsForm.values.suffix)}
-                  </>
-                )}
-              </CTableDataCell>
-            </CTableRow>
-            <CTableRow>
-              <CTableHeaderCell scope="row">Address</CTableHeaderCell>
-              <CTableDataCell colSpan={3}>
-                {fetchDataLoading ? (
-                  <Skeleton variant="rounded" width={100} />
-                ) : (
-                  applicantDetailsForm.values.barangay
-                )}
-              </CTableDataCell>
-              <CTableHeaderCell scope="row">Birthdate</CTableHeaderCell>
-              <CTableDataCell>
-                {fetchDataLoading ? (
-                  <Skeleton variant="rounded" width={100} />
-                ) : (
-                  applicantDetailsForm.values.birthdate
-                )}
-              </CTableDataCell>
-              <CTableHeaderCell scope="row">Age</CTableHeaderCell>
-              <CTableDataCell>
-                {fetchDataLoading ? (
-                  <Skeleton variant="rounded" width={20} />
-                ) : (
-                  calculateAge(applicantDetailsForm.values.birthdate)
-                )}
-              </CTableDataCell>
-            </CTableRow>
-            <CTableRow>
-              <CTableHeaderCell scope="row">Civil Status</CTableHeaderCell>
-              <CTableDataCell>
-                {fetchDataLoading ? (
-                  <Skeleton variant="rounded" width={50} />
-                ) : (
-                  applicantDetailsForm.values.civil_status
-                )}
-              </CTableDataCell>
-              <CTableHeaderCell scope="row">Sex</CTableHeaderCell>
-              <CTableDataCell>
-                {fetchDataLoading ? (
-                  <Skeleton variant="rounded" width={80} />
-                ) : (
-                  applicantDetailsForm.values.sex
-                )}
-              </CTableDataCell>
-              <CTableHeaderCell scope="row">Contact #</CTableHeaderCell>
-              <CTableDataCell>
-                {fetchDataLoading ? (
-                  <Skeleton variant="rounded" width={100} />
-                ) : (
-                  applicantDetailsForm.values.contact_number
-                )}
-              </CTableDataCell>
-              <CTableHeaderCell scope="row">Email Address</CTableHeaderCell>
-              <CTableDataCell>
-                {fetchDataLoading ? (
-                  <Skeleton variant="rounded" width={150} />
-                ) : (
-                  applicantDetailsForm.values.email_address
-                )}
-              </CTableDataCell>
-            </CTableRow>
-            <CTableRow>
-              <CTableHeaderCell scope="row">Father&apos;s Name</CTableHeaderCell>
-              <CTableDataCell colSpan={3}>
-                {fetchDataLoading ? (
-                  <Skeleton variant="rounded" width={200} />
-                ) : (
-                  applicantDetailsForm.values.father_name
-                )}
-              </CTableDataCell>
-              <CTableHeaderCell scope="row">Father&apos;s Occupation</CTableHeaderCell>
-              <CTableDataCell colSpan={3}>
-                {fetchDataLoading ? (
-                  <Skeleton variant="rounded" width={200} />
-                ) : (
-                  applicantDetailsForm.values.father_occupation
-                )}
-              </CTableDataCell>
-            </CTableRow>
-            <CTableRow>
-              <CTableHeaderCell scope="row">Mother&apos;s Name</CTableHeaderCell>
-              <CTableDataCell colSpan={3}>
-                {fetchDataLoading ? (
-                  <Skeleton variant="rounded" width={200} />
-                ) : (
-                  applicantDetailsForm.values.mother_name
-                )}
-              </CTableDataCell>
-              <CTableHeaderCell scope="row">Mother&apos;s Occupation</CTableHeaderCell>
-              <CTableDataCell colSpan={3}>
-                {fetchDataLoading ? (
-                  <Skeleton variant="rounded" width={200} />
-                ) : (
-                  applicantDetailsForm.values.mother_occupation
-                )}
-              </CTableDataCell>
-            </CTableRow>
-            <CTableRow>
-              <CTableDataCell align="right" colSpan={9}>
-                <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                  <CButton
-                    onClick={() => {
-                      setApplicantDetailsModal(true)
-                    }}
-                    color="primary"
-                    variant="outline"
-                    className="px-3"
-                    size="sm"
-                  >
-                    <lord-icon
-                      src="https://cdn.lordicon.com/zfzufhzk.json"
-                      trigger="hover"
-                      style={{ width: '20px', height: '20px', paddingTop: '5px' }}
-                    ></lord-icon>
-                    Edit
-                  </CButton>
-                </div>
-              </CTableDataCell>
-            </CTableRow>
-          </CTableBody>
-        </CTable>
+                </CTableDataCell>
+                <CTableHeaderCell style={{ whiteSpace: 'nowrap' }} scope="row">
+                  Birthdate
+                </CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={80} />
+                  ) : (
+                    <>
+                      <CFormInput
+                        type="date"
+                        name="birthdate"
+                        onChange={handleInputChange}
+                        value={applicantDetailsForm.values.birthdate}
+                        required
+                        style={{
+                          width: '120px',
+                        }}
+                      />
+                      {applicantDetailsForm.touched.birthdate &&
+                        applicantDetailsForm.errors.birthdate && (
+                          <CFormText className="text-danger">
+                            {applicantDetailsForm.errors.birthdate}
+                          </CFormText>
+                        )}
+                    </>
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell scope="row">Age</CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={20} />
+                  ) : (
+                    calculateAge(applicantDetailsForm.values.birthdate)
+                  )}
+                </CTableDataCell>
+              </CTableRow>
+
+              <CTableRow>
+                <CTableHeaderCell style={{ whiteSpace: 'nowrap' }} scope="row">
+                  Civil Status
+                </CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={40} />
+                  ) : (
+                    <>
+                      <CFormSelect
+                        name="civil_status"
+                        onChange={handleInputChange}
+                        value={applicantDetailsForm.values.civil_status}
+                        required
+                      >
+                        <option value="">Select</option>
+                        {CivilStatus.map((civil_status, index) => (
+                          <option key={index} value={civil_status}>
+                            {civil_status}
+                          </option>
+                        ))}
+                      </CFormSelect>
+                      {applicantDetailsForm.touched.civil_status &&
+                        applicantDetailsForm.errors.civil_status && (
+                          <CFormText className="text-danger">
+                            {applicantDetailsForm.errors.civil_status}
+                          </CFormText>
+                        )}
+                    </>
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell style={{ whiteSpace: 'nowrap' }} scope="row">
+                  Sex
+                </CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={50} />
+                  ) : (
+                    <>
+                      <CFormSelect
+                        name="sex"
+                        onChange={handleInputChange}
+                        value={applicantDetailsForm.values.sex}
+                        required
+                      >
+                        <option value="">Select</option>
+                        {Sex.map((sex, index) => (
+                          <option key={index} value={sex}>
+                            {sex}
+                          </option>
+                        ))}
+                      </CFormSelect>
+                      {applicantDetailsForm.touched.sex && applicantDetailsForm.errors.sex && (
+                        <CFormText className="text-danger">
+                          {applicantDetailsForm.errors.sex}
+                        </CFormText>
+                      )}
+                    </>
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell style={{ whiteSpace: 'nowrap' }} scope="row">
+                  Contact #
+                </CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={90} />
+                  ) : (
+                    <>
+                      <CFormInput
+                        type="text"
+                        name="contact_number"
+                        onChange={handleInputChange}
+                        value={applicantDetailsForm.values.contact_number}
+                        required
+                        style={{
+                          width: '200px',
+                        }}
+                      />
+                      {applicantDetailsForm.touched.contact_number &&
+                        applicantDetailsForm.errors.contact_number && (
+                          <CFormText className="text-danger">
+                            {applicantDetailsForm.errors.contact_number}
+                          </CFormText>
+                        )}
+                    </>
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell style={{ whiteSpace: 'nowrap' }} scope="row">
+                  Email Address
+                </CTableHeaderCell>
+                <CTableDataCell>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={120} />
+                  ) : (
+                    <>
+                      <CFormInput
+                        type="text"
+                        name="email_address"
+                        onChange={handleInputChange}
+                        value={applicantDetailsForm.values.email_address}
+                        required
+                        style={{
+                          width: '200px',
+                        }}
+                      />
+                      {applicantDetailsForm.touched.email_address &&
+                        applicantDetailsForm.errors.email_address && (
+                          <CFormText className="text-danger">
+                            {applicantDetailsForm.errors.email_address}
+                          </CFormText>
+                        )}
+                    </>
+                  )}
+                </CTableDataCell>
+              </CTableRow>
+              <CTableRow>
+                <CTableHeaderCell style={{ whiteSpace: 'nowrap' }} scope="row">
+                  Father&apos;s Name
+                </CTableHeaderCell>
+                <CTableDataCell colSpan={3}>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={90} />
+                  ) : (
+                    <>
+                      <CFormInput
+                        type="text"
+                        name="father_name"
+                        onChange={handleInputChange}
+                        value={applicantDetailsForm.values.father_name}
+                        required
+                        style={{
+                          width: '200px',
+                        }}
+                      />
+                      {applicantDetailsForm.touched.father_name &&
+                        applicantDetailsForm.errors.father_name && (
+                          <CFormText className="text-danger">
+                            {applicantDetailsForm.errors.father_name}
+                          </CFormText>
+                        )}
+                    </>
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell style={{ whiteSpace: 'nowrap' }} scope="row">
+                  Father&apos;s Occupation
+                </CTableHeaderCell>
+                <CTableDataCell colSpan={3}>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={90} />
+                  ) : (
+                    <>
+                      <CFormInput
+                        type="text"
+                        name="father_occupation"
+                        onChange={handleInputChange}
+                        value={applicantDetailsForm.values.father_occupation}
+                        required
+                        style={{
+                          width: '200px',
+                        }}
+                      />
+                      {applicantDetailsForm.touched.father_occupation &&
+                        applicantDetailsForm.errors.father_occupation && (
+                          <CFormText className="text-danger">
+                            {applicantDetailsForm.errors.father_occupation}
+                          </CFormText>
+                        )}
+                    </>
+                  )}
+                </CTableDataCell>
+              </CTableRow>
+
+              <CTableRow>
+                <CTableHeaderCell style={{ whiteSpace: 'nowrap' }} scope="row">
+                  Mother&apos;s Name
+                </CTableHeaderCell>
+                <CTableDataCell colSpan={3}>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={90} />
+                  ) : (
+                    <>
+                      <CFormInput
+                        type="text"
+                        name="mother_name"
+                        onChange={handleInputChange}
+                        value={applicantDetailsForm.values.mother_name}
+                        required
+                        style={{
+                          width: '200px',
+                        }}
+                      />
+                      {applicantDetailsForm.touched.mother_name &&
+                        applicantDetailsForm.errors.mother_name && (
+                          <CFormText className="text-danger">
+                            {applicantDetailsForm.errors.mother_name}
+                          </CFormText>
+                        )}
+                    </>
+                  )}
+                </CTableDataCell>
+                <CTableHeaderCell style={{ whiteSpace: 'nowrap' }} scope="row">
+                  Mother&apos;s Occupation
+                </CTableHeaderCell>
+                <CTableDataCell colSpan={3}>
+                  {fetchDataLoading ? (
+                    <Skeleton variant="rounded" width={90} />
+                  ) : (
+                    <>
+                      <CFormInput
+                        type="text"
+                        name="mother_occupation"
+                        onChange={handleInputChange}
+                        value={applicantDetailsForm.values.mother_occupation}
+                        required
+                        style={{
+                          width: '200px',
+                        }}
+                      />
+                      {applicantDetailsForm.touched.mother_occupation &&
+                        applicantDetailsForm.errors.mother_occupation && (
+                          <CFormText className="text-danger">
+                            {applicantDetailsForm.errors.mother_occupation}
+                          </CFormText>
+                        )}
+                    </>
+                  )}
+                </CTableDataCell>
+              </CTableRow>
+            </CTableBody>
+          </CTable>
+        </CForm>
+        {operationLoading && <DefaultLoading />} */}
       </>
       <>
         <MaterialReactTable
@@ -746,7 +1037,7 @@ const AppDetails = ({ id }) => {
               color="primary"
               variant="contained"
               shape="rounded-pill"
-              style={{ fontSize: 12 }}
+              style={{ fontSize: 12, borderRadius: 50 }}
               onClick={() => {
                 setApplicationDetailsModalVisible(true)
                 addNewApplicationDetailsForm.resetForm()
@@ -779,275 +1070,6 @@ const AppDetails = ({ id }) => {
             </Button>
           )}
         />
-      </>
-      <>
-        <CModal
-          alignment="center"
-          size="xl"
-          backdrop="static"
-          visible={applicantDetailsModal}
-          onClose={() => setApplicantDetailsModal(false)}
-        >
-          <CModalHeader onClose={() => setApplicantDetailsModal(false)}>
-            <CModalTitle> Edit Profile</CModalTitle>
-          </CModalHeader>
-
-          <CForm
-            id="form"
-            className="row g-3 needs-validation"
-            noValidate
-            onSubmit={applicantDetailsForm.handleSubmit}
-          >
-            <CModalBody>
-              <RequiredFieldNote />
-              <CRow className="my-3">
-                <CCol>
-                  <CFormInput
-                    type="text"
-                    label={requiredField('Reference #')}
-                    name="reference_number"
-                    onChange={handleInputChange}
-                    value={applicantDetailsForm.values.reference_number}
-                    required
-                    style={{ fontSize: 20 }}
-                    className="text-end"
-                  />
-                  {applicantDetailsForm.touched.reference_number &&
-                    applicantDetailsForm.errors.reference_number && (
-                      <CFormText className="text-danger">
-                        {applicantDetailsForm.errors.reference_number}
-                      </CFormText>
-                    )}
-                </CCol>
-              </CRow>
-              <CRow className="my-3">
-                <CCol md={3}>
-                  <CFormInput
-                    type="text"
-                    label={requiredField('Last Name')}
-                    name="lastname"
-                    onChange={handleInputChange}
-                    value={applicantDetailsForm.values.lastname}
-                    required
-                  />
-                  {applicantDetailsForm.touched.lastname &&
-                    applicantDetailsForm.errors.lastname && (
-                      <CFormText className="text-danger">
-                        {applicantDetailsForm.errors.lastname}
-                      </CFormText>
-                    )}
-                </CCol>
-                <CCol md={3}>
-                  <CFormInput
-                    type="text"
-                    label={requiredField('First Name')}
-                    name="firstname"
-                    onChange={handleInputChange}
-                    value={applicantDetailsForm.values.firstname}
-                    required
-                  />
-                  {applicantDetailsForm.touched.firstname &&
-                    applicantDetailsForm.errors.firstname && (
-                      <CFormText className="text-danger">
-                        {applicantDetailsForm.errors.firstname}
-                      </CFormText>
-                    )}
-                </CCol>
-                <CCol md={3}>
-                  <CFormInput
-                    type="text"
-                    label="Middle Name"
-                    name="middlename"
-                    onChange={handleInputChange}
-                    value={applicantDetailsForm.values.middlename}
-                    required
-                  />
-                </CCol>
-                <CCol md={3}>
-                  <CFormInput
-                    type="text"
-                    label="Suffix"
-                    name="suffix"
-                    onChange={handleInputChange}
-                    value={applicantDetailsForm.values.suffix}
-                  />
-                </CCol>
-              </CRow>
-              <CRow className="my-3">
-                <CCol md={6}>
-                  <CFormLabel>
-                    {
-                      <>
-                        {fetchAddressLoading && <CSpinner size="sm" />}
-                        {requiredField(' Address')}
-                      </>
-                    }
-                  </CFormLabel>
-                  <Select
-                    ref={selectAddressIputRef}
-                    value={address.find(
-                      (option) => option.value === applicantDetailsForm.values.address,
-                    )}
-                    onChange={handleSelectAddress}
-                    options={address}
-                    name="barangay_id"
-                    isSearchable
-                    placeholder="Search..."
-                    isClearable
-                  />
-                  {applicantDetailsForm.touched.address && applicantDetailsForm.errors.address && (
-                    <CFormText className="text-danger">
-                      {applicantDetailsForm.errors.address}
-                    </CFormText>
-                  )}
-                </CCol>
-                <CCol md={4}>
-                  <CFormInput
-                    type="date"
-                    label={requiredField('Birthdate')}
-                    name="birthdate"
-                    onChange={handleInputChange}
-                    value={applicantDetailsForm.values.birthdate}
-                  />
-                  {applicantDetailsForm.touched.birthdate &&
-                    applicantDetailsForm.errors.birthdate && (
-                      <CFormText className="text-danger">
-                        {applicantDetailsForm.errors.birthdate}
-                      </CFormText>
-                    )}
-                </CCol>
-                <CCol md={2}>
-                  <CFormInput
-                    type="text"
-                    label="Age"
-                    name="age"
-                    style={{ textAlign: 'right' }}
-                    className="border-0 border-bottom border-bottom-1 "
-                    value={applicantDetailsForm.values.age}
-                    readOnly
-                  />
-                </CCol>
-              </CRow>
-
-              <CRow className="my-3">
-                <CCol md={3}>
-                  <CFormSelect
-                    label={requiredField('Civil Status')}
-                    name="civil_status"
-                    onChange={handleInputChange}
-                    value={applicantDetailsForm.values.civil_status}
-                    required
-                  >
-                    <option value="">Select</option>
-                    {CivilStatus.map((civil_status, index) => (
-                      <option key={index} value={civil_status}>
-                        {civil_status}
-                      </option>
-                    ))}
-                  </CFormSelect>
-                  {applicantDetailsForm.touched.civil_status &&
-                    applicantDetailsForm.errors.civil_status && (
-                      <CFormText className="text-danger">
-                        {applicantDetailsForm.errors.civil_status}
-                      </CFormText>
-                    )}
-                </CCol>
-                <CCol md={3}>
-                  <CFormSelect
-                    label={requiredField('Sex')}
-                    name="sex"
-                    onChange={handleInputChange}
-                    value={applicantDetailsForm.values.sex}
-                    required
-                  >
-                    <option value="">Select</option>
-                    {Sex.map((sex, index) => (
-                      <option key={index} value={sex}>
-                        {sex}
-                      </option>
-                    ))}
-                  </CFormSelect>
-                  {applicantDetailsForm.touched.sex && applicantDetailsForm.errors.sex && (
-                    <CFormText className="text-danger">{applicantDetailsForm.errors.sex}</CFormText>
-                  )}
-                </CCol>
-                <CCol md={3}>
-                  <CFormInput
-                    type="text"
-                    label="Contact #"
-                    name="contact_number"
-                    onChange={handleInputChange}
-                    value={applicantDetailsForm.values.contact_number}
-                  />
-                </CCol>
-                <CCol md={3}>
-                  <CFormInput
-                    type="text"
-                    label="Facebook/Others"
-                    name="email_address"
-                    onChange={handleInputChange}
-                    value={applicantDetailsForm.values.email_address}
-                  />
-                </CCol>
-              </CRow>
-              <CRow className="my-3">
-                <CCol md={6}>
-                  <CFormInput
-                    type="text"
-                    label="Father's Name"
-                    name="father_name"
-                    onChange={handleInputChange}
-                    value={applicantDetailsForm.values.father_name}
-                  />
-                </CCol>
-                <CCol md={6}>
-                  <CFormInput
-                    type="text"
-                    label="Occupation"
-                    name="father_occupation"
-                    onChange={handleInputChange}
-                    value={applicantDetailsForm.values.father_occupation}
-                  />
-                </CCol>
-              </CRow>
-
-              <CRow className="my-3">
-                <CCol md={6}>
-                  <CFormInput
-                    type="text"
-                    label="Mother's Name"
-                    name="mother_name"
-                    onChange={handleInputChange}
-                    value={applicantDetailsForm.values.mother_name}
-                  />
-                </CCol>
-                <CCol md={6}>
-                  <CFormInput
-                    type="text"
-                    label="Occupation"
-                    name="mother_occupation"
-                    onChange={handleInputChange}
-                    value={applicantDetailsForm.values.mother_occupation}
-                  />
-                </CCol>
-              </CRow>
-            </CModalBody>
-
-            {operationLoading && <DefaultLoading />}
-
-            <CModalFooter>
-              <CButton color="primary" type="submit">
-                <lord-icon
-                  src="https://cdn.lordicon.com/oqdmuxru.json"
-                  trigger="hover"
-                  colors="primary:#ffffff"
-                  style={{ width: '20px', height: '20px', paddingTop: '3px' }}
-                ></lord-icon>{' '}
-                Update
-              </CButton>
-            </CModalFooter>
-          </CForm>
-        </CModal>
       </>
 
       <>
@@ -1310,7 +1332,7 @@ const AppDetails = ({ id }) => {
                   )}
                   {addNewApplicationDetailsForm.values.scholarship_type === 'tvet' && (
                     <>
-                      <CCol md={5}>
+                      <CCol md={4}>
                         <CFormLabel>
                           {
                             <>
@@ -1368,10 +1390,10 @@ const AppDetails = ({ id }) => {
                             </CFormText>
                           )}
                       </CCol>
-                      <CCol md={3}>
+                      <CCol md={2}>
                         <CFormInput
                           type="number"
-                          label={requiredField('No. of hours')}
+                          label={requiredField('No. of days')}
                           name="hourNumber"
                           onChange={handleInputChange}
                           value={addNewApplicationDetailsForm.values.hourNumber}
@@ -1384,14 +1406,30 @@ const AppDetails = ({ id }) => {
                             </CFormText>
                           )}
                       </CCol>
+                      <CCol md={2}>
+                        <CFormInput
+                          type="number"
+                          label={requiredField('Availment')}
+                          name="availment"
+                          onChange={handleInputChange}
+                          value={addNewApplicationDetailsForm.values.availment}
+                          required
+                        />
+                        {addNewApplicationDetailsForm.touched.availment &&
+                          addNewApplicationDetailsForm.errors.availment && (
+                            <CFormText className="text-danger">
+                              {addNewApplicationDetailsForm.errors.availment}
+                            </CFormText>
+                          )}
+                      </CCol>
                     </>
                   )}
                 </CRow>
 
                 <CRow className="my-1">
-                  <CCol>
-                    {addNewApplicationDetailsForm.values.scholarship_type === 'senior_high' && (
-                      <>
+                  {addNewApplicationDetailsForm.values.scholarship_type === 'senior_high' && (
+                    <>
+                      <CCol md={6}>
                         <CFormSelect
                           label={requiredField('Grade Level')}
                           name="grade_level"
@@ -1413,11 +1451,29 @@ const AppDetails = ({ id }) => {
                               {addNewApplicationDetailsForm.errors.grade_level}
                             </CFormText>
                           )}
-                      </>
-                    )}
+                      </CCol>
+                      <CCol md={6}>
+                        <CFormInput
+                          type="number"
+                          label={requiredField('Availment')}
+                          name="availment"
+                          onChange={handleInputChange}
+                          value={addNewApplicationDetailsForm.values.availment}
+                          required
+                        />
+                        {addNewApplicationDetailsForm.touched.availment &&
+                          addNewApplicationDetailsForm.errors.availment && (
+                            <CFormText className="text-danger">
+                              {addNewApplicationDetailsForm.errors.availment}
+                            </CFormText>
+                          )}
+                      </CCol>
+                    </>
+                  )}
 
-                    {addNewApplicationDetailsForm.values.scholarship_type !== 'senior_high' && (
-                      <>
+                  {addNewApplicationDetailsForm.values.scholarship_type === 'college' && (
+                    <>
+                      <CCol md={6}>
                         <CFormSelect
                           label={requiredField('Year Level')}
                           name="year_level"
@@ -1438,26 +1494,25 @@ const AppDetails = ({ id }) => {
                               {addNewApplicationDetailsForm.errors.year_level}
                             </CFormText>
                           )}
-                      </>
-                    )}
-                  </CCol>
-
-                  <CCol>
-                    <CFormInput
-                      type="number"
-                      label={requiredField('Availment')}
-                      name="availment"
-                      onChange={handleInputChange}
-                      value={addNewApplicationDetailsForm.values.availment}
-                      required
-                    />
-                    {addNewApplicationDetailsForm.touched.availment &&
-                      addNewApplicationDetailsForm.errors.availment && (
-                        <CFormText className="text-danger">
-                          {addNewApplicationDetailsForm.errors.availment}
-                        </CFormText>
-                      )}
-                  </CCol>
+                      </CCol>
+                      <CCol md={6}>
+                        <CFormInput
+                          type="number"
+                          label={requiredField('Availment')}
+                          name="availment"
+                          onChange={handleInputChange}
+                          value={addNewApplicationDetailsForm.values.availment}
+                          required
+                        />
+                        {addNewApplicationDetailsForm.touched.availment &&
+                          addNewApplicationDetailsForm.errors.availment && (
+                            <CFormText className="text-danger">
+                              {addNewApplicationDetailsForm.errors.availment}
+                            </CFormText>
+                          )}
+                      </CCol>
+                    </>
+                  )}
                 </CRow>
 
                 <CRow className="mt-4">

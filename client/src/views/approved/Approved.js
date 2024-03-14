@@ -10,10 +10,8 @@ import {
   CTabContent,
   CTabPane,
 } from '@coreui/react'
-import SeniorHigh from './SeniorHigh'
-import College from './College'
-import Tvet from './Tvet'
 import { toast } from 'react-toastify'
+import ManageApplication from '../manage_application/ManageApplication'
 
 const Approved = ({ cardTitle }) => {
   const [activeKey, setActiveKey] = useState(1)
@@ -77,7 +75,7 @@ const Approved = ({ cardTitle }) => {
               style={{ position: 'relative' }}
             >
               <hr />
-              <SeniorHigh />
+              <ManageApplication app_status="approved" scholarship_type="senior_high" />
             </CTabPane>
             <CTabPane
               role="tabpanel"
@@ -86,7 +84,7 @@ const Approved = ({ cardTitle }) => {
               style={{ position: 'relative' }}
             >
               <hr />
-              <College />
+              <ManageApplication app_status="approved" scholarship_type="college" />
             </CTabPane>
             <CTabPane
               role="tabpanel"
@@ -95,7 +93,7 @@ const Approved = ({ cardTitle }) => {
               style={{ position: 'relative' }}
             >
               <hr />
-              <Tvet />
+              <ManageApplication app_status="approved" scholarship_type="tvet" />
             </CTabPane>
           </CTabContent>
         </CCardBody>

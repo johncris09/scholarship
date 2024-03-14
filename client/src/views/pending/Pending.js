@@ -10,10 +10,8 @@ import {
   CTabContent,
   CTabPane,
 } from '@coreui/react'
-import SeniorHigh from './SeniorHigh'
-import College from './College'
-import Tvet from './Tvet'
 import { toast } from 'react-toastify'
+import ManageApplication from '../manage_application/ManageApplication'
 
 const Pending = ({ cardTitle }) => {
   const [activeKey, setActiveKey] = useState(1)
@@ -79,7 +77,13 @@ const Pending = ({ cardTitle }) => {
               style={{ position: 'relative' }}
             >
               <hr />
-              <SeniorHigh />
+              <ManageApplication
+                hasBulkApproved={true}
+                hasBulkDisapproved={true}
+                hasDeleteSelectedRows={true}
+                app_status="pending"
+                scholarship_type="senior_high"
+              />
             </CTabPane>
             <CTabPane
               role="tabpanel"
@@ -88,7 +92,13 @@ const Pending = ({ cardTitle }) => {
               style={{ position: 'relative' }}
             >
               <hr />
-              <College />
+              <ManageApplication
+                hasBulkApproved={true}
+                hasBulkDisapproved={true}
+                hasDeleteSelectedRows={true}
+                app_status="pending"
+                scholarship_type="college"
+              />
             </CTabPane>
             <CTabPane
               role="tabpanel"
@@ -97,7 +107,13 @@ const Pending = ({ cardTitle }) => {
               style={{ position: 'relative' }}
             >
               <hr />
-              <Tvet />
+              <ManageApplication
+                hasBulkApproved={true}
+                hasBulkDisapproved={true}
+                hasDeleteSelectedRows={true}
+                app_status="pending"
+                scholarship_type="tvet"
+              />
             </CTabPane>
           </CTabContent>
         </CCardBody>
