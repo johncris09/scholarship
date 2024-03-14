@@ -89,8 +89,9 @@ const Login = () => {
             }
           })
           .catch((error) => {
-            console.info(error)
-            toast.error(handleError(error))
+            toast.error('The server is closed. Please try again later."')
+            // console.info(error)
+            // toast.error(handleError(error))
           })
           .finally(() => {
             setLoading(false)
@@ -131,7 +132,7 @@ const Login = () => {
           },
           opacity: 1,
         },
-        enable: false,
+        enable: true,
       },
       clear: true,
       defaultThemes: {},
@@ -192,7 +193,7 @@ const Login = () => {
             duration: 2,
             mix: false,
             opacity: 0.8,
-            size: 40,
+            size: 10,
             divs: {
               distance: 200,
               duration: 0.4,
@@ -624,9 +625,9 @@ const Login = () => {
             <CCol xs={12} sm={12} lg={6} xl={6}>
               <CCardGroup>
                 <CCard className="p-4 box">
-                  <div className="ribbon ribbon-top-right">
+                  {/* <div className="ribbon ribbon-top-right">
                     <span>Upgraded </span>
-                  </div>
+                  </div> */}
                   <CCardBody>
                     <div className="text-center">
                       <CImage
