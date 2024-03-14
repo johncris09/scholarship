@@ -173,6 +173,10 @@ const seniorHighDefaultColumn = [
     accessorKey: 'grade_level',
     header: 'Grade Level',
   },
+  {
+    accessorKey: 'reason',
+    header: 'Reason',
+  },
 ]
 
 const collegeDefaultColumn = [
@@ -218,6 +222,10 @@ const collegeDefaultColumn = [
     header: 'Course',
   },
   {
+    accessorKey: 'unit',
+    header: 'Unit',
+  },
+  {
     accessorKey: 'school_year',
     header: 'School Year',
   },
@@ -236,6 +244,10 @@ const collegeDefaultColumn = [
   {
     accessorKey: 'year_level',
     header: 'Year Level',
+  },
+  {
+    accessorKey: 'reason',
+    header: 'Reason',
   },
 ]
 
@@ -282,6 +294,10 @@ const tvetDefaultColumn = [
     header: 'Course',
   },
   {
+    accessorKey: 'unit',
+    header: '# of Days',
+  },
+  {
     accessorKey: 'school_year',
     header: 'School Year',
   },
@@ -298,8 +314,8 @@ const tvetDefaultColumn = [
     header: 'Availment',
   },
   {
-    accessorKey: 'year_level',
-    header: 'Year Level',
+    accessorKey: 'reason',
+    header: 'Reason',
   },
 ]
 const commiteeChairperson = 'MARK ANTHONY D. ARTIGAS'
