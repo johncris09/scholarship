@@ -141,94 +141,6 @@ class ScholarshipModel extends CI_Model
         return $query->row();
     }
 
-    // public function getApplicationDetails($id)
-    // {
-    //     $query = "    
-    //         SELECT
-    //             c.id,
-    //             c.app_year_number,
-    //             c.app_id_number,
-    //             c.app_sem_number,
-    //             c.ctc,
-    //             c.availment,
-    //             cs.school,
-    //             course.course,
-    //             c.unit,
-    //             c.year_level,
-    //             c.semester,
-    //             c.school_year,
-    //             c.app_status,
-    //             c.app_status,
-    //             'college' AS scholarship_type
-    //         FROM
-    //             `college` AS c
-    //         LEFT JOIN college_school AS cs
-    //         ON
-    //             c.school = cs.id
-    //         LEFT JOIN course ON c.course = course.id
-    //         WHERE
-    //             scholarship_id = " . $id ."
-    //         UNION
-    //         SELECT
-    //             sh.id,
-    //             sh.app_year_number,
-    //             sh.app_id_number,
-    //             sh.app_sem_number,
-    //             sh.ctc,
-    //             sh.availment,
-    //             s.school,
-    //             strand.strand AS course,
-    //             '' AS unit,
-    //             sh.grade_level AS year_level,
-    //             sh.semester,
-    //             sh.school_year,
-    //             sh.app_status,
-    //             sh.app_status,
-    //             'senior high' AS scholarship_type
-    //         FROM
-    //             `senior_high` sh
-    //         LEFT JOIN senior_high_school AS s
-    //         ON
-    //             sh.school = s.id
-    //         LEFT JOIN strand ON sh.strand = strand.id
-    //         WHERE
-    //             scholarship_id = " . $id ."
-    //         UNION
-    //         SELECT
-    //             t.id,
-    //             t.app_year_number,
-    //             t.app_id_number,
-    //             t.app_sem_number,
-    //             t.ctc,
-    //             t.availment,
-    //             ts.school,
-    //             tc.course,
-    //             t.hour_number AS unit,
-    //             t.year_level,
-    //             t.semester,
-    //             t.school_year,
-    //             t.app_status,
-    //             t.app_status,
-    //             'tvet' AS scholarship_type
-    //         FROM
-    //             `tvet` t
-    //         LEFT JOIN tvet_school AS ts
-    //         ON
-    //             t.school = ts.id
-    //         LEFT JOIN tvet_course AS tc
-    //         ON
-    //             t.course = tc.id
-    //         WHERE
-    //             t.scholarship_id = " . $id ."
-    //         ORDER BY
-    //             school_year ASC,
-    //             semester ASC,
-    //             app_year_number ASC";
-
-    //     $query = $this->db->query($query);
-    //     return $query->result();
-    // }
-
 
     public function getApplicationDetails($id)
     {
@@ -357,4 +269,112 @@ class ScholarshipModel extends CI_Model
         return $this->db->insert_id();
     }
 
+
+    function get_sibling() // current
+    {
+
+        $query_sem = $this->db->query('SELECT current_semester FROM  config where id = 1')->row();
+        $query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->row();
+
+
+        $query = "
+            SELECT DISTINCT
+                a1.lastname  ,
+                a1.firstname ,
+                a1.middlename ,
+                a1.suffix ,
+                a1.address , 
+                a1.father_name  ,
+                a1.mother_name  
+            FROM
+                scholarship a1
+            JOIN scholarship a2 ON
+                a1.father_name = a2.father_name and a1.mother_name = a2.mother_name
+            LEFT JOIN senior_high sh ON
+                a1.id = sh.scholarship_id
+            LEFT JOIN college c ON
+                a1.id = c.scholarship_id
+            LEFT JOIN tvet t ON
+                a1.id = t.scholarship_id
+            WHERE
+                a1.id <> a2.id  
+            AND sh.semester = '" . $query_sem->current_semester . "' 
+            AND c.semester = '" . $query_sem->current_semester . "' 
+            AND t.semester = '" . $query_sem->current_semester . "' 
+            AND sh.school_year = '" . $query_sy->current_sy . "' 
+            AND c.school_year = '" . $query_sy->current_sy . "' 
+            AND t.school_year = '" . $query_sy->current_sy . "'
+            order by a1.lastname, a1.firstname, a1.middlename asc
+             ";
+        $query = $this->db->query($query);
+        return $query->result();
+
+    }
+    function get_all_sibling()
+    {
+
+        $query = "
+            SELECT DISTINCT
+                a1.lastname  ,
+                a1.firstname ,
+                a1.middlename ,
+                a1.suffix ,
+                a1.address , 
+                a1.father_name  ,
+                a1.mother_name  
+            FROM
+                scholarship a1
+            JOIN scholarship a2 ON
+                a1.father_name = a2.father_name and a1.mother_name = a2.mother_name
+            LEFT JOIN senior_high sh ON
+                a1.id = sh.scholarship_id
+            LEFT JOIN college c ON
+                a1.id = c.scholarship_id
+            LEFT JOIN tvet t ON
+                a1.id = t.scholarship_id
+            WHERE
+                a1.id <> a2.id   
+            order by a1.lastname, a1.firstname, a1.middlename asc
+             ";
+        $query = $this->db->query($query);
+        return $query->result();
+
+    }
+
+    function filter_sibling($data)
+    {
+        $query = "
+            SELECT DISTINCT
+                a1.lastname  ,
+                a1.firstname ,
+                a1.middlename ,
+                a1.suffix ,
+                a1.address , 
+                a1.father_name  ,
+                a1.mother_name  
+            FROM
+                scholarship a1
+            JOIN scholarship a2 ON
+                a1.father_name = a2.father_name and a1.mother_name = a2.mother_name
+            LEFT JOIN senior_high sh ON
+                a1.id = sh.scholarship_id
+            LEFT JOIN college c ON
+                a1.id = c.scholarship_id
+            LEFT JOIN tvet t ON
+                a1.id = t.scholarship_id
+            WHERE
+                a1.id <> a2.id  
+            AND sh.semester = '" . $data['semester'] . "' 
+            AND c.semester = '" . $data['semester'] . "' 
+            AND t.semester = '" . $data['semester'] . "' 
+            AND sh.school_year = '" . $data['school_year'] . "' 
+            AND c.school_year = '" . $data['school_year'] . "' 
+            AND t.school_year = '" . $data['school_year'] . "'
+            order by a1.lastname, a1.firstname, a1.middlename asc
+             ";
+        $query = $this->db->query($query);
+        return $query->result();
+    }
 }
+
+

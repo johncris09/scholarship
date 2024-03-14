@@ -8,6 +8,7 @@ import {
   cilLibraryBuilding,
   cilListRich,
   cilMagnifyingGlass,
+  cilPeople,
   cilPlus,
   cilSchool,
   cilSpeedometer,
@@ -45,6 +46,7 @@ const _nav = (userInfo) => {
       //   to: '/advance_search',
       //   icon: <CIcon icon={cilMagnifyingGlass} customClassName="nav-icon" />,
       // },
+
       {
         component: CNavGroup,
         name: 'Manage Application',
@@ -77,6 +79,12 @@ const _nav = (userInfo) => {
             to: '/manage/void',
           },
         ],
+      },
+      {
+        component: CNavItem,
+        name: 'Sibling(s)',
+        to: '/sibling',
+        icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
       },
       {
         component: CNavTitle,

@@ -12,6 +12,8 @@ const Archived = React.lazy(() => import('./views/archived/Archived'))
 const Void = React.lazy(() => import('./views/void/Void'))
 const Status = React.lazy(() => import('./views/status/Status'))
 
+const Sibling = React.lazy(() => import('./views/sibling/Sibling'))
+
 const GenerateReport = React.lazy(() => import('./views/generate_report/GenerateReport'))
 
 // Applicant
@@ -76,12 +78,17 @@ const routes = [
   },
   // { path: '/registration', name: 'Registration', element: Registration },
   {
+    path: '/sibling',
+    user: ['4BSVYawhFI8j779vM8q1', 'KmOlD4kHZC93Yp8Jirhc'],
+    name: 'Sibline(s)',
+    element: Sibling,
+  },
+  {
     path: '/advance_search',
     user: ['4BSVYawhFI8j779vM8q1', 'KmOlD4kHZC93Yp8Jirhc', 'azr14gGCV7hLW2ppQz2l'],
     name: 'Advance Search',
     element: AdvanceSearch,
   },
-
   {
     path: '/manage',
     user: ['4BSVYawhFI8j779vM8q1', 'KmOlD4kHZC93Yp8Jirhc'],

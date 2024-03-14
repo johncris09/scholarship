@@ -143,8 +143,9 @@ $route['applicant_details/(:any)'] = 'Applicant/getApplicationDetails/$1';
 $route['verify'] = 'Applicant/verify';
 $route['applicant/update/(:any)'] = 'Applicant/update/$1';
 $route['applicant/update_applicant_details/(:any)'] = 'Applicant/update_applicant_details/$1';
-
-
+$route['sibling'] = 'Applicant/get_sibling';
+$route['get_all_sibling'] = 'Applicant/get_all_sibling';
+$route['filter_sibling'] = 'Applicant/filter_sibling';
 
 
 

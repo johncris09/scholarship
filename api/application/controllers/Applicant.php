@@ -479,5 +479,25 @@ class Applicant extends RestController
         $this->response($result, RestController::HTTP_OK);
     }
 
+    function get_sibling_get()
+    {
+        $model = new ScholarshipModel;
+        $result = $model->get_sibling(); // current
+        $this->response($result, RestController::HTTP_OK);
+    }
+    function get_all_sibling_get()
+    {
+        $model = new ScholarshipModel;
+        $requestData = $this->input->get();
+        $result = $model->get_all_sibling();
+        $this->response($result, RestController::HTTP_OK);
+    }
+    function filter_sibling_get()
+    {
+        $model = new ScholarshipModel;
+        $requestData = $this->input->get();
+        $result = $model->filter_sibling($requestData);
+        $this->response($result, RestController::HTTP_OK);
+    }
 
 }
