@@ -573,7 +573,7 @@ const Tvet = () => {
             </CRow>
 
             <CRow className="justify-content-between mt-4">
-              <CButton color="primary" type="submit">
+              <CButton color="primary" type="submit" shape="rounded-pill">
                 <lord-icon
                   src="https://cdn.lordicon.com/lyrrgrsl.json"
                   trigger="hover"
