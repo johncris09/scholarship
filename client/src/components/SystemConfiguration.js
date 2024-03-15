@@ -4,8 +4,9 @@ import axios from 'axios'
 import CryptoJS from 'crypto-js'
 import { MagnifyingGlass, Oval, RotatingLines } from 'react-loader-spinner'
 import Swal from 'sweetalert2'
+import { EditorState, convertToRaw, convertFromRaw } from 'draft-js'
 
-const isProduction = false
+const isProduction = true
 
 const api = axios.create({
   baseURL: isProduction
@@ -176,6 +177,20 @@ const seniorHighDefaultColumn = [
   {
     accessorKey: 'reason',
     header: 'Reason',
+    accessorFn: (row) => {
+      const contentStateString = row.reason
+
+      if (contentStateString === null) {
+        return '' // Return empty string if content state is null
+      } else {
+        const contentState = convertFromRaw(JSON.parse(contentStateString))
+        const plainText = contentState
+          .getBlocksAsArray()
+          .map((block) => block.getText())
+          .join('\n')
+        return plainText
+      }
+    },
   },
 ]
 
@@ -248,6 +263,20 @@ const collegeDefaultColumn = [
   {
     accessorKey: 'reason',
     header: 'Reason',
+    accessorFn: (row) => {
+      const contentStateString = row.reason
+
+      if (contentStateString === null) {
+        return '' // Return empty string if content state is null
+      } else {
+        const contentState = convertFromRaw(JSON.parse(contentStateString))
+        const plainText = contentState
+          .getBlocksAsArray()
+          .map((block) => block.getText())
+          .join('\n')
+        return plainText
+      }
+    },
   },
 ]
 
@@ -316,6 +345,20 @@ const tvetDefaultColumn = [
   {
     accessorKey: 'reason',
     header: 'Reason',
+    accessorFn: (row) => {
+      const contentStateString = row.reason
+
+      if (contentStateString === null) {
+        return '' // Return empty string if content state is null
+      } else {
+        const contentState = convertFromRaw(JSON.parse(contentStateString))
+        const plainText = contentState
+          .getBlocksAsArray()
+          .map((block) => block.getText())
+          .join('\n')
+        return plainText
+      }
+    },
   },
 ]
 const commiteeChairperson = 'MARK ANTHONY D. ARTIGAS'

@@ -67,7 +67,6 @@ class College extends RestController
 
         $college = new CollegeModel;
         $requestData = json_decode($this->input->raw_input_stream, true);
-
         $data = array(
             'app_year_number' => $requestData['app_year_number'],
             'app_id_number' => $requestData['app_id_number'],
@@ -80,7 +79,7 @@ class College extends RestController
             'semester' => $requestData['semester'],
             'school_year' => $requestData['school_year'],
             'app_status' => $requestData['app_status'],
-            'reason' => $requestData['reason']
+            'reason' => json_encode($requestData['reason']),
         );
 
 

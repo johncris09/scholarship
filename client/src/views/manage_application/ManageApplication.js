@@ -55,6 +55,10 @@ import {
 import * as Yup from 'yup'
 import { ExportToCsv } from 'export-to-csv'
 import Swal from 'sweetalert2'
+import { Editor } from 'react-draft-wysiwyg'
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
+import { EditorState, convertToRaw, convertFromRaw } from 'draft-js'
+import draftToHtml from 'draftjs-to-html'
 
 const ManageApplication = ({
   app_status,
@@ -67,7 +71,6 @@ const ManageApplication = ({
   const selectCourseInputRef = useRef()
   const selectStrandInputRef = useRef()
   const [data, setData] = useState([])
-
   const [validated, setValidated] = useState(false)
   const [bulkApprovedValidated, setBulkApprovedValidated] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -80,6 +83,7 @@ const ManageApplication = ({
   const [selectedRows, setSelectedRows] = useState([])
   const [modalBulkApproved, setModalBulkApprovedVisible] = useState(false)
   const [table, setTable] = useState([])
+  const [editorState, setEditorState] = useState(() => EditorState.createEmpty())
 
   useEffect(() => {
     fetchData()
@@ -211,11 +215,11 @@ const ManageApplication = ({
     }),
     availment: Yup.string().required('Availment is required'),
     app_status: Yup.string().required('Application Status is required'),
-    reason: Yup.string().when('app_status', {
-      is: (value) => value === 'Disapproved' || value === 'Void' || value === 'Archived',
-      then: (schema) => schema.required('Reason is required'),
-      otherwise: (schema) => schema,
-    }),
+    // reason: Yup.string().when('app_status', {
+    //   is: (value) => value === 'Disapproved' || value === 'Void' || value === 'Archived',
+    //   then: (schema) => schema.required('Reason is required'),
+    //   otherwise: (schema) => schema,
+    // }),
   })
   const applicationDetailsForm = useFormik({
     initialValues: {
@@ -232,7 +236,6 @@ const ManageApplication = ({
       school: '',
       strand: '',
       course: '',
-      // tvetCourse: '',
       unit: '',
       hourNumber: '',
       grade_level: '',
@@ -241,12 +244,17 @@ const ManageApplication = ({
       school_year: '',
       availment: '',
       app_status: '',
+      reason: '',
     },
     validationSchema: applicationDetailsFormValidationSchema,
     onSubmit: async (values) => {
+      const contentState = convertToRaw(values.reason.getCurrentContent())
+      const contentStateString = JSON.stringify(contentState)
+      const updatedValues = { ...values, reason: JSON.parse(contentStateString) }
+
       setLoadingOperation(true)
       await api
-        .put(scholarship_type + '/update/' + values.id, values)
+        .put(scholarship_type + '/update/' + values.id, updatedValues)
         .then((response) => {
           toast.success(response.data.message)
           fetchData()
@@ -359,7 +367,7 @@ const ManageApplication = ({
         Availment: item.availment,
         'School Year': item.school_year,
         Semester: item.semester,
-        Reason: item.reason,
+        // Reason: item.reason,
       }
 
       if (scholarship_type === 'senior_high') {
@@ -538,6 +546,12 @@ const ManageApplication = ({
     })
   }
 
+  const onEditorStateChange = (editorState) => {
+    setEditorState(editorState) // Update the local state with the new EditorState
+
+    applicationDetailsForm.setFieldValue('reason', editorState)
+  }
+
   return (
     <>
       <ToastContainer />
@@ -615,7 +629,6 @@ const ManageApplication = ({
           <hr />
         </CCol>
       </CRow>
-
       <CRow>
         <CCol>
           <MaterialReactTable
@@ -705,11 +718,17 @@ const ManageApplication = ({
                   applicationDetailsForm.setFieldValue('scholarship_type', scholarship_type)
                   applicationDetailsForm.setFieldValue('school_year', row.original.school_year)
                   applicationDetailsForm.setFieldValue('app_status', row.original.app_status)
-                  applicationDetailsForm.setFieldValue(
-                    'reason',
-                    row.original.reason === null ? '' : row.original.reason,
-                  )
+                  const contentStateString = row.original.reason
 
+                  if (contentStateString === null) {
+                    setEditorState(EditorState.createEmpty())
+                    applicationDetailsForm.setFieldValue('reason', EditorState.createEmpty())
+                  } else {
+                    const contentState = convertFromRaw(JSON.parse(contentStateString))
+                    const editorState = EditorState.createWithContent(contentState)
+                    setEditorState(editorState)
+                    applicationDetailsForm.setFieldValue('reason', editorState)
+                  }
                   setApplicationDetailsModalVisible(true)
                 }}
                 sx={{ m: 0 }}
@@ -783,7 +802,6 @@ const ManageApplication = ({
         </CCol>
         {/* {loading && <DefaultLoading />} */}
       </CRow>
-
       <>
         <CModal
           size="lg"
@@ -1356,22 +1374,21 @@ const ManageApplication = ({
 
                 <CRow className="my-1">
                   <CCol md={12}>
-                    <CFormTextarea
-                      placeholder="Required only when application status set to disapproved, archived and void"
-                      label="Reason (Optional)"
-                      name="reason"
-                      onChange={handleInputChange}
-                      style={{ height: '100px' }}
-                    >
-                      {applicationDetailsForm.values.reason}
-                    </CFormTextarea>
-
-                    {applicationDetailsForm.touched.reason &&
-                      applicationDetailsForm.errors.reason && (
-                        <CFormText className="text-danger">
-                          {applicationDetailsForm.errors.reason}
-                        </CFormText>
-                      )}
+                    <CFormLabel>Reason (optional)</CFormLabel>
+                    <Editor
+                      editorState={editorState}
+                      wrapperClassName="demo-wrapper"
+                      editorClassName="demo-editor"
+                      editorStyle={{ height: 200, paddingLeft: 5, lineHeight: 0.1 }}
+                      wrapperStyle={{ border: '.5px solid #F1F6F9' }}
+                      onEditorStateChange={onEditorStateChange}
+                    />
+                    {/* {applicationDetailsForm.touched.reason &&
+                    applicationDetailsForm.errors.reason ? (
+                      <CFormText className="text-danger">
+                        {applicationDetailsForm.errors.reason}
+                      </CFormText>
+                    ) : null} */}
                   </CCol>
                 </CRow>
 

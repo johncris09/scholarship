@@ -81,6 +81,7 @@ class Tvet extends RestController
             'school_year' => $requestData['school_year'],
             'app_status' => $requestData['app_status'],
             'reason' => $requestData['reason'],
+			'reason' => json_encode($requestData['reason']),
         );
 
         $update_result = $tvet->update($id, $data);
