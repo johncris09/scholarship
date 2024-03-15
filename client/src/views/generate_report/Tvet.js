@@ -22,6 +22,8 @@ import MaterialReactTable from 'material-react-table'
 import { Box } from '@mui/material'
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Font, Image } from '@react-pdf/renderer'
 import logo from './../../assets/images/logo-sm.png'
+import asensoLogo from './../../assets/images/asenso-logo.png'
+import bagongPilipinasLogo from './../../assets/images/bagong-pilipinas-logo.png'
 import { jwtDecode } from 'jwt-decode'
 import {
   DefaultLoading,
@@ -297,13 +299,29 @@ const Tvet = () => {
       fontStyle: 'italic !important',
     },
 
-    logo: {
+    logo_left: {
       width: 70,
       height: 70,
       marginRight: 10,
       top: 0,
       position: 'absolute',
       left: 5,
+    },
+    logo_right_1: {
+      width: 70,
+      height: 70,
+      marginRight: 10,
+      top: 0,
+      position: 'absolute',
+      right: 50,
+    },
+    logo_right_2: {
+      width: 80,
+      height: 80,
+      marginRight: 10,
+      top: 0,
+      position: 'absolute',
+      right: -15,
     },
 
     title: {
@@ -684,11 +702,17 @@ const Tvet = () => {
             {chunks.map((chunk, index) => (
               <Page key={index} style={styles.page}>
                 <View style={styles.header} fixed>
-                  <Image src={logo} style={styles.logo} alt="logo" />
+                  <Image src={logo} style={styles.logo_left} alt="Oroquieta City Logo" />
                   <Text style={styles.country}>Republic of the Philippines</Text>
                   <Text style={styles.office}>Office of the City Mayor</Text>
                   <Text style={styles.city}>Oroqueita City</Text>
                   <Text style={styles.citytag}>City of Goodlife</Text>
+                  <Image src={asensoLogo} style={styles.logo_right_1} alt="Asenso Logo" />
+                  <Image
+                    src={bagongPilipinasLogo}
+                    style={styles.logo_right_2}
+                    alt="Baqgong Pilipinas Logo"
+                  />
                 </View>
                 <View style={styles.description} fixed>
                   <Text>{title}</Text>
