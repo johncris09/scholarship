@@ -220,7 +220,6 @@ const AppDetails = ({ id }) => {
     api
       .get('applicant/' + id)
       .then((response) => {
-        // console.info(response.data)
         setData(response.data)
         applicantDetailsForm.setFieldValue('id', response.data.id)
         applicantDetailsForm.setFieldValue('reference_number', response.data.reference_number)

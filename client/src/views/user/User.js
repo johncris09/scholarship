@@ -146,7 +146,6 @@ const User = ({ cardTitle }) => {
         await api
           .put('user/update/' + values.id, values)
           .then((response) => {
-            console.info(response.data)
             toast.success(response.data.message)
             fetchData()
             setValidated(false)

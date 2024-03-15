@@ -117,8 +117,6 @@ const Applicant = ({ cardTitle }) => {
     api
       .get('applicant/' + id)
       .then((response) => {
-        console.info(response.data)
-        // applicationDetailsForm.setValues(response.data)
         applicantDetailsForm.setValues({
           id: response.data.id,
           reference_number: response.data.reference_number,
@@ -407,7 +405,6 @@ const Applicant = ({ cardTitle }) => {
       await api
         .put('applicant/update_applicant_details/' + values.id, values)
         .then((response) => {
-          console.info(response.data)
           toast.success(response.data.message)
           setApplicationDetailsModalVisible(false)
           fetchApplicationDetails(applicationDetailsForm.values.scholarship_id)

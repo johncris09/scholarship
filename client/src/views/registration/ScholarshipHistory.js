@@ -450,7 +450,6 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
       await api
         .post('applicant/insert', values)
         .then((response) => {
-          console.info(response.data)
           toast.success(response.data.message)
           setApplicationDetailsModalVisible(false)
           fetchApplicationDetails()

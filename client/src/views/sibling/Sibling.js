@@ -55,7 +55,6 @@ const Sibling = ({ cardTitle }) => {
     await api
       .get('get_all_sibling')
       .then((response) => {
-        console.info(response.data)
         setSiblingData(response.data)
       })
       .catch((error) => {
