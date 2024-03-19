@@ -7,6 +7,7 @@ import {
   CHeaderDivider,
   CHeaderNav,
   CHeaderToggler,
+  CImage,
   CSpinner,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
@@ -17,6 +18,7 @@ import { api, toSentenceCase } from './SystemConfiguration'
 import { AsyncTypeahead } from 'react-bootstrap-typeahead'
 import { useNavigate } from 'react-router-dom'
 
+const isProduction = false
 const AppHeader = () => {
   const typeAheadRef = useRef()
   const dispatch = useDispatch()
@@ -91,12 +93,34 @@ const AppHeader = () => {
             maxResults={5}
             placeholder="Search applicant ..."
             inputProps={{ style: { paddingLeft: 40, borderRadius: 20 } }}
-            renderMenuItemChildren={(row) => (
-              <span>
-                {toSentenceCase(row.lastname)}, {toSentenceCase(row.firstname)}{' '}
-                {toSentenceCase(row.middlename)} {row.suffix}
-              </span>
-            )}
+            renderMenuItemChildren={(row) => {
+              let photo = row.photo ? row.photo : 'defaultAvatar.png' // Assuming defaultAvatar.png is a string
+              return (
+                <>
+                  <span>
+                    <CImage
+                      style={{ borderRadius: 50, marginRight: 7 }}
+                      src={
+                        isProduction
+                          ? process.env.REACT_APP_BASEURL_PRODUCTION +
+                            'assets/image/scholarship/' +
+                            photo
+                          : process.env.REACT_APP_BASEURL_DEVELOPMENT +
+                            'assets/image/scholarship/' +
+                            photo
+                      }
+                      alt="Profile Photo"
+                      width={25}
+                      height={25}
+                    />
+                  </span>
+                  <span>
+                    {toSentenceCase(row.lastname)}, {toSentenceCase(row.firstname)}{' '}
+                    {toSentenceCase(row.middlename)} {row.suffix}
+                  </span>
+                </>
+              )
+            }}
             renderToken={(option, props, index) => (
               <span key={index}>
                 {`${toSentenceCase(option.lastname)}, ${toSentenceCase(

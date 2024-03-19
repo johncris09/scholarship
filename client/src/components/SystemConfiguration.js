@@ -5,8 +5,9 @@ import CryptoJS from 'crypto-js'
 import { MagnifyingGlass, Oval, RotatingLines } from 'react-loader-spinner'
 import Swal from 'sweetalert2'
 import { EditorState, convertToRaw, convertFromRaw } from 'draft-js'
+import { Box } from '@mui/material'
 
-const isProduction = true
+const isProduction = false
 
 const api = axios.create({
   baseURL: isProduction
@@ -116,67 +117,114 @@ const seniorHighDefaultColumn = [
   {
     accessorKey: 'id',
     header: 'Application #',
+    includeInExport: true,
     accessorFn: (row) => `${row.app_year_number}-${row.app_sem_number}-${row.app_id_number}`,
+  },
+  {
+    accessorKey: 'photo',
+    header: 'Photo',
+    size: 120,
+    includeInExport: false,
+    Cell: ({ row }) => {
+      let photo = row.original.photo || 'defaultAvatar.png' // Assuming "defaultAvatar.png" is a string
+      return (
+        <Box
+          className="text-right"
+          md={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end', // Align to the right
+            gap: '1rem',
+          }}
+        >
+          <img
+            alt="avatar"
+            height={25}
+            src={
+              isProduction
+                ? `${process.env.REACT_APP_BASEURL_PRODUCTION}assets/image/scholarship/${photo}`
+                : `${process.env.REACT_APP_BASEURL_DEVELOPMENT}assets/image/scholarship/${photo}`
+            }
+            loading="lazy"
+            style={{ borderRadius: '50%' }}
+          />
+        </Box>
+      )
+    },
   },
   {
     accessorKey: 'lastname',
     header: 'Last Name',
+    includeInExport: true,
     accessorFn: (row) => `${toSentenceCase(row.lastname)}`,
   },
   {
     accessorKey: 'firstname',
     header: 'First Name',
+    includeInExport: true,
     accessorFn: (row) => `${toSentenceCase(row.firstname)}`,
   },
   {
     accessorKey: 'middlename',
     header: 'Middle Name',
+    includeInExport: true,
     accessorFn: (row) => `${toSentenceCase(row.middlename)}`,
   },
   {
     accessorKey: 'contact_number',
     header: 'Contact #',
+    includeInExport: true,
   },
   {
     accessorKey: 'address',
     header: 'Address',
     accessorFn: (row) => `${toSentenceCase(row.address)}`,
+    includeInExport: true,
   },
   {
     accessorKey: 'sex',
     header: 'Gender',
+    includeInExport: true,
   },
   {
     accessorKey: 'school',
     header: 'School',
+    includeInExport: true,
   },
   {
     accessorKey: 'strand',
     header: 'Strand',
+    includeInExport: true,
   },
   {
     accessorKey: 'school_year',
     header: 'School Year',
+    includeInExport: true,
   },
   {
     accessorKey: 'semester',
     header: 'Semester',
+    includeInExport: true,
   },
   {
     accessorKey: 'app_status',
     header: 'Application Status',
+    includeInExport: true,
   },
   {
     accessorKey: 'availment',
     header: 'Availment',
+    includeInExport: true,
   },
   {
     accessorKey: 'grade_level',
     header: 'Grade Level',
+    includeInExport: true,
   },
   {
     accessorKey: 'reason',
     header: 'Reason',
+    includeInExport: false,
     accessorFn: (row) => {
       const contentStateString = row.reason
 
@@ -199,21 +247,57 @@ const collegeDefaultColumn = [
     accessorKey: 'id',
     header: 'Application #',
     accessorFn: (row) => `${row.app_year_number}-${row.app_sem_number}-${row.app_id_number}`,
+    includeInExport: true,
+  },
+  {
+    accessorKey: 'photo',
+    header: 'Photo',
+    size: 120,
+    includeInExport: false,
+    Cell: ({ row }) => {
+      let photo = row.original.photo || 'defaultAvatar.png' // Assuming "defaultAvatar.png" is a string
+      return (
+        <Box
+          className="text-right"
+          md={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end', // Align to the right
+            gap: '1rem',
+          }}
+        >
+          <img
+            alt="avatar"
+            height={25}
+            src={
+              isProduction
+                ? `${process.env.REACT_APP_BASEURL_PRODUCTION}assets/image/scholarship/${photo}`
+                : `${process.env.REACT_APP_BASEURL_DEVELOPMENT}assets/image/scholarship/${photo}`
+            }
+            loading="lazy"
+            style={{ borderRadius: '50%' }}
+          />
+        </Box>
+      )
+    },
   },
   {
     accessorKey: 'lastname',
     header: 'Last Name',
     accessorFn: (row) => `${toSentenceCase(row.lastname)}`,
+    includeInExport: true,
   },
   {
     accessorKey: 'firstname',
     header: 'First Name',
     accessorFn: (row) => `${toSentenceCase(row.firstname)}`,
+    includeInExport: true,
   },
   {
     accessorKey: 'middlename',
     header: 'Middle Name',
     accessorFn: (row) => `${toSentenceCase(row.middlename)}`,
+    includeInExport: true,
   },
   {
     accessorKey: 'contact_number',
@@ -223,42 +307,52 @@ const collegeDefaultColumn = [
     accessorKey: 'address',
     header: 'Address',
     accessorFn: (row) => `${toSentenceCase(row.address)}`,
+    includeInExport: true,
   },
   {
     accessorKey: 'sex',
     header: 'Gender',
+    includeInExport: true,
   },
   {
     accessorKey: 'school',
     header: 'School',
+    includeInExport: true,
   },
   {
     accessorKey: 'course',
     header: 'Course',
+    includeInExport: true,
   },
   {
     accessorKey: 'unit',
     header: 'Unit',
+    includeInExport: true,
   },
   {
     accessorKey: 'school_year',
     header: 'School Year',
+    includeInExport: true,
   },
   {
     accessorKey: 'semester',
     header: 'Semester',
+    includeInExport: true,
   },
   {
     accessorKey: 'app_status',
     header: 'Application Status',
+    includeInExport: true,
   },
   {
     accessorKey: 'availment',
     header: 'Availment',
+    includeInExport: true,
   },
   {
     accessorKey: 'year_level',
     header: 'Year Level',
+    includeInExport: true,
   },
   {
     accessorKey: 'reason',
@@ -277,6 +371,7 @@ const collegeDefaultColumn = [
         return plainText
       }
     },
+    includeInExport: false,
   },
 ]
 
@@ -285,62 +380,108 @@ const tvetDefaultColumn = [
     accessorKey: 'app_id_number',
     header: 'Application #',
     accessorFn: (row) => `${row.app_year_number}-${row.app_sem_number}-${row.app_id_number}`,
+    includeInExport: true,
+  },
+  {
+    accessorKey: 'photo',
+    header: 'Photo',
+    size: 120,
+    includeInExport: false,
+    Cell: ({ row }) => {
+      let photo = row.original.photo || 'defaultAvatar.png' // Assuming "defaultAvatar.png" is a string
+      return (
+        <Box
+          className="text-right"
+          md={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end', // Align to the right
+            gap: '1rem',
+          }}
+        >
+          <img
+            alt="avatar"
+            height={25}
+            src={
+              isProduction
+                ? `${process.env.REACT_APP_BASEURL_PRODUCTION}assets/image/scholarship/${photo}`
+                : `${process.env.REACT_APP_BASEURL_DEVELOPMENT}assets/image/scholarship/${photo}`
+            }
+            loading="lazy"
+            style={{ borderRadius: '50%' }}
+          />
+        </Box>
+      )
+    },
   },
   {
     accessorKey: 'lastname',
     header: 'Last Name',
     accessorFn: (row) => `${toSentenceCase(row.lastname)}`,
+    includeInExport: true,
   },
   {
     accessorKey: 'firstname',
     header: 'First Name',
     accessorFn: (row) => `${toSentenceCase(row.firstname)}`,
+    includeInExport: true,
   },
   {
     accessorKey: 'middlename',
     header: 'Middle Name',
     accessorFn: (row) => `${toSentenceCase(row.middlename)}`,
+    includeInExport: true,
   },
   {
     accessorKey: 'contact_number',
     header: 'Contact #',
+    includeInExport: true,
   },
   {
     accessorKey: 'address',
     header: 'Address',
     accessorFn: (row) => `${toSentenceCase(row.address)}`,
+    includeInExport: true,
   },
   {
     accessorKey: 'sex',
     header: 'Gender',
+    includeInExport: true,
   },
   {
     accessorKey: 'school',
     header: 'School',
+    includeInExport: true,
   },
   {
     accessorKey: 'course',
     header: 'Course',
+    includeInExport: true,
   },
   {
     accessorKey: 'unit',
     header: '# of Days',
+    includeInExport: true,
   },
   {
     accessorKey: 'school_year',
     header: 'School Year',
+    includeInExport: true,
   },
   {
     accessorKey: 'semester',
     header: 'Semester',
+    includeInExport: true,
   },
   {
     accessorKey: 'app_status',
     header: 'Application Status',
+    includeInExport: true,
   },
   {
     accessorKey: 'availment',
     header: 'Availment',
+    includeInExport: true,
   },
   {
     accessorKey: 'reason',
@@ -359,6 +500,7 @@ const tvetDefaultColumn = [
         return plainText
       }
     },
+    includeInExport: false,
   },
 ]
 const commiteeChairperson = 'MARK ANTHONY D. ARTIGAS'

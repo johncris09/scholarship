@@ -378,13 +378,14 @@
   border-top-right-radius: 10px !important;
 }
 
-#new-app-form input {
+#new-app-form input[type="text"],input[type="date"] ,input[type="number"]{
   border-radius: 50px;
 }
 
 #new-app-form select {
   border-radius: 50px;
 }
+
 #new-app-form .css-13cymwt-control {
   border-radius: 50px;
 }

@@ -20,28 +20,29 @@ class SeniorHighModel extends CI_Model
 
         $this->db
             ->select('
-                `sh`.`id`,
+                sh.id,
 				scholarship.reference_number,
 				sh.scholarship_id,
                 scholarship.lastname,
                 scholarship.firstname,
                 scholarship.middlename,
                 scholarship.suffix,
+                scholarship.photo,
                 scholarship.contact_number,
                 barangay.barangay AS address,
                 scholarship.sex,
-                `sh`.`app_year_number`,
-                `sh`.`app_id_number`,
-                `sh`.`app_sem_number`,
-                `sh`.`ctc`,
-                `sh`.`availment`,
-                `s`.`school`,
-                `strand`.`strand`,
-                `sh`.`grade_level`,
-                `sh`.`semester`,
-                `sh`.`school_year`,
-                `sh`.`app_status`,
-                `sh`.`reason`,
+                sh.app_year_number,
+                sh.app_id_number,
+                sh.app_sem_number,
+                sh.ctc,
+                sh.availment,
+                s.school,
+                strand.strand,
+                sh.grade_level,
+                sh.semester,
+                sh.school_year,
+                sh.app_status,
+                sh.reason,
                 barangay.id AS barangay_id,
                 s.id AS senior_high_school_id,
                 strand.id AS strand_id')
@@ -73,27 +74,29 @@ class SeniorHighModel extends CI_Model
     {
         $this->db
             ->select('
-            `sh`.`id`,
+            sh.id,
             scholarship.reference_number,
             sh.scholarship_id,
             scholarship.lastname,
             scholarship.firstname,
             scholarship.middlename,
             scholarship.suffix,
+            scholarship.photo,
             scholarship.contact_number,
             barangay.barangay AS address,
             scholarship.sex,
-            `sh`.`app_year_number`,
-            `sh`.`app_id_number`,
-            `sh`.`app_sem_number`,
-            `sh`.`ctc`,
-            `sh`.`availment`,
-            `s`.`school`,
-            `strand`.`strand`,
-            `sh`.`grade_level`,
-            `sh`.`semester`,
-            `sh`.`school_year`,
-            `sh`.`app_status`,
+            sh.app_year_number,
+            sh.app_id_number,
+            sh.app_sem_number,
+            sh.ctc,
+            sh.availment,
+            s.school,
+            strand.strand,
+            sh.grade_level,
+            sh.semester,
+            sh.school_year,
+            sh.app_status,
+            sh.reason,
             barangay.id AS barangay_id,
             s.id AS senior_high_school_id,
             strand.id AS strand_id')
@@ -122,27 +125,29 @@ class SeniorHighModel extends CI_Model
     {
         $this->db
             ->select('
-            `sh`.`id`,
+            sh.id,
             scholarship.reference_number,
             sh.scholarship_id,
             scholarship.lastname,
             scholarship.firstname,
             scholarship.middlename,
             scholarship.suffix,
+            scholarship.photo,
             scholarship.contact_number,
             barangay.barangay AS address,
             scholarship.sex,
-            `sh`.`app_year_number`,
-            `sh`.`app_id_number`,
-            `sh`.`app_sem_number`,
-            `sh`.`ctc`,
-            `sh`.`availment`,
-            `s`.`school`,
-            `strand`.`strand`,
-            `sh`.`grade_level`,
-            `sh`.`semester`,
-            `sh`.`school_year`,
-            `sh`.`app_status`,
+            sh.app_year_number,
+            sh.app_id_number,
+            sh.app_sem_number,
+            sh.ctc,
+            sh.availment,
+            s.school,
+            strand.strand,
+            sh.grade_level,
+            sh.semester,
+            sh.school_year,
+            sh.app_status,
+            sh.reason,
             barangay.id AS barangay_id,
             s.id AS senior_high_school_id,
             strand.id AS strand_id')
@@ -586,28 +591,29 @@ class SeniorHighModel extends CI_Model
 
         $this->db
             ->select('
-            `sh`.`id`,
+            sh.id,
             scholarship.reference_number,
             sh.scholarship_id,
             scholarship.lastname,
             scholarship.firstname,
             scholarship.middlename,
             scholarship.suffix,
+            scholarship.photo,
             scholarship.contact_number,
             barangay.barangay AS address,
             scholarship.sex,
-            `sh`.`app_year_number`,
-            `sh`.`app_id_number`,
-            `sh`.`app_sem_number`,
-            `sh`.`ctc`,
-            `sh`.`availment`,
-            `s`.`school`,
+            sh.app_year_number,
+            sh.app_id_number,
+            sh.app_sem_number,
+            sh.ctc,
+            sh.availment,
+            s.school,
             `s`.`abbreviation`,
-            `strand`.`strand`,
-            `sh`.`grade_level`,
-            `sh`.`semester`,
-            `sh`.`school_year`,
-            `sh`.`app_status`,
+            strand.strand,
+            sh.grade_level,
+            sh.semester,
+            sh.school_year,
+            sh.app_status,
             barangay.id AS barangay_id,
             s.id AS senior_high_school_id,
             strand.id AS strand_id')
@@ -625,78 +631,23 @@ class SeniorHighModel extends CI_Model
         $query = $this->db->get();
         return $query->result();
 
+
+        // modified query
+        // if (!empty($data)) {
+        //     // Start building the WHERE conditions
+        //     $this->db->where($data);
+
+        //     // If availment is not 1, add an additional condition
+        //     if (!isset($data['availment'])) {
+        //         $this->db->where('availment !=', 1);
+        //     }
+        // }
+        // $this->db->order_by('lastname ', 'asc');
+        // $this->db->order_by('firstname ', 'asc');
+
+        // $query = $this->db->get();
+        // return $query->result();
     }
-
-
-
-    // **************************************************************** 
-    // **************************************************************** 
-    // **************************************************************** 
-    // **************************************************************** 
-    // **************************************************************** 
-    // ****************************************************************  
-    // _______________
-    // |             |
-    // |  METHOD     |
-    // |             |
-    // ****************************************************************
-    // ****************************************************************
-    // ****************************************************************
-    // ****************************************************************
-    // ****************************************************************
-    // ****************************************************************     
-
-    public $default_column = '
-        ID,
-        AppNoYear,
-        AppNoID,
-        AppNoSem,
-        AppStatus,
-        AppFirstName,
-        AppMidIn,
-        AppLastName,
-        AppSuffix,
-        AppAddress,
-        AppDOB,
-        AppAge,
-        AppCivilStat,
-        AppGender,
-        AppContact,
-        AppCTC,
-        AppEmailAdd,
-        AppAvailment,
-        AppSchool,
-        AppCourse,
-        AppSchoolAddress,
-        AppYear,
-        AppSem,
-        AppSY,
-        AppFather,
-        AppFatherOccu,
-        AppMother,
-        AppMotherOccu,
-        AppManager
-    ';
-
-
-
-
-    public function bulk_insert($data)
-    {
-        return $this->db->insert_batch($this->table, $data);
-
-    }
-
-
-    public function find($id)
-    {
-        $this->db->where('id', $id);
-        $query = $this->db->get($this->table);
-        return $query->row();
-    }
-
-
-
 
 
     public function filter_total($data)
@@ -708,39 +659,15 @@ class SeniorHighModel extends CI_Model
         return $result->total;
     }
 
-
-
-    public function get_student()
+    public function find($id)
     {
-        $query = $this->db->select($this->default_column)
-            ->where('AppManager', 'Active')
-            ->order_by('id', 'desc')
-            ->get($this->table);
-        return $query->result();
+        $this->db->where('id', $id);
+        $query = $this->db->get($this->table);
+        return $query->row();
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
+      
 
 }
 

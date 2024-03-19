@@ -189,10 +189,6 @@ const Tvet = () => {
       header: 'Course',
     },
     {
-      accessorKey: 'year_level',
-      header: 'Year Level',
-    },
-    {
       accessorKey: 'school',
       header: 'School',
     },
@@ -226,12 +222,11 @@ const Tvet = () => {
             ? item.middlename.substring(0, 1) + '.'
             : ''
         } ${item.suffix}`,
-        Address: item.colAddress,
-        Course: item.colCourse,
-        'Year Level': item.colYearLevel,
-        School: item.colSchool,
-        'Contact #': item.colContactNo,
-        Availment: item.colAvailment,
+        Address: item.address,
+        Course: item.course,
+        School: item.abbreviation,
+        'Contact #': item.contact_number,
+        Availment: item.availment,
       }
     })
     csvExporter.generateCsv(exportedData)

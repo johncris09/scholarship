@@ -1,6 +1,6 @@
 <?php
 
-defined('BASEPATH') or exit('No direct script access allowed');
+defined('BASEPATH') or exit ('No direct script access allowed');
 
 class CollegeModel extends CI_Model
 {
@@ -28,6 +28,7 @@ class CollegeModel extends CI_Model
                 scholarship.firstname,
                 scholarship.middlename,
                 scholarship.suffix,
+                scholarship.photo,
                 scholarship.contact_number,
                 barangay.barangay AS address,
                 scholarship.sex,
@@ -44,7 +45,6 @@ class CollegeModel extends CI_Model
 				c.school_year,
 				c.app_status,
                 c.reason,
-				c.app_status,
                 barangay.id AS barangay_id,
                 cs.id AS college_school_id,
                 course.id AS course_id')
@@ -83,6 +83,7 @@ class CollegeModel extends CI_Model
                 scholarship.firstname,
                 scholarship.middlename,
                 scholarship.suffix,
+                scholarship.photo,
                 scholarship.contact_number,
                 barangay.barangay AS address,
                 scholarship.sex,
@@ -98,7 +99,7 @@ class CollegeModel extends CI_Model
 				c.semester,
 				c.school_year,
 				c.app_status,
-				c.app_status,
+				c.reason,
                 barangay.id AS barangay_id,
                 cs.id AS college_school_id,
                 course.id AS course_id')
@@ -134,6 +135,7 @@ class CollegeModel extends CI_Model
                 scholarship.firstname,
                 scholarship.middlename,
                 scholarship.suffix,
+                scholarship.photo,
                 scholarship.contact_number,
                 barangay.barangay AS address,
                 scholarship.sex,
@@ -149,7 +151,7 @@ class CollegeModel extends CI_Model
 				c.semester,
 				c.school_year,
 				c.app_status,
-				c.app_status,
+				c.reason,
                 barangay.id AS barangay_id,
                 cs.id AS college_school_id,
                 course.id AS course_id')
@@ -177,7 +179,7 @@ class CollegeModel extends CI_Model
 
 
 	public function bulk_status_update($data, $id)
-	{ 
+	{
 		$this->db->where_in('id', $id);
 		return $this->db->update('college', $data);
 
@@ -550,7 +552,7 @@ class CollegeModel extends CI_Model
 
 		return $data;
 
-	} 
+	}
 	public function generate_report($data)
 	{
 
@@ -563,6 +565,7 @@ class CollegeModel extends CI_Model
                 scholarship.firstname,
                 scholarship.middlename,
                 scholarship.suffix,
+                scholarship.photo,
                 scholarship.contact_number,
                 barangay.barangay AS address,
                 scholarship.sex,
@@ -579,8 +582,8 @@ class CollegeModel extends CI_Model
 				c.year_level,
 				c.semester,
 				c.school_year,
-				c.app_status,
-				c.app_status,
+				c.app_status, 
+				c.reason,
                 barangay.id AS barangay_id,
                 cs.id AS college_school_id,
                 course.id AS course_id')
@@ -591,117 +594,15 @@ class CollegeModel extends CI_Model
 			->join('course', 'c.course = course.id', 'LEFT');
 
 
-		if (!empty($data)) {
+		if (!empty ($data)) {
 			$this->db->where($data);
 		}
 
-        $this->db->order_by('lastname, firstname', 'asc');
- 
+		$this->db->order_by('lastname, firstname', 'asc');
+
 		$query = $this->db->get();
 		return $query->result();
 
-	}
-
-	// ********************************
-	// ********************************
-	// ********************************
-	// ********************************
-	// ********************************
-	// ********************************
-	// ********************************
-	// ********************************
-	// _______________
-	// |             |
-	// |  METHOD     |
-	// |             |
-	// ********************************
-	// ********************************
-	// ********************************
-	// ********************************
-	// ********************************
-	// ********************************
-	// ********************************
-	// ********************************
-	// ********************************
-	// ********************************
-	// ********************************
-
-	public $default_column = '
-		ID,
-		colAppNoYear,
-		colAppNoID,
-		colAppNoSem,
-		colAppStat,
-		colFirstName,
-		colLastName,
-		colMI,
-		colSuffix,
-		colAddress,
-		colDOB,
-		colAge,
-		colCivilStat,
-		colGender,
-		colContactNo,
-		colCTC,
-		colEmailAdd,
-		colAvailment,
-		colSchool,
-		colSchoolAddress,
-		colCourse,
-		colYearLevel,
-		colSem,
-		colSY,
-		colFathersName,
-		colFatherOccu,
-		colMothersName,
-		colMotherOccu,
-		colManager,
-		colUnits
-	';
-
-
-
-
-	public function find($id)
-	{
-		$this->db->where('id', $id);
-		$query = $this->db->get($this->table);
-		return $query->row();
-	}
-
-	public function update($id, $data)
-	{
-		$this->db->where('id', $id);
-		return $this->db->update($this->table, $data);
-	}
-
-
-
-
-
-	public function bulk_insert($data)
-	{
-		return $this->db->insert_batch($this->table, $data);
-
-	}
-
-
-
-
-
-	public function get_student()
-	{
-		$query = $this->db->select($this->default_column)
-			->where('colManager', 'Active')
-			->order_by('ID', 'desc')
-			->get($this->table);
-		return $query->result();
-	}
-
-
-
-
-
-
+	} 
 
 }

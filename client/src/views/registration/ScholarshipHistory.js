@@ -1121,7 +1121,7 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
 
                 <CRow className="mt-4">
                   <div className="d-grid gap-2">
-                    <CButton color="primary" type="submit">
+                    <CButton shape="rounded-pill" color="primary" type="submit">
                       Submit
                     </CButton>
                   </div>

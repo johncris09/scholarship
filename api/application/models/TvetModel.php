@@ -29,6 +29,7 @@ class TvetModel extends CI_Model
                 scholarship.firstname,
                 scholarship.middlename,
                 scholarship.suffix,
+                scholarship.photo,
                 scholarship.contact_number,
                 barangay.barangay AS address,
                 scholarship.sex,
@@ -82,6 +83,7 @@ class TvetModel extends CI_Model
                 scholarship.firstname,
                 scholarship.middlename,
                 scholarship.suffix,
+                scholarship.photo,
                 scholarship.contact_number,
                 barangay.barangay AS address,
                 scholarship.sex,
@@ -97,7 +99,7 @@ class TvetModel extends CI_Model
 				t.semester,
 				t.school_year,
 				t.app_status,
-				t.app_status,
+				t.reason,
                 barangay.id AS barangay_id,
                 ts.id AS tvet_school_id,
                 tc.id AS tvet_course_id')
@@ -131,6 +133,7 @@ class TvetModel extends CI_Model
                 scholarship.firstname,
                 scholarship.middlename,
                 scholarship.suffix,
+                scholarship.photo,
                 scholarship.contact_number,
                 barangay.barangay AS address,
                 scholarship.sex,
@@ -146,7 +149,7 @@ class TvetModel extends CI_Model
 				t.semester,
 				t.school_year,
 				t.app_status,
-				t.app_status,
+				t.reason,
                 barangay.id AS barangay_id,
                 ts.id AS tvet_school_id,
                 tc.id AS tvet_course_id')
@@ -553,6 +556,7 @@ class TvetModel extends CI_Model
                 scholarship.firstname,
                 scholarship.middlename,
                 scholarship.suffix,
+                scholarship.photo,
                 scholarship.contact_number,
                 barangay.barangay AS address,
                 scholarship.sex,
@@ -569,7 +573,7 @@ class TvetModel extends CI_Model
 				t.semester,
 				t.school_year,
 				t.app_status,
-				t.app_status,
+				t.reason,
                 barangay.id AS barangay_id,
                 ts.id AS tvet_school_id,
                 tc.id AS tvet_course_id')
@@ -650,14 +654,7 @@ class TvetModel extends CI_Model
 		return $query->row();
 	}
 
-
-
-	public function bulk_insert($data)
-	{
-		return $this->db->insert_batch($this->table, $data);
-
-	}
-
+ 
 
 	public function get_student()
 	{

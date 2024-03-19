@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
-import './../../assets/css/react-paginate.css'
-import './../../assets/css/custom.css'
+// import './../../assets/css/react-paginate.css'
+// import './../../assets/css/custom.css'
+import Cropper from 'react-cropper'
+import 'cropperjs/dist/cropper.css'
 import {
   CButton,
   CCard,
@@ -12,12 +14,15 @@ import {
   CFormLabel,
   CFormSelect,
   CFormText,
-  CInputGroup,
+  CImage,
+  CModal,
+  CModalBody,
+  CModalFooter,
   CRow,
   CSpinner,
 } from '@coreui/react'
 import { ToastContainer, toast } from 'react-toastify'
-import 'react-form-wizard-component/dist/style.css'
+// import 'react-form-wizard-component/dist/style.css'
 import {
   CivilStatus,
   DefaultLoading,
@@ -45,8 +50,11 @@ import {
 } from './ApplicationNumber'
 import BasicInfo from './BasicInfo'
 import ScholarshipHistory from './ScholarshipHistory'
+const isProduction = false
 
 const Registration = ({ cardTitle }) => {
+  const avatarRef = useRef(null)
+  const imageRef = useRef(null)
   const selectAddressIputRef = useRef()
   const selectSeniorHighSchoolInputRef = useRef()
   const selectCollegeSchoolInputRef = useRef()
@@ -74,6 +82,10 @@ const Registration = ({ cardTitle }) => {
   const [address, setAddress] = useState([])
   const [config, setConfig] = useState([])
   const [scholarshipID, setScholarshipID] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
+  const [cropPhotoModalVisible, setCropPhotoModalVisible] = useState(false)
+  const cropperRef = useRef(null)
+  const [cropData, setCropData] = useState('')
 
   useEffect(() => {
     fetchConfig()
@@ -298,6 +310,38 @@ const Registration = ({ cardTitle }) => {
       accessorFn: (row) => row.reference_number,
     },
     {
+      accessorKey: 'photo',
+      header: 'Photo',
+      size: 120,
+      includeInExport: false,
+      Cell: ({ row }) => {
+        let photo = row.original.photo || 'defaultAvatar.png' // Assuming "defaultAvatar.png" is a string
+        return (
+          <Box
+            className="text-right"
+            md={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end', // Align to the right
+              gap: '1rem',
+            }}
+          >
+            <img
+              alt="avatar"
+              height={25}
+              src={
+                isProduction
+                  ? `${process.env.REACT_APP_BASEURL_PRODUCTION}assets/image/scholarship/${photo}`
+                  : `${process.env.REACT_APP_BASEURL_DEVELOPMENT}assets/image/scholarship/${photo}`
+              }
+              loading="lazy"
+              style={{ borderRadius: '50%' }}
+            />
+          </Box>
+        )
+      },
+    },
+    {
       accessorKey: 'lastname',
       header: 'Last Name',
       accessorFn: (row) => toSentenceCase(row.lastname),
@@ -433,6 +477,7 @@ const Registration = ({ cardTitle }) => {
       father_occupation: '',
       mother_name: '',
       mother_occupation: '',
+      photo: '',
       scholarship_type: 'senior_high',
       school: '',
       strand: '',
@@ -447,12 +492,10 @@ const Registration = ({ cardTitle }) => {
     validationSchema: newApplicantFormValidationSchema,
     onSubmit: async (values) => {
       setOperationLoading(true)
-
       await api
         .post('applicant/insert_new_applicant', values)
         .then((response) => {
           toast.success(response.data.message)
-
           if (values.scholarship_type === 'senior_high') {
             selectStrandInputRef.current.clearValue()
             selectSeniorHighSchoolInputRef.current.clearValue()
@@ -530,6 +573,40 @@ const Registration = ({ cardTitle }) => {
     }
   }
 
+  const handleImageChange = (e) => {
+    e.preventDefault()
+
+    const files = e.target.files
+    if (files && files.length > 0) {
+      const file = files[0]
+      if (window.URL) {
+        setImageUrl(URL.createObjectURL(file))
+      } else if (window.FileReader) {
+        const reader = new FileReader()
+        reader.onload = function (e) {
+          setImageUrl(reader.result)
+        }
+        reader.readAsDataURL(file)
+      }
+      setCropPhotoModalVisible(true)
+    }
+  }
+
+  const handleCrop = () => {
+    if (typeof cropperRef.current?.cropper !== 'undefined') {
+      setCropData(cropperRef.current?.cropper.getCroppedCanvas().toDataURL())
+
+      cropperRef.current?.cropper.getCroppedCanvas().toBlob(async (blob) => {
+        var reader = new FileReader()
+        reader.readAsDataURL(blob)
+        reader.onloadend = async function () {
+          var base64Data = reader.result
+          newApplicantForm.setFieldValue('photo', base64Data)
+          setCropPhotoModalVisible(false)
+        }
+      })
+    }
+  }
   return (
     <>
       <ToastContainer />
@@ -620,624 +697,679 @@ const Registration = ({ cardTitle }) => {
                     className="row g-3 needs-validation"
                     noValidate
                     onSubmit={newApplicantForm.handleSubmit}
+                    style={{ position: 'relative' }}
                   >
-                    <CRow className="my-2">
-                      <CCol md={12}>
-                        <CFormSelect
-                          label={requiredField('Scholarship Type')}
-                          name="scholarship_type"
-                          onChange={handleInputNewApplicantForm}
-                          value={newApplicantForm.values.scholarship_type}
-                          required
-                        >
-                          <option value="senior_high">Senior High</option>
-                          <option value="college">College</option>
-                          <option value="tvet">TVET</option>
-                        </CFormSelect>
-                      </CCol>
-                    </CRow>
-                    <CRow className="justify-content-between my-1">
-                      <CCol md={7} sm={6} xs={6} lg={8} xl={4}>
-                        <CFormLabel>
-                          {
-                            <>
-                              {fetchSeniorHighSchoolLoading && <CSpinner size="sm" />}
-                              {requiredField(' Application Number')}
-                            </>
-                          }
-                        </CFormLabel>
-                        <h4 className="text-danger text-decoration-underline">
-                          <ApplicationYearNumber endPointType={endPoint} />-
-                          <ApplicationSemNumber endPointType={endPoint} />-
-                          <ApplicationIDNumber endPointType={endPoint} />
-                        </h4>
-
-                        <CInputGroup className="mb-3 ">
-                          <CFormInput
-                            type="hidden"
-                            name="app_year_number"
-                            onChange={handleInputNewApplicantForm}
-                            value={newApplicantForm.values.app_year_number}
-                            className="text-center"
-                            placeholder="Year"
-                            aria-label="Year"
-                            required
-                          />
-
-                          <CFormInput
-                            type="hidden"
-                            name="app_sem_number"
-                            onChange={handleInputNewApplicantForm}
-                            value={newApplicantForm.values.app_sem_number}
-                            className="text-center "
-                            placeholder="Semester"
-                            aria-label="Sem"
-                            required
-                          />
-                          <CFormInput
-                            type="hidden"
-                            name="app_id_number"
-                            onChange={handleInputNewApplicantForm}
-                            value={newApplicantForm.values.app_id_number}
-                            className="text-center"
-                            placeholder="App No"
-                            aria-label="App No"
-                            required
-                          />
-                        </CInputGroup>
-                      </CCol>
-                      <CCol md={4}>
-                        <CFormLabel>Application Status</CFormLabel>
-                        <h4 className="text-danger text-decoration-underline">Pending</h4>
-                      </CCol>
-                    </CRow>
-
                     <CRow>
-                      <CCol md={12}>
-                        <CFormLabel>Reference #</CFormLabel>
-                        <h4 className="text-danger text-decoration-underline">
-                          {generateReferenceNumber()}
-                        </h4>
-                      </CCol>
-                    </CRow>
-
-                    <CRow className="my-1 mt-4">
-                      <CCol md={3}>
-                        <CFormInput
-                          type="text"
-                          label={requiredField('Last Name')}
-                          name="lastname"
-                          onChange={handleInputNewApplicantForm}
-                          value={newApplicantForm.values.lastname}
-                          required
-                        />
-                        {newApplicantForm.touched.lastname && newApplicantForm.errors.lastname && (
-                          <CFormText className="text-danger">
-                            {newApplicantForm.errors.lastname}
-                          </CFormText>
-                        )}
-                      </CCol>
-                      <CCol md={3}>
-                        <CFormInput
-                          type="text"
-                          feedbackInvalid="First Name is required."
-                          label={requiredField('First Name')}
-                          name="firstname"
-                          onChange={handleInputNewApplicantForm}
-                          value={newApplicantForm.values.firstname}
-                          required
-                        />
-                        {newApplicantForm.touched.firstname &&
-                          newApplicantForm.errors.firstname && (
-                            <CFormText className="text-danger">
-                              {newApplicantForm.errors.firstname}
-                            </CFormText>
-                          )}
-                      </CCol>
-                      <CCol md={3}>
-                        <CFormInput
-                          type="text"
-                          label="Middle Name"
-                          name="middlename"
-                          onChange={handleInputNewApplicantForm}
-                          value={newApplicantForm.values.middlename}
-                          required
-                        />
-                      </CCol>
-                      <CCol md={3}>
-                        <CFormInput
-                          type="text"
-                          label="Suffix"
-                          name="suffix"
-                          onChange={handleInputNewApplicantForm}
-                          value={newApplicantForm.values.suffix}
-                          required
-                        />
-                      </CCol>
-                    </CRow>
-
-                    <CRow className="my-3">
-                      <CCol md={6}>
-                        <CFormLabel>
-                          {
-                            <>
-                              {fetchAddressLoading && <CSpinner size="sm" />}
-                              {requiredField(' Address')}
-                            </>
-                          }
+                      <CCol md={2} className="mt-5 text-center  ">
+                        <p className="text-center">Profile Photo</p>
+                        <CFormLabel
+                          className="label"
+                          data-toggle="tooltip"
+                          title="Change your avatar"
+                        >
+                          <CImage
+                            rounded
+                            thumbnail
+                            ref={avatarRef}
+                            id="avatar"
+                            src={
+                              newApplicantForm.values.photo
+                                ? newApplicantForm.values.photo
+                                : isProduction
+                                ? process.env.REACT_APP_BASEURL_PRODUCTION +
+                                  'assets/image/scholarship/defaultAvatar.png'
+                                : process.env.REACT_APP_BASEURL_DEVELOPMENT +
+                                  'assets/image/scholarship/defaultAvatar.png'
+                            }
+                            alt="Profile Photo"
+                            width="90%"
+                            height="90%"
+                          />
+                          <CFormInput
+                            type="file"
+                            className="d-none"
+                            name="image"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                          />
                         </CFormLabel>
-                        <Select
-                          ref={selectAddressIputRef}
-                          value={address.find(
-                            (option) => option.value === newApplicantForm.values.address,
-                          )}
-                          onChange={handleSelectChange}
-                          options={address}
-                          name="address"
-                          isSearchable
-                          placeholder="Search..."
-                          isClearable
-                        />
-                        {newApplicantForm.touched.address && newApplicantForm.errors.address && (
-                          <CFormText className="text-danger">
-                            {newApplicantForm.errors.address}
-                          </CFormText>
-                        )}
-                      </CCol>
-                      <CCol md={4}>
-                        <CFormInput
-                          type="date"
-                          label={requiredField('Birthdate')}
-                          name="birthdate"
-                          onChange={handleInputNewApplicantForm}
-                          value={newApplicantForm.values.birthdate}
-                        />
-                        {newApplicantForm.touched.birthdate &&
-                          newApplicantForm.errors.birthdate && (
-                            <CFormText className="text-danger">
-                              {newApplicantForm.errors.birthdate}
-                            </CFormText>
-                          )}
-                      </CCol>
-                      <CCol md={2}>
-                        <CFormInput
-                          type="text"
-                          label="Age"
-                          name="age"
-                          style={{ textAlign: 'right' }}
-                          className="border-0 border-bottom border-bottom-1 "
-                          value={newApplicantForm.values.age}
-                          readOnly
-                        />
-                      </CCol>
-                    </CRow>
-                    <CRow className="my-3">
-                      <CCol md={3}>
-                        <CFormSelect
-                          label={requiredField('Civil Status')}
-                          name="civil_status"
-                          onChange={handleInputNewApplicantForm}
-                          value={newApplicantForm.values.civil_status}
-                          required
-                        >
-                          <option value="">Select</option>
-                          {CivilStatus.map((civil_status, index) => (
-                            <option key={index} value={civil_status}>
-                              {civil_status}
-                            </option>
-                          ))}
-                        </CFormSelect>
-                        {newApplicantForm.touched.civil_status &&
-                          newApplicantForm.errors.civil_status && (
-                            <CFormText className="text-danger">
-                              {newApplicantForm.errors.civil_status}
-                            </CFormText>
-                          )}
-                      </CCol>
-                      <CCol md={3}>
-                        <CFormSelect
-                          label={requiredField('Sex')}
-                          name="sex"
-                          onChange={handleInputNewApplicantForm}
-                          value={newApplicantForm.values.sex}
-                          required
-                        >
-                          <option value="">Select</option>
-                          {Sex.map((sex, index) => (
-                            <option key={index} value={sex}>
-                              {sex}
-                            </option>
-                          ))}
-                        </CFormSelect>
-                        {newApplicantForm.touched.sex && newApplicantForm.errors.sex && (
-                          <CFormText className="text-danger">
-                            {newApplicantForm.errors.sex}
-                          </CFormText>
-                        )}
-                      </CCol>
-                      <CCol md={3}>
-                        <CFormInput
-                          type="text"
-                          label="Contact #"
-                          name="contact_number"
-                          onChange={handleInputNewApplicantForm}
-                          value={newApplicantForm.values.contact_number}
-                        />
-                      </CCol>
-                      <CCol md={3}>
-                        <CFormInput
-                          type="text"
-                          label="Facebook/Others"
-                          name="email_address"
-                          onChange={handleInputNewApplicantForm}
-                          value={newApplicantForm.values.email_address}
-                        />
-                      </CCol>
-                    </CRow>
-                    <CRow className="my-3">
-                      <CCol md={6}>
-                        <CFormInput
-                          type="text"
-                          label="Father's Name"
-                          name="father_name"
-                          onChange={handleInputNewApplicantForm}
-                          value={newApplicantForm.values.father_name}
-                        />
-                      </CCol>
-                      <CCol md={6}>
-                        <CFormInput
-                          type="text"
-                          label="Occupation"
-                          name="father_occupation"
-                          onChange={handleInputNewApplicantForm}
-                          value={newApplicantForm.values.father_occupation}
-                        />
-                      </CCol>
-                    </CRow>
 
-                    <CRow className="my-3">
-                      <CCol md={6}>
-                        <CFormInput
-                          type="text"
-                          label="Mother's Name"
-                          name="mother_name"
-                          onChange={handleInputNewApplicantForm}
-                          value={newApplicantForm.values.mother_name}
-                        />
+                        <CModal
+                          alignment="center"
+                          visible={cropPhotoModalVisible}
+                          onClose={() => setCropPhotoModalVisible(false)}
+                        >
+                          <CModalBody>
+                            <h3>Crop Photo</h3>
+                            <Cropper
+                              ref={cropperRef}
+                              style={{
+                                height: 422,
+                                width: '90%',
+                                margin: '0 auto',
+                                marginTop: 25,
+                              }}
+                              zoomTo={0.5}
+                              aspectRatio={1}
+                              preview=".img-preview"
+                              src={imageUrl}
+                              viewMode={1}
+                              minCropBoxHeight={10}
+                              minCropBoxWidth={10}
+                              background={false}
+                              responsive={true}
+                              autoCropArea={1}
+                              checkOrientation={false}
+                              guides={true}
+                            />
+                          </CModalBody>
+                          {/* {profilePhotoLoading && <DefaultLoading />} */}
+                          <CModalFooter>
+                            <button
+                              type="button"
+                              onClick={() => setCropPhotoModalVisible(false)}
+                              className="btn btn-secondary"
+                              data-dismiss="modal"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleCrop}
+                              className="btn btn-primary"
+                              id="crop"
+                            >
+                              Crop
+                            </button>
+                          </CModalFooter>
+                        </CModal>
                       </CCol>
-                      <CCol md={6}>
-                        <CFormInput
-                          type="text"
-                          label="Occupation"
-                          name="mother_occupation"
-                          onChange={handleInputNewApplicantForm}
-                          value={newApplicantForm.values.mother_occupation}
-                        />
-                      </CCol>
-                    </CRow>
+                      <CCol md={10}>
+                        <CRow className="my-2">
+                          <CCol md={12}>
+                            <CFormSelect
+                              label={requiredField('Scholarship Type')}
+                              name="scholarship_type"
+                              onChange={handleInputNewApplicantForm}
+                              value={newApplicantForm.values.scholarship_type}
+                              required
+                            >
+                              <option value="senior_high">Senior High</option>
+                              <option value="college">College</option>
+                              <option value="tvet">TVET</option>
+                            </CFormSelect>
+                          </CCol>
+                        </CRow>
+                        <CRow className="mb-5">
+                          <CCol md={6}>
+                            <CFormLabel>Reference Number</CFormLabel>
+                            <h5 className="text-danger text-decoration-underline">
+                              {generateReferenceNumber()}
+                            </h5>
+                          </CCol>
+                          <CCol md={3}>
+                            <CFormLabel>Application Number</CFormLabel>
+                            <h5 className="text-danger text-decoration-underline">
+                              <ApplicationYearNumber endPointType={endPoint} />-
+                              <ApplicationSemNumber endPointType={endPoint} />-
+                              <ApplicationIDNumber endPointType={endPoint} />
+                            </h5>
+                          </CCol>
+                          <CCol md={3}>
+                            <CFormLabel>Application Status</CFormLabel>
 
-                    <CRow className="my-1">
-                      {/* if senior high */}
-                      {newApplicantForm.values.scholarship_type === 'senior_high' && (
-                        <>
-                          <CCol md={8}>
+                            <h5 className="text-danger text-decoration-underline">Pending</h5>
+                          </CCol>
+                        </CRow>
+                        <CRow>
+                          <CCol md={12}>
+                            <h6>Basic Information</h6>
+                            <hr />
+                          </CCol>
+                        </CRow>
+                        <CRow>
+                          <CCol md={3}>
+                            <CFormInput
+                              type="text"
+                              label={requiredField('Last Name')}
+                              name="lastname"
+                              onChange={handleInputNewApplicantForm}
+                              value={newApplicantForm.values.lastname}
+                              required
+                            />
+                            {newApplicantForm.touched.lastname &&
+                              newApplicantForm.errors.lastname && (
+                                <CFormText className="text-danger">
+                                  {newApplicantForm.errors.lastname}
+                                </CFormText>
+                              )}
+                          </CCol>
+                          <CCol md={3}>
+                            <CFormInput
+                              type="text"
+                              feedbackInvalid="First Name is required."
+                              label={requiredField('First Name')}
+                              name="firstname"
+                              onChange={handleInputNewApplicantForm}
+                              value={newApplicantForm.values.firstname}
+                              required
+                            />
+                            {newApplicantForm.touched.firstname &&
+                              newApplicantForm.errors.firstname && (
+                                <CFormText className="text-danger">
+                                  {newApplicantForm.errors.firstname}
+                                </CFormText>
+                              )}
+                          </CCol>
+                          <CCol md={3}>
+                            <CFormInput
+                              type="text"
+                              label="Middle Name"
+                              name="middlename"
+                              onChange={handleInputNewApplicantForm}
+                              value={newApplicantForm.values.middlename}
+                              required
+                            />
+                          </CCol>
+                          <CCol md={3}>
+                            <CFormInput
+                              type="text"
+                              label="Suffix"
+                              name="suffix"
+                              onChange={handleInputNewApplicantForm}
+                              value={newApplicantForm.values.suffix}
+                              required
+                            />
+                          </CCol>
+                        </CRow>
+
+                        <CRow>
+                          <CCol md={6}>
                             <CFormLabel>
                               {
                                 <>
-                                  {fetchSeniorHighSchoolLoading && <CSpinner size="sm" />}
-                                  {requiredField(' School')}
+                                  {fetchAddressLoading && <CSpinner size="sm" />}
+                                  {requiredField(' Address')}
                                 </>
                               }
                             </CFormLabel>
                             <Select
-                              ref={selectSeniorHighSchoolInputRef}
-                              value={seniorHighSchool.find(
-                                (option) => option.value === newApplicantForm.values.school,
+                              ref={selectAddressIputRef}
+                              value={address.find(
+                                (option) => option.value === newApplicantForm.values.address,
                               )}
                               onChange={handleSelectChange}
-                              options={seniorHighSchool}
-                              name="school"
+                              options={address}
+                              name="address"
                               isSearchable
                               placeholder="Search..."
                               isClearable
                             />
-                            {newApplicantForm.touched.school && newApplicantForm.errors.school && (
-                              <CFormText className="text-danger">
-                                {newApplicantForm.errors.school}
-                              </CFormText>
-                            )}
+                            {newApplicantForm.touched.address &&
+                              newApplicantForm.errors.address && (
+                                <CFormText className="text-danger">
+                                  {newApplicantForm.errors.address}
+                                </CFormText>
+                              )}
                           </CCol>
                           <CCol md={4}>
-                            <CFormLabel>
-                              {
-                                <>
-                                  {fetchStrandLoading && <CSpinner size="sm" />}
-                                  {requiredField(' Strand')}
-                                </>
-                              }
-                            </CFormLabel>
-                            <Select
-                              ref={selectStrandInputRef}
-                              value={strand.find(
-                                (option) => option.value === newApplicantForm.values.strand,
-                              )}
-                              onChange={handleSelectChange}
-                              options={strand}
-                              name="strand"
-                              isSearchable
-                              placeholder="Search..."
-                              isClearable
+                            <CFormInput
+                              type="date"
+                              label={requiredField('Birthdate')}
+                              name="birthdate"
+                              onChange={handleInputNewApplicantForm}
+                              value={newApplicantForm.values.birthdate}
                             />
-                            {newApplicantForm.touched.strand && newApplicantForm.errors.strand && (
-                              <CFormText className="text-danger">
-                                {newApplicantForm.errors.strand}
-                              </CFormText>
-                            )}
+                            {newApplicantForm.touched.birthdate &&
+                              newApplicantForm.errors.birthdate && (
+                                <CFormText className="text-danger">
+                                  {newApplicantForm.errors.birthdate}
+                                </CFormText>
+                              )}
                           </CCol>
-                        </>
-                      )}
+                          <CCol md={2}>
+                            <CFormInput
+                              type="text"
+                              label="Age"
+                              name="age"
+                              style={{ textAlign: 'right' }}
+                              className="border-0 border-bottom border-bottom-1 "
+                              value={newApplicantForm.values.age}
+                              readOnly
+                            />
+                          </CCol>
+                        </CRow>
 
-                      {newApplicantForm.values.scholarship_type === 'college' && (
-                        <>
-                          <CCol md={5}>
-                            <CFormLabel>
-                              {
-                                <>
-                                  {fetchCollegeSchoolLoading && <CSpinner size="sm" />}
-                                  {requiredField(' School')}
-                                </>
-                              }
-                            </CFormLabel>
-                            <Select
-                              ref={selectCollegeSchoolInputRef}
-                              value={collegeSchool.find(
-                                (option) => option.value === newApplicantForm.values.collegeSchool,
+                        <CRow className="my-3">
+                          <CCol md={3}>
+                            <CFormSelect
+                              label={requiredField('Civil Status')}
+                              name="civil_status"
+                              onChange={handleInputNewApplicantForm}
+                              value={newApplicantForm.values.civil_status}
+                              required
+                            >
+                              <option value="">Select</option>
+                              {CivilStatus.map((civil_status, index) => (
+                                <option key={index} value={civil_status}>
+                                  {civil_status}
+                                </option>
+                              ))}
+                            </CFormSelect>
+                            {newApplicantForm.touched.civil_status &&
+                              newApplicantForm.errors.civil_status && (
+                                <CFormText className="text-danger">
+                                  {newApplicantForm.errors.civil_status}
+                                </CFormText>
                               )}
-                              onChange={handleSelectChange}
-                              options={collegeSchool}
-                              name="school"
-                              isSearchable
-                              placeholder="Search..."
-                              isClearable
-                            />
-                            {newApplicantForm.touched.school && newApplicantForm.errors.school && (
-                              <CFormText className="text-danger">
-                                {newApplicantForm.errors.school}
-                              </CFormText>
-                            )}
                           </CCol>
-                          <CCol md={4}>
-                            <CFormLabel>
-                              {
-                                <>
-                                  {fetchCourseLoading && <CSpinner size="sm" />}
-                                  {requiredField(' Course')}
-                                </>
-                              }
-                            </CFormLabel>
-                            <Select
-                              ref={selectCourseInputRef}
-                              value={course.find(
-                                (option) => option.value === newApplicantForm.values.course,
-                              )}
-                              onChange={handleSelectChange}
-                              options={course}
-                              name="course"
-                              isSearchable
-                              placeholder="Search..."
-                              isClearable
-                            />
-                            {newApplicantForm.touched.course && newApplicantForm.errors.course && (
+                          <CCol md={3}>
+                            <CFormSelect
+                              label={requiredField('Sex')}
+                              name="sex"
+                              onChange={handleInputNewApplicantForm}
+                              value={newApplicantForm.values.sex}
+                              required
+                            >
+                              <option value="">Select</option>
+                              {Sex.map((sex, index) => (
+                                <option key={index} value={sex}>
+                                  {sex}
+                                </option>
+                              ))}
+                            </CFormSelect>
+                            {newApplicantForm.touched.sex && newApplicantForm.errors.sex && (
                               <CFormText className="text-danger">
-                                {newApplicantForm.errors.course}
+                                {newApplicantForm.errors.sex}
                               </CFormText>
                             )}
                           </CCol>
                           <CCol md={3}>
                             <CFormInput
-                              type="number"
-                              label={requiredField('Unit')}
-                              name="unit"
+                              type="text"
+                              label="Contact #"
+                              name="contact_number"
                               onChange={handleInputNewApplicantForm}
-                              value={newApplicantForm.values.unit}
-                              required
+                              value={newApplicantForm.values.contact_number}
                             />
-                            {newApplicantForm.touched.unit && newApplicantForm.errors.unit && (
-                              <CFormText className="text-danger">
-                                {newApplicantForm.errors.unit}
-                              </CFormText>
-                            )}
                           </CCol>
-                        </>
-                      )}
-                      {newApplicantForm.values.scholarship_type === 'tvet' && (
-                        <>
-                          <CCol md={4}>
-                            <CFormLabel>
-                              {
-                                <>
-                                  {fetchTvetSchoolLoading && <CSpinner size="sm" />}
-                                  {requiredField(' School')}
-                                </>
-                              }
-                            </CFormLabel>
-                            <Select
-                              ref={selectTvetCourseInputRef}
-                              value={tvetSchool.find(
-                                (option) => option.value === newApplicantForm.values.tvetSchool,
-                              )}
-                              onChange={handleSelectChange}
-                              options={tvetSchool}
-                              name="school"
-                              isSearchable
-                              placeholder="Search..."
-                              isClearable
-                            />
-                            {newApplicantForm.touched.school && newApplicantForm.errors.school && (
-                              <CFormText className="text-danger">
-                                {newApplicantForm.errors.school}
-                              </CFormText>
-                            )}
-                          </CCol>
-                          <CCol md={4}>
-                            <CFormLabel>
-                              {
-                                <>
-                                  {fetchTvetCourseLoading && <CSpinner size="sm" />}
-                                  {requiredField(' Course')}
-                                </>
-                              }
-                            </CFormLabel>
-                            <Select
-                              ref={selectTvetCourseInputRef}
-                              value={tvetCourse.find(
-                                (option) => option.value === newApplicantForm.values.tvetCourse,
-                              )}
-                              onChange={handleSelectChange}
-                              options={tvetCourse}
-                              name="tvetCourse"
-                              isSearchable
-                              placeholder="Search..."
-                              isClearable
-                            />
-                            {newApplicantForm.touched.tvetCourse &&
-                              newApplicantForm.errors.tvetCourse && (
-                                <CFormText className="text-danger">
-                                  {newApplicantForm.errors.tvetCourse}
-                                </CFormText>
-                              )}
-                          </CCol>
-                          <CCol md={2}>
+                          <CCol md={3}>
                             <CFormInput
-                              type="number"
-                              label={requiredField('No. of days')}
-                              name="hourNumber"
+                              type="text"
+                              label="Facebook/Others"
+                              name="email_address"
                               onChange={handleInputNewApplicantForm}
-                              value={newApplicantForm.values.hourNumber}
-                              required
+                              value={newApplicantForm.values.email_address}
                             />
-                            {newApplicantForm.touched.hourNumber &&
-                              newApplicantForm.errors.hourNumber && (
-                                <CFormText className="text-danger">
-                                  {newApplicantForm.errors.hourNumber}
-                                </CFormText>
-                              )}
                           </CCol>
-                          <CCol md={2}>
-                            <CFormInput
-                              type="number"
-                              label={requiredField('Availment')}
-                              name="availment"
-                              onChange={handleInputNewApplicantForm}
-                              value={newApplicantForm.values.availment}
-                              required
-                            />
-                            {newApplicantForm.touched.availment &&
-                              newApplicantForm.errors.availment && (
-                                <CFormText className="text-danger">
-                                  {newApplicantForm.errors.availment}
-                                </CFormText>
-                              )}
-                          </CCol>
-                        </>
-                      )}
-                    </CRow>
-
-                    <CRow className="my-1">
-                      {newApplicantForm.values.scholarship_type === 'senior_high' && (
-                        <>
+                        </CRow>
+                        <CRow className="my-3">
                           <CCol md={6}>
-                            <CFormSelect
-                              label={requiredField('Grade Level')}
-                              name="grade_level"
+                            <CFormInput
+                              type="text"
+                              label="Father's Name"
+                              name="father_name"
                               onChange={handleInputNewApplicantForm}
-                              value={newApplicantForm.values.grade_level}
-                              required
-                            >
-                              <option value="">Select</option>
-                              {GradeLevel.map((grade_level, index) => (
-                                <option key={index} value={grade_level}>
-                                  {grade_level}
-                                </option>
-                              ))}
-                            </CFormSelect>
-
-                            {newApplicantForm.touched.grade_level &&
-                              newApplicantForm.errors.grade_level && (
-                                <CFormText className="text-danger">
-                                  {newApplicantForm.errors.grade_level}
-                                </CFormText>
-                              )}
+                              value={newApplicantForm.values.father_name}
+                            />
                           </CCol>
                           <CCol md={6}>
                             <CFormInput
-                              type="number"
-                              label={requiredField('Availment')}
-                              name="availment"
+                              type="text"
+                              label="Occupation"
+                              name="father_occupation"
                               onChange={handleInputNewApplicantForm}
-                              value={newApplicantForm.values.availment}
-                              required
+                              value={newApplicantForm.values.father_occupation}
                             />
-                            {newApplicantForm.touched.availment &&
-                              newApplicantForm.errors.availment && (
-                                <CFormText className="text-danger">
-                                  {newApplicantForm.errors.availment}
-                                </CFormText>
-                              )}
                           </CCol>
-                        </>
-                      )}
 
-                      {newApplicantForm.values.scholarship_type === 'college' && (
-                        <>
                           <CCol md={6}>
-                            <CFormSelect
-                              label={requiredField('Year Level')}
-                              name="year_level"
+                            <CFormInput
+                              type="text"
+                              label="Mother's Name"
+                              name="mother_name"
                               onChange={handleInputNewApplicantForm}
-                              value={newApplicantForm.values.year_level}
-                              required
-                            >
-                              <option value="">Select</option>
-                              {YearLevel.map((year_level, index) => (
-                                <option key={index} value={year_level}>
-                                  {year_level}
-                                </option>
-                              ))}
-                            </CFormSelect>
-                            {newApplicantForm.touched.year_level &&
-                              newApplicantForm.errors.year_level && (
-                                <CFormText className="text-danger">
-                                  {newApplicantForm.errors.year_level}
-                                </CFormText>
-                              )}
+                              value={newApplicantForm.values.mother_name}
+                            />
                           </CCol>
                           <CCol md={6}>
                             <CFormInput
-                              type="number"
-                              label={requiredField('Availment')}
-                              name="availment"
+                              type="text"
+                              label="Occupation"
+                              name="mother_occupation"
                               onChange={handleInputNewApplicantForm}
-                              value={newApplicantForm.values.availment}
-                              required
+                              value={newApplicantForm.values.mother_occupation}
                             />
-                            {newApplicantForm.touched.availment &&
-                              newApplicantForm.errors.availment && (
-                                <CFormText className="text-danger">
-                                  {newApplicantForm.errors.availment}
-                                </CFormText>
-                              )}
                           </CCol>
-                        </>
-                      )}
-                    </CRow>
+                        </CRow>
+                        <CRow className="my-1">
+                          {newApplicantForm.values.scholarship_type === 'senior_high' && (
+                            <>
+                              <CCol md={8}>
+                                <CFormLabel>
+                                  {
+                                    <>
+                                      {fetchSeniorHighSchoolLoading && <CSpinner size="sm" />}
+                                      {requiredField(' School')}
+                                    </>
+                                  }
+                                </CFormLabel>
+                                <Select
+                                  ref={selectSeniorHighSchoolInputRef}
+                                  value={seniorHighSchool.find(
+                                    (option) => option.value === newApplicantForm.values.school,
+                                  )}
+                                  onChange={handleSelectChange}
+                                  options={seniorHighSchool}
+                                  name="school"
+                                  isSearchable
+                                  placeholder="Search..."
+                                  isClearable
+                                />
+                                {newApplicantForm.touched.school &&
+                                  newApplicantForm.errors.school && (
+                                    <CFormText className="text-danger">
+                                      {newApplicantForm.errors.school}
+                                    </CFormText>
+                                  )}
+                              </CCol>
+                              <CCol md={4}>
+                                <CFormLabel>
+                                  {
+                                    <>
+                                      {fetchStrandLoading && <CSpinner size="sm" />}
+                                      {requiredField(' Strand')}
+                                    </>
+                                  }
+                                </CFormLabel>
+                                <Select
+                                  ref={selectStrandInputRef}
+                                  value={strand.find(
+                                    (option) => option.value === newApplicantForm.values.strand,
+                                  )}
+                                  onChange={handleSelectChange}
+                                  options={strand}
+                                  name="strand"
+                                  isSearchable
+                                  placeholder="Search..."
+                                  isClearable
+                                />
+                                {newApplicantForm.touched.strand &&
+                                  newApplicantForm.errors.strand && (
+                                    <CFormText className="text-danger">
+                                      {newApplicantForm.errors.strand}
+                                    </CFormText>
+                                  )}
+                              </CCol>
+                            </>
+                          )}
 
-                    <CRow className="mt-4">
-                      <div className="d-grid gap-2">
-                        <CButton color="primary" type="submit" style={{ borderRadius: 50 }}>
-                          Submit
-                        </CButton>
-                      </div>
+                          {newApplicantForm.values.scholarship_type === 'college' && (
+                            <>
+                              <CCol md={5}>
+                                <CFormLabel>
+                                  {
+                                    <>
+                                      {fetchCollegeSchoolLoading && <CSpinner size="sm" />}
+                                      {requiredField(' School')}
+                                    </>
+                                  }
+                                </CFormLabel>
+                                <Select
+                                  ref={selectCollegeSchoolInputRef}
+                                  value={collegeSchool.find(
+                                    (option) =>
+                                      option.value === newApplicantForm.values.collegeSchool,
+                                  )}
+                                  onChange={handleSelectChange}
+                                  options={collegeSchool}
+                                  name="school"
+                                  isSearchable
+                                  placeholder="Search..."
+                                  isClearable
+                                />
+                                {newApplicantForm.touched.school &&
+                                  newApplicantForm.errors.school && (
+                                    <CFormText className="text-danger">
+                                      {newApplicantForm.errors.school}
+                                    </CFormText>
+                                  )}
+                              </CCol>
+                              <CCol md={4}>
+                                <CFormLabel>
+                                  {
+                                    <>
+                                      {fetchCourseLoading && <CSpinner size="sm" />}
+                                      {requiredField(' Course')}
+                                    </>
+                                  }
+                                </CFormLabel>
+                                <Select
+                                  ref={selectCourseInputRef}
+                                  value={course.find(
+                                    (option) => option.value === newApplicantForm.values.course,
+                                  )}
+                                  onChange={handleSelectChange}
+                                  options={course}
+                                  name="course"
+                                  isSearchable
+                                  placeholder="Search..."
+                                  isClearable
+                                />
+                                {newApplicantForm.touched.course &&
+                                  newApplicantForm.errors.course && (
+                                    <CFormText className="text-danger">
+                                      {newApplicantForm.errors.course}
+                                    </CFormText>
+                                  )}
+                              </CCol>
+                              <CCol md={3}>
+                                <CFormInput
+                                  type="number"
+                                  label={requiredField('Unit')}
+                                  name="unit"
+                                  onChange={handleInputNewApplicantForm}
+                                  value={newApplicantForm.values.unit}
+                                  required
+                                />
+                                {newApplicantForm.touched.unit && newApplicantForm.errors.unit && (
+                                  <CFormText className="text-danger">
+                                    {newApplicantForm.errors.unit}
+                                  </CFormText>
+                                )}
+                              </CCol>
+                            </>
+                          )}
+                          {newApplicantForm.values.scholarship_type === 'tvet' && (
+                            <>
+                              <CCol md={4}>
+                                <CFormLabel>
+                                  {
+                                    <>
+                                      {fetchTvetSchoolLoading && <CSpinner size="sm" />}
+                                      {requiredField(' School')}
+                                    </>
+                                  }
+                                </CFormLabel>
+                                <Select
+                                  ref={selectTvetCourseInputRef}
+                                  value={tvetSchool.find(
+                                    (option) => option.value === newApplicantForm.values.tvetSchool,
+                                  )}
+                                  onChange={handleSelectChange}
+                                  options={tvetSchool}
+                                  name="school"
+                                  isSearchable
+                                  placeholder="Search..."
+                                  isClearable
+                                />
+                                {newApplicantForm.touched.school &&
+                                  newApplicantForm.errors.school && (
+                                    <CFormText className="text-danger">
+                                      {newApplicantForm.errors.school}
+                                    </CFormText>
+                                  )}
+                              </CCol>
+                              <CCol md={4}>
+                                <CFormLabel>
+                                  {
+                                    <>
+                                      {fetchTvetCourseLoading && <CSpinner size="sm" />}
+                                      {requiredField(' Course')}
+                                    </>
+                                  }
+                                </CFormLabel>
+                                <Select
+                                  ref={selectTvetCourseInputRef}
+                                  value={tvetCourse.find(
+                                    (option) => option.value === newApplicantForm.values.tvetCourse,
+                                  )}
+                                  onChange={handleSelectChange}
+                                  options={tvetCourse}
+                                  name="tvetCourse"
+                                  isSearchable
+                                  placeholder="Search..."
+                                  isClearable
+                                />
+                                {newApplicantForm.touched.tvetCourse &&
+                                  newApplicantForm.errors.tvetCourse && (
+                                    <CFormText className="text-danger">
+                                      {newApplicantForm.errors.tvetCourse}
+                                    </CFormText>
+                                  )}
+                              </CCol>
+                              <CCol md={2}>
+                                <CFormInput
+                                  type="number"
+                                  label={requiredField('No. of days')}
+                                  name="hourNumber"
+                                  onChange={handleInputNewApplicantForm}
+                                  value={newApplicantForm.values.hourNumber}
+                                  required
+                                />
+                                {newApplicantForm.touched.hourNumber &&
+                                  newApplicantForm.errors.hourNumber && (
+                                    <CFormText className="text-danger">
+                                      {newApplicantForm.errors.hourNumber}
+                                    </CFormText>
+                                  )}
+                              </CCol>
+                              <CCol md={2}>
+                                <CFormInput
+                                  type="number"
+                                  label={requiredField('Availment')}
+                                  name="availment"
+                                  onChange={handleInputNewApplicantForm}
+                                  value={newApplicantForm.values.availment}
+                                  required
+                                />
+                                {newApplicantForm.touched.availment &&
+                                  newApplicantForm.errors.availment && (
+                                    <CFormText className="text-danger">
+                                      {newApplicantForm.errors.availment}
+                                    </CFormText>
+                                  )}
+                              </CCol>
+                            </>
+                          )}
+                        </CRow>
+
+                        <CRow className="my-1">
+                          {newApplicantForm.values.scholarship_type === 'senior_high' && (
+                            <>
+                              <CCol md={6}>
+                                <CFormSelect
+                                  label={requiredField('Grade Level')}
+                                  name="grade_level"
+                                  onChange={handleInputNewApplicantForm}
+                                  value={newApplicantForm.values.grade_level}
+                                  required
+                                >
+                                  <option value="">Select</option>
+                                  {GradeLevel.map((grade_level, index) => (
+                                    <option key={index} value={grade_level}>
+                                      {grade_level}
+                                    </option>
+                                  ))}
+                                </CFormSelect>
+
+                                {newApplicantForm.touched.grade_level &&
+                                  newApplicantForm.errors.grade_level && (
+                                    <CFormText className="text-danger">
+                                      {newApplicantForm.errors.grade_level}
+                                    </CFormText>
+                                  )}
+                              </CCol>
+                              <CCol md={6}>
+                                <CFormInput
+                                  type="number"
+                                  label={requiredField('Availment')}
+                                  name="availment"
+                                  onChange={handleInputNewApplicantForm}
+                                  value={newApplicantForm.values.availment}
+                                  required
+                                />
+                                {newApplicantForm.touched.availment &&
+                                  newApplicantForm.errors.availment && (
+                                    <CFormText className="text-danger">
+                                      {newApplicantForm.errors.availment}
+                                    </CFormText>
+                                  )}
+                              </CCol>
+                            </>
+                          )}
+
+                          {newApplicantForm.values.scholarship_type === 'college' && (
+                            <>
+                              <CCol md={6}>
+                                <CFormSelect
+                                  label={requiredField('Year Level')}
+                                  name="year_level"
+                                  onChange={handleInputNewApplicantForm}
+                                  value={newApplicantForm.values.year_level}
+                                  required
+                                >
+                                  <option value="">Select</option>
+                                  {YearLevel.map((year_level, index) => (
+                                    <option key={index} value={year_level}>
+                                      {year_level}
+                                    </option>
+                                  ))}
+                                </CFormSelect>
+                                {newApplicantForm.touched.year_level &&
+                                  newApplicantForm.errors.year_level && (
+                                    <CFormText className="text-danger">
+                                      {newApplicantForm.errors.year_level}
+                                    </CFormText>
+                                  )}
+                              </CCol>
+                              <CCol md={6}>
+                                <CFormInput
+                                  type="number"
+                                  label={requiredField('Availment')}
+                                  name="availment"
+                                  onChange={handleInputNewApplicantForm}
+                                  value={newApplicantForm.values.availment}
+                                  required
+                                />
+                                {newApplicantForm.touched.availment &&
+                                  newApplicantForm.errors.availment && (
+                                    <CFormText className="text-danger">
+                                      {newApplicantForm.errors.availment}
+                                    </CFormText>
+                                  )}
+                              </CCol>
+                            </>
+                          )}
+                        </CRow>
+                        <CRow className="mt-4">
+                          <div className="d-grid gap-2">
+                            <CButton color="primary" type="submit" style={{ borderRadius: 50 }}>
+                              Submit
+                            </CButton>
+                          </div>
+                        </CRow>
+                      </CCol>
                     </CRow>
                   </CForm>
                   {operationLoading && <DefaultLoading />}

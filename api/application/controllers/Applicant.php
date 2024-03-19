@@ -1,7 +1,7 @@
 <?php
 
 // namespace App\Classes;
-defined('BASEPATH') or exit('No direct script access allowed');
+defined('BASEPATH') or exit ('No direct script access allowed');
 
 require APPPATH . 'libraries/RestController.php';
 require APPPATH . 'libraries/Format.php';
@@ -23,6 +23,7 @@ class Applicant extends RestController
         $this->load->model('TvetModel');
         $this->load->model('CollegeModel');
         $this->load->model('SystemSequenceModel');
+        $this->load->helper(array('form', 'url'));
     }
     public function index_get()
     {
@@ -51,7 +52,6 @@ class Applicant extends RestController
     }
     public function insert_post()
     {
-        $model = new ScholarshipModel;
         $senior_high = new SeniorHighModel;
         $college = new CollegeModel;
         $tvet = new TvetModel;
@@ -77,7 +77,6 @@ class Applicant extends RestController
                 'semester' => $query_sem->current_semester,
                 'school_year' => $query_sy->current_sy,
                 'availment' => $requestData['availment'],
-                // 'ctc' => $requestData['ctc'],
                 'app_status' => 'Pending',
             );
             $result = $senior_high->insert($data);
@@ -101,7 +100,6 @@ class Applicant extends RestController
                 'semester' => $query_sem->current_semester,
                 'school_year' => $query_sy->current_sy,
                 'availment' => $requestData['availment'],
-                // 'ctc' => $requestData['ctc'],
                 'app_status' => 'Pending',
 
             );
@@ -123,11 +121,9 @@ class Applicant extends RestController
                 'school' => $requestData['school'],
                 'course' => $requestData['tvetCourse'],
                 'hour_number' => $requestData['hourNumber'],
-                // 'year_level' => $requestData['year_level'],
                 'semester' => $query_sem->current_semester,
                 'school_year' => $query_sy->current_sy,
                 'availment' => $requestData['availment'],
-                // 'ctc' => $requestData['ctc'],
                 'app_status' => 'Pending',
             );
 
@@ -195,22 +191,56 @@ class Applicant extends RestController
 
         $data = array(
             'reference_number' => $reference_number,
-            'lastname' => $requestData['lastname'],
-            'firstname' => $requestData['firstname'],
-            'middlename' => $requestData['middlename'],
-            'suffix' => $requestData['suffix'],
+            'lastname' => preg_replace('/\s+/', ' ', $requestData['lastname']),
+            'firstname' => preg_replace('/\s+/', ' ', $requestData['firstname']),
+            'middlename' => preg_replace('/\s+/', ' ', $requestData['middlename']),
+            'suffix' => preg_replace('/\s+/', ' ', $requestData['suffix']),
             'address' => $requestData['address'],
             'birthdate' => $requestData['birthdate'],
             'civil_status' => $requestData['civil_status'],
             'sex' => $requestData['sex'],
-            'contact_number' => $requestData['contact_number'],
-            'email_address' => $requestData['email_address'],
-            'father_name' => $requestData['father_name'],
-            'father_occupation' => $requestData['father_occupation'],
-            'mother_name' => $requestData['mother_name'],
-            'mother_occupation' => $requestData['mother_occupation']
+            'contact_number' => preg_replace('/\s+/', ' ', $requestData['contact_number']),
+            'email_address' => preg_replace('/\s+/', ' ', $requestData['email_address']),
+            'father_name' => preg_replace('/\s+/', ' ', $requestData['father_name']),
+            'father_occupation' => preg_replace('/\s+/', ' ', $requestData['father_occupation']),
+            'mother_name' => preg_replace('/\s+/', ' ', $requestData['mother_name']),
+            'mother_occupation' => preg_replace('/\s+/', ' ', $requestData['mother_occupation']),
+
         );
 
+
+
+
+        if (isset ($requestData['photo']) && !empty ($requestData['photo'])) {
+
+            $photo = $requestData['photo'];
+            $image_array_1 = explode(";", $photo);
+            $image_array_2 = explode(",", $image_array_1[1]);
+            $image_data = base64_decode($image_array_2[1]);
+
+
+            $rootFolderPath = FCPATH;
+            $parts = explode('/', rtrim($rootFolderPath, '/'));
+            $directoryName = end($parts);
+            $time = time();
+            $image_name = $directoryName . '/' . 'assets/image/scholarship/' . $time . '.png';
+
+            $parentDirectoryPath = dirname(FCPATH);
+
+            // Save the decoded image to a temporary file
+            $temp_file = $parentDirectoryPath . '/api/assets/image/scholarship' . '/' . 'temp_image.jpg';
+            file_put_contents($temp_file, $image_data);
+
+            // Compress the image
+            $source_img = $temp_file;
+            $destination_img = $parentDirectoryPath . '/api/assets/image/scholarship' . '/' . $time . '.png';
+            $quality = 75;
+            $this->compress($temp_file, $destination_img, $quality);
+
+            // Optionally, you can remove the temporary file
+            unlink($temp_file);
+            $data['photo'] = $time . '.png';
+        } 
         $insertApplicant = $model->insertNewApplicant($data);
 
 
@@ -252,7 +282,7 @@ class Applicant extends RestController
                 'semester' => $query_sem->current_semester,
                 'school_year' => $query_sy->current_sy,
                 'availment' => $requestData['availment'],
-                // 'ctc' => $requestData['ctc'],
+
                 'app_status' => 'Pending',
             );
 
@@ -275,11 +305,11 @@ class Applicant extends RestController
                 'school' => $requestData['school'],
                 'course' => $requestData['course'],
                 'hour_number' => $requestData['hourNumber'],
-                'year_level' => $requestData['year_level'],
+                // 'year_level' => $requestData['year_level'],
                 'semester' => $query_sem->current_semester,
                 'school_year' => $query_sy->current_sy,
                 'availment' => $requestData['availment'],
-                // 'ctc' => $requestData['ctc'],
+
                 'app_status' => 'Pending',
             );
 
@@ -381,11 +411,87 @@ class Applicant extends RestController
     }
 
 
+
+    function compress($source, $destination, $quality)
+    {
+        $info = getimagesize($source);
+
+        if ($info['mime'] == 'image/jpeg')
+            $image = imagecreatefromjpeg($source);
+        elseif ($info['mime'] == 'image/gif')
+            $image = imagecreatefromgif($source);
+        elseif ($info['mime'] == 'image/png')
+            $image = imagecreatefrompng($source);
+
+        imagejpeg($image, $destination, $quality);
+
+        return $destination;
+    }
+
+
+
+
+    public function update_photo_put($id)
+    {
+
+        $model = new ScholarshipModel;
+
+        $requestData = json_decode($this->input->raw_input_stream, true);
+        $photo = $requestData['photo'];
+        $image_array_1 = explode(";", $photo);
+        $image_array_2 = explode(",", $image_array_1[1]);
+        $data = base64_decode($image_array_2[1]);
+
+
+        $rootFolderPath = FCPATH;
+        $parts = explode('/', rtrim($rootFolderPath, '/'));
+        $directoryName = end($parts);
+        $time = time();
+        $image_name = $directoryName . '/' . 'assets/image/scholarship/' . $time . '.png';
+
+        $parentDirectoryPath = dirname(FCPATH);
+
+        // Save the decoded image to a temporary file
+        $temp_file = $parentDirectoryPath . '/api/assets/image/scholarship' . '/' . 'temp_image.jpg';
+        file_put_contents($temp_file, $data);
+
+        // Compress the image
+        $source_img = $temp_file;
+        $destination_img = $parentDirectoryPath . '/api/assets/image/scholarship' . '/' . $time . '.png';
+        $quality = 75;
+        $this->compress($temp_file, $destination_img, $quality);
+
+        // Optionally, you can remove the temporary file
+        unlink($temp_file);
+
+
+
+        $data = array(
+            'photo' => $time . '.png',
+        );
+
+        $result = $model->update($id, $data);
+
+        if ($result > 0) {
+            $this->response([
+                'status' => true,
+                'message' => 'Profile Photo Updated',
+            ], RestController::HTTP_OK);
+        } else {
+
+            $this->response([
+                'status' => false,
+                'message' => 'Failed to update information.'
+            ], RestController::HTTP_BAD_REQUEST);
+
+        }
+    }
+
     public function update_applicant_details_put($id)
     {
 
 
-        $model = new ScholarshipModel;
+
         $senior_high = new SeniorHighModel;
         $college = new CollegeModel;
         $tvet = new TvetModel;
@@ -442,11 +548,9 @@ class Applicant extends RestController
                 'school' => $requestData['school'],
                 'course' => $requestData['tvetCourse'],
                 'hour_number' => $requestData['hourNumber'],
-                // 'year_level' => $requestData['year_level'],
                 'semester' => $requestData['semester'],
                 'school_year' => $requestData['school_year'],
                 'availment' => $requestData['availment'],
-                // 'ctc' => $requestData['ctc'],
                 'app_status' => $requestData['app_status'],
             );
 
@@ -488,7 +592,6 @@ class Applicant extends RestController
     function get_all_sibling_get()
     {
         $model = new ScholarshipModel;
-        $requestData = $this->input->get();
         $result = $model->get_all_sibling();
         $this->response($result, RestController::HTTP_OK);
     }

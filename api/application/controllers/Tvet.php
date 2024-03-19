@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') or exit('No direct script access allowed');
+defined('BASEPATH') or exit ('No direct script access allowed');
 
 require APPPATH . 'libraries/RestController.php';
 require APPPATH . 'libraries/Format.php';
@@ -81,7 +81,7 @@ class Tvet extends RestController
             'school_year' => $requestData['school_year'],
             'app_status' => $requestData['app_status'],
             'reason' => $requestData['reason'],
-			'reason' => json_encode($requestData['reason']),
+            'reason' => json_encode($requestData['reason']),
         );
 
         $update_result = $tvet->update($id, $data);
@@ -149,7 +149,7 @@ class Tvet extends RestController
             'app_status' => $requestData['status'],
         );
 
-        if (isset($requestData['reason'])) {
+        if (isset ($requestData['reason'])) {
             $data['reason'] = $requestData['reason'];
         }
 
@@ -221,8 +221,8 @@ class Tvet extends RestController
         $CryptoHelper = new CryptoHelper;
         $requestData = $this->input->get();
         $data = array(
-            'semester' => !empty($requestData['semester']) ? $requestData['semester'] : '',
-            'school_year' => !empty($requestData['school_year']) ? $requestData['school_year'] : '',
+            'semester' => !empty ($requestData['semester']) ? $requestData['semester'] : '',
+            'school_year' => !empty ($requestData['school_year']) ? $requestData['school_year'] : '',
         );
 
         $result = array(
@@ -244,8 +244,8 @@ class Tvet extends RestController
         $CryptoHelper = new CryptoHelper;
         $requestData = $this->input->get();
         $data = array(
-            'semester' => !empty($requestData['semester']) ? $requestData['semester'] : '',
-            'school_year' => !empty($requestData['school_year']) ? $requestData['school_year'] : '',
+            'semester' => !empty ($requestData['semester']) ? $requestData['semester'] : '',
+            'school_year' => !empty ($requestData['school_year']) ? $requestData['school_year'] : '',
         );
         $result = $tvet->filter_total($data);
         $this->response($result, RestController::HTTP_OK);
@@ -358,204 +358,37 @@ class Tvet extends RestController
 
         $data = [];
         $data = array();
-        if (isset($requestData['school']) && !empty($requestData['school'])) {
+        if (isset ($requestData['school']) && !empty ($requestData['school'])) {
             $data['ts.id'] = $requestData['school'];
         }
-        if (isset($requestData['semester']) && !empty($requestData['semester'])) {
+        if (isset ($requestData['semester']) && !empty ($requestData['semester'])) {
             $data['semester'] = $requestData['semester'];
         }
-        if (isset($requestData['school_year']) && !empty($requestData['school_year'])) {
+        if (isset ($requestData['school_year']) && !empty ($requestData['school_year'])) {
             $data['school_year'] = $requestData['school_year'];
         }
-        if (isset($requestData['status']) && !empty($requestData['status'])) {
+        if (isset ($requestData['status']) && !empty ($requestData['status'])) {
             $data['app_status'] = $requestData['status'];
         }
-        if (isset($requestData['availment']) && !empty($requestData['availment'])) {
+        if (isset ($requestData['availment']) && !empty ($requestData['availment'])) {
             $data['availment'] = $requestData['availment'];
         }
-        if (isset($requestData['sex']) && !empty($requestData['sex'])) {
+        if (isset ($requestData['sex']) && !empty ($requestData['sex'])) {
             $data['sex'] = $requestData['sex'];
         }
-        if (isset($requestData['year_level']) && !empty($requestData['year_level'])) {
+        if (isset ($requestData['year_level']) && !empty ($requestData['year_level'])) {
             $data['year_level'] = $requestData['year_level'];
         }
-        if (isset($requestData['address']) && !empty($requestData['address'])) {
+        if (isset ($requestData['address']) && !empty ($requestData['address'])) {
             $data['barangay.id'] = $requestData['address'];
         }
 
-        if (isset($requestData['course']) && !empty($requestData['course'])) {
+        if (isset ($requestData['course']) && !empty ($requestData['course'])) {
             $data['tc.id'] = $requestData['course'];
         }
         $result = $tvet->generate_report($data);
         $this->response($result, RestController::HTTP_OK);
     }
-
-
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-    // _________________________
-
-    public function index_get()
-    {
-        $tvet = new TvetModel;
-        $CryptoHelper = new CryptoHelper;
-        $result = $CryptoHelper->cryptoJsAesEncrypt(json_encode($tvet->get_student()));
-        $this->response($result, RestController::HTTP_OK);
-    }
-
-
-    public function find_get($id)
-    {
-        $tvet = new TvetModel;
-        $result = $tvet->find($id);
-        $this->response($result, RestController::HTTP_OK);
-
-    }
-
-
-
-    public function insert_post()
-    {
-
-
-
-        $tvet = new TvetModel;
-        $system_sequence = new SystemSequenceModel;
-
-        $requestData = json_decode($this->input->raw_input_stream, true);
-        $data = array(
-            'colAppNoYear' => $requestData['app_no_year'],
-            'colAppNoSem' => $requestData['app_no_sem'],
-            'colAppNoID' => $requestData['app_no_id'],
-            'colAppStat' => 'Pending',
-            'colFirstName' => $requestData['firstname'],
-            'colLastName' => $requestData['lastname'],
-            'colMI' => $requestData['middle_initial'],
-            'colSuffix' => $requestData['suffix'],
-            'colAddress' => $requestData['address'],
-            'colDOB' => date("m/d/Y", strtotime($requestData['birthdate'])),
-            'colAge' => $requestData['age'],
-            'colCivilStat' => $requestData['civil_status'],
-            'colGender' => $requestData['sex'],
-            'colContactNo' => $requestData['contact_number'],
-            'colCTC' => $requestData['ctc_number'],
-            'colEmailAdd' => $requestData['email_address'],
-            'colAvailment' => $requestData['availment'],
-            'colSchool' => $requestData['school'],
-            'colCourse' => $requestData['course'],
-            'colSchoolAddress' => $requestData['school_address'],
-            'colYearLevel' => $requestData['year_level'],
-            'colSem' => $requestData['semester'],
-            'colSY' => $requestData['school_year'],
-            'colFathersName' => $requestData['father_name'],
-            'colFatherOccu' => $requestData['father_occupation'],
-            'colMothersName' => $requestData['mother_name'],
-            'colMotherOccu' => $requestData['mother_occupation'],
-            'colManager' => 'Active'
-        );
-
-        $this->response($data, RestController::HTTP_OK);
-        $result = $tvet->insert($data);
-        $this->response($result, RestController::HTTP_OK);
-        // if ($result > 0) {
-
-        //     // update the system app no
-        //     $appno_data = array(
-        //         'seq_appno' => $requestData['app_no_id'],
-        //     );
-        //     $system_sequence->update(3, $appno_data);
-
-        //     $this->response([
-        //         'status' => true,
-        //         'message' => 'Successfully Inserted.'
-        //     ], RestController::HTTP_OK);
-        // } else {
-
-        //     $this->response([
-        //         'status' => false,
-        //         'message' => 'Failed to create new data.'
-
-        //     ], RestController::HTTP_OK);
-        // }
-
-
-
-    }
-
-    public function bulk_insert_post()
-    {
-
-        $tvet = new TvetModel;
-        $system_sequence = new SystemSequenceModel;
-
-
-        $requestData = json_decode($this->input->raw_input_stream, true);
-
-        $result = $tvet->bulk_insert($requestData);
-
-
-        if ($result > 0) {
-            $this->response([
-                'status' => true,
-                'message' => 'Successfully Inserted.'
-            ], RestController::HTTP_OK);
-        } else {
-
-            $this->response([
-                'status' => false,
-                'message' => 'Failed to create new data.'
-            ], RestController::HTTP_BAD_REQUEST);
-        }
-    }
-
-
-
-
-
-
-
-
-    public function total_status_get()
-    {
-        $tvet = new TvetModel;
-        $CryptoHelper = new CryptoHelper;
-        $result = array(
-            'type' => "Tvet",
-            'pending' => (int) $tvet->total_pending()->total_pending,
-            'approved' => (int) $tvet->total_approved()->total_approved,
-            'disapproved' => (int) $tvet->total_disapproved()->total_disapproved,
-            'archived' => (int) $tvet->total_archived()->total_archived,
-            'void' => (int) $tvet->total_void()->total_void,
-        );
-        $this->response($result, RestController::HTTP_OK);
-    }
-
-
-
 
 
 

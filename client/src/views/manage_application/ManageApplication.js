@@ -18,7 +18,6 @@ import {
   CFormLabel,
   CFormSelect,
   CFormText,
-  CFormTextarea,
   CInputGroup,
   CModal,
   CModalBody,
@@ -58,7 +57,6 @@ import Swal from 'sweetalert2'
 import { Editor } from 'react-draft-wysiwyg'
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
 import { EditorState, convertToRaw, convertFromRaw } from 'draft-js'
-import draftToHtml from 'draftjs-to-html'
 
 const ManageApplication = ({
   app_status,
@@ -162,6 +160,7 @@ const ManageApplication = ({
       })
       .then((response) => {
         setData(response.data)
+        console.info(response.data)
       })
       .catch((error) => {
         toast.error(handleError(error))
@@ -342,11 +341,11 @@ const ManageApplication = ({
       useKeysAsHeaders: false,
       headers:
         column === 'senior_high'
-          ? seniorHighDefaultColumn.map((c) => c.header)
+          ? seniorHighDefaultColumn.filter((c) => c.includeInExport).map((c) => c.header)
           : column === 'college'
-          ? collegeDefaultColumn.map((c) => c.header)
+          ? collegeDefaultColumn.filter((c) => c.includeInExport).map((c) => c.header)
           : column === 'tvet'
-          ? tvetDefaultColumn.map((c) => c.header)
+          ? tvetDefaultColumn.filter((c) => c.includeInExport).map((c) => c.header)
           : [],
     }
   }
@@ -367,7 +366,6 @@ const ManageApplication = ({
         Availment: item.availment,
         'School Year': item.school_year,
         Semester: item.semester,
-        // Reason: item.reason,
       }
 
       if (scholarship_type === 'senior_high') {
@@ -1374,7 +1372,7 @@ const ManageApplication = ({
 
                 <CRow className="my-1">
                   <CCol md={12}>
-                    <CFormLabel>Reason (optional)</CFormLabel>
+                    <CFormLabel>Notes (optional)</CFormLabel>
                     <Editor
                       editorState={editorState}
                       wrapperClassName="demo-wrapper"
