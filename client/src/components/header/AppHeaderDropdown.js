@@ -29,40 +29,46 @@ const AppHeaderDropdown = () => {
     return () => clearInterval(intervalId)
   }, [photo])
   const fetchData = async () => {
-    const user = jwtDecode(localStorage.getItem('scholarshipToken'))
-    await api
-      .get('user/find/' + user.id)
-      .then((response) => {
-        if (response.data.photo) {
-          if (isProduction) {
-            setPhoto(
-              process.env.REACT_APP_BASEURL_PRODUCTION + 'assets/image/user/' + response.data.photo,
-            )
+    try {
+      const user = jwtDecode(localStorage.getItem('scholarshipToken'))
+      await api
+        .get('user/find/' + user.id)
+        .then((response) => {
+          if (response.data.photo) {
+            if (isProduction) {
+              setPhoto(
+                process.env.REACT_APP_BASEURL_PRODUCTION +
+                  'assets/image/user/' +
+                  response.data.photo,
+              )
+            } else {
+              setPhoto(
+                process.env.REACT_APP_BASEURL_DEVELOPMENT +
+                  'assets/image/user/' +
+                  response.data.photo,
+              )
+            }
           } else {
-            setPhoto(
-              process.env.REACT_APP_BASEURL_DEVELOPMENT +
-                'assets/image/user/' +
-                response.data.photo,
-            )
+            if (isProduction) {
+              setPhoto(
+                process.env.REACT_APP_BASEURL_PRODUCTION + 'assets/image/user/defaultAvatar.png',
+              )
+            } else {
+              setPhoto(
+                process.env.REACT_APP_BASEURL_DEVELOPMENT + 'assets/image/user/defaultAvatar.png',
+              )
+            }
           }
-        } else {
-          if (isProduction) {
-            setPhoto(
-              process.env.REACT_APP_BASEURL_PRODUCTION + 'assets/image/user/defaultAvatar.png',
-            )
-          } else {
-            setPhoto(
-              process.env.REACT_APP_BASEURL_DEVELOPMENT + 'assets/image/user/defaultAvatar.png',
-            )
-          }
-        }
-      })
-      .catch((error) => {
-        // toast.error(handleErforror(error))
-      })
-      .finally(() => {
-        // setFetchSenifororHighSchoolLoading(false)
-      })
+        })
+        .catch((error) => {
+          // toast.error(handleErforror(error))
+        })
+        .finally(() => {
+          // setFetchSenifororHighSchoolLoading(false)
+        })
+    } catch (err) {
+      console.info(err)
+    }
   }
   const handleLogout = async (e) => {
     e.preventDefault()
