@@ -90,8 +90,8 @@ const Login = () => {
             }
           })
           .catch((error) => {
-            toast.error('The server is closed. Please try again later."')
-            // console.info(error)
+            toast.error('The server is closed. Please try again later.')
+
             // toast.error(handleError(error))
           })
           .finally(() => {
