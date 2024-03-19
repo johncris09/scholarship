@@ -55,6 +55,7 @@ const isProduction = false
 const Registration = ({ cardTitle }) => {
   const avatarRef = useRef(null)
   const imageRef = useRef(null)
+  const cropperRef = useRef(null)
   const selectAddressIputRef = useRef()
   const selectSeniorHighSchoolInputRef = useRef()
   const selectCollegeSchoolInputRef = useRef()
@@ -84,7 +85,7 @@ const Registration = ({ cardTitle }) => {
   const [scholarshipID, setScholarshipID] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [cropPhotoModalVisible, setCropPhotoModalVisible] = useState(false)
-  const cropperRef = useRef(null)
+
   const [cropData, setCropData] = useState('')
 
   useEffect(() => {

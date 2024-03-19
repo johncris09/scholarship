@@ -1,5 +1,13 @@
-import React, { useState } from 'react'
-import { CDropdown, CDropdownItem, CDropdownMenu, CDropdownToggle, CSpinner } from '@coreui/react'
+import React, { useState, useEffect } from 'react'
+import {
+  CAvatar,
+  CDropdown,
+  CDropdownItem,
+  CDropdownMenu,
+  CDropdownToggle,
+  CImage,
+  CSpinner,
+} from '@coreui/react'
 import { cilAccountLogout } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { useNavigate } from 'react-router-dom'
@@ -10,10 +18,57 @@ const isProduction = false
 const AppHeaderDropdown = () => {
   const navigate = useNavigate()
   const [operationLoading, setOperationLoading] = useState(false)
+  const [photo, setPhoto] = useState('')
+  useEffect(() => {
+    fetchData()
+
+    // Setup interval to fetch data every 5 seconds (5000 milliseconds)
+    const intervalId = setInterval(fetchData, 1000)
+
+    // Cleanup function to clear interval when the component unmounts
+    return () => clearInterval(intervalId)
+  }, [photo])
+  const fetchData = async () => {
+    const user = jwtDecode(localStorage.getItem('scholarshipToken'))
+    await api
+      .get('user/find/' + user.id)
+      .then((response) => {
+        if (response.data.photo) {
+          if (isProduction) {
+            setPhoto(
+              process.env.REACT_APP_BASEURL_PRODUCTION + 'assets/image/user/' + response.data.photo,
+            )
+          } else {
+            setPhoto(
+              process.env.REACT_APP_BASEURL_DEVELOPMENT +
+                'assets/image/user/' +
+                response.data.photo,
+            )
+          }
+        } else {
+          if (isProduction) {
+            setPhoto(
+              process.env.REACT_APP_BASEURL_PRODUCTION + 'assets/image/user/defaultAvatar.png',
+            )
+          } else {
+            setPhoto(
+              process.env.REACT_APP_BASEURL_DEVELOPMENT + 'assets/image/user/defaultAvatar.png',
+            )
+          }
+        }
+      })
+      .catch((error) => {
+        // toast.error(handleErforror(error))
+      })
+      .finally(() => {
+        // setFetchSenifororHighSchoolLoading(false)
+      })
+  }
   const handleLogout = async (e) => {
     e.preventDefault()
     let user = []
     const isTokenExist = localStorage.getItem('scholarshipToken') !== null
+
     if (isTokenExist) {
       user = jwtDecode(localStorage.getItem('scholarshipToken'))
 
@@ -36,21 +91,12 @@ const AppHeaderDropdown = () => {
     <>
       <CDropdown className="_avatar" variant="nav-item">
         <CDropdownToggle placement="bottom-end" className="py-0 " caret={false}>
-          <lord-icon
-            className="position-relative"
-            src="https://cdn.lordicon.com/zfmcashd.json"
-            trigger="hover"
+          <CAvatar
+            src={photo}
+            title="Profile Photo"
+            size="md"
             style={{ width: '50px', height: '50px' }}
-          >
-            <CSpinner
-              position="bottom-end"
-              color={isProduction ? 'success ' : 'danger'}
-              className="border border-light pb-2"
-              size="sm"
-              variant="grow"
-              style={{ marginTop: 35, marginLeft: 30, zIndex: 2 }}
-            />
-          </lord-icon>
+          />
         </CDropdownToggle>
         <CDropdownMenu className="pt-0" placement="bottom-end">
           <CDropdownItem href="#/login" onClick={handleLogout}>

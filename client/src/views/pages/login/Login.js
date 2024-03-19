@@ -82,9 +82,7 @@ const Login = () => {
               }
 
               // update login status then go to dashboard/home page
-              await api.put('user/update/' + user.id, { isLogin: 1 }).then((response) => {
-                console.info(response.data)
-              })
+              await api.put('user/update/' + user.id, { isLogin: 1 }).then((response) => {})
             } else {
               toast.error(response.data.message)
             }

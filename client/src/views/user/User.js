@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import './../../assets/css/react-paginate.css'
 import Swal from 'sweetalert2'
+import Cropper from 'react-cropper'
+import 'cropperjs/dist/cropper.css'
 import {
   CButton,
   CCard,
@@ -11,11 +13,12 @@ import {
   CFormCheck,
   CFormInput,
   CFormLabel,
-  CFormSelect,
   CFormText,
+  CImage,
   CInputGroup,
   CModal,
   CModalBody,
+  CModalFooter,
   CModalHeader,
   CModalTitle,
   CRow,
@@ -41,9 +44,12 @@ import {
   validationPrompt,
 } from 'src/components/SystemConfiguration'
 import * as Yup from 'yup'
+const isProduction = false
 
 const User = ({ cardTitle }) => {
+  const avatarRef = useRef(null)
   const [data, setData] = useState([])
+  const cropperRef = useRef(null)
   const selectSeniorHighSchoolInputRef = useRef()
   const selectRoleTypeInputRef = useRef()
   const [validated, setValidated] = useState(true)
@@ -56,7 +62,10 @@ const User = ({ cardTitle }) => {
   const [isEnableEdit, setIsEnableEdit] = useState(false)
   const [togglePassword, setTogglePassword] = useState(true)
   const [fetchSeniorHighSchoolLoading, setFetchSeniorHighSchoolLoading] = useState(false)
+  const [cropPhotoModalVisible, setCropPhotoModalVisible] = useState(false)
 
+  const [cropData, setCropData] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
   useEffect(() => {
     fetchData()
     fetchSeniorHighSchool()
@@ -137,8 +146,9 @@ const User = ({ cardTitle }) => {
       role_type: '',
       school_user: false,
       school: '',
+      photo: '',
     },
-    validationSchema: validationSchema,
+    // validationSchema: validationSchema,
     onSubmit: async (values) => {
       if (values.hidePassword) {
         setOperationLoading(true)
@@ -152,8 +162,7 @@ const User = ({ cardTitle }) => {
             setModalFormVisible(false)
           })
           .catch((error) => {
-            console.info(error)
-            // toast.error(handleError(error))
+            toast.error(handleError(error))
           })
           .finally(() => {
             setOperationLoading(false)
@@ -169,7 +178,7 @@ const User = ({ cardTitle }) => {
             fetchData()
           })
           .catch((error) => {
-            toast.error(handleError(error))
+            toast.error('Duplicate Entry!')
           })
           .finally(() => {
             setOperationLoading(false)
@@ -249,6 +258,38 @@ const User = ({ cardTitle }) => {
 
   const column = [
     {
+      accessorKey: 'photo',
+      header: 'Photo',
+      size: 120,
+      includeInExport: false,
+      Cell: ({ row }) => {
+        let photo = row.original.photo || 'defaultAvatar.png' // Assuming "defaultAvatar.png" is a string
+        return (
+          <Box
+            className="text-right"
+            md={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end', // Align to the right
+              gap: '1rem',
+            }}
+          >
+            <img
+              alt="avatar"
+              height={25}
+              src={
+                isProduction
+                  ? `${process.env.REACT_APP_BASEURL_PRODUCTION}assets/image/user/${photo}`
+                  : `${process.env.REACT_APP_BASEURL_DEVELOPMENT}assets/image/user/${photo}`
+              }
+              loading="lazy"
+              style={{ borderRadius: '50%' }}
+            />
+          </Box>
+        )
+      },
+    },
+    {
       accessorKey: 'firstname',
       header: 'First Name',
     },
@@ -286,6 +327,40 @@ const User = ({ cardTitle }) => {
     },
   ]
 
+  const handleImageChange = (e) => {
+    e.preventDefault()
+
+    const files = e.target.files
+    if (files && files.length > 0) {
+      const file = files[0]
+      if (window.URL) {
+        setImageUrl(URL.createObjectURL(file))
+      } else if (window.FileReader) {
+        const reader = new FileReader()
+        reader.onload = function (e) {
+          setImageUrl(reader.result)
+        }
+        reader.readAsDataURL(file)
+      }
+      setCropPhotoModalVisible(true)
+    }
+  }
+
+  const handleCrop = () => {
+    if (typeof cropperRef.current?.cropper !== 'undefined') {
+      setCropData(cropperRef.current?.cropper.getCroppedCanvas().toDataURL())
+
+      cropperRef.current?.cropper.getCroppedCanvas().toBlob(async (blob) => {
+        var reader = new FileReader()
+        reader.readAsDataURL(blob)
+        reader.onloadend = async function () {
+          var base64Data = reader.result
+          form.setFieldValue('photo', base64Data)
+          setCropPhotoModalVisible(false)
+        }
+      })
+    }
+  }
   return (
     <>
       <ToastContainer />
@@ -355,6 +430,11 @@ const User = ({ cardTitle }) => {
                         hidePassword: true,
                         school_user: row.original.school != null ? row.original.school : '',
                         school: row.original.school_id === null ? '' : row.original.school_id,
+                        photo: row.original.photo
+                          ? isProduction
+                            ? `${process.env.REACT_APP_BASEURL_PRODUCTION}assets/image/user/${row.original.photo}`
+                            : `${process.env.REACT_APP_BASEURL_DEVELOPMENT}assets/image/user/${row.original.photo}`
+                          : '',
                       })
                       setModalFormVisible(true)
                     }}
@@ -430,7 +510,9 @@ const User = ({ cardTitle }) => {
         size="lg"
       >
         <CModalHeader>
-          <CModalTitle>{isEnableEdit ? `Edit ${cardTitle}` : `Add New ${cardTitle}`}</CModalTitle>
+          <CModalTitle>
+            {form.values.hidePassword ? `Edit ${cardTitle}` : `Add New ${cardTitle}`}
+          </CModalTitle>
         </CModalHeader>
         <CModalBody>
           <RequiredFieldNote />
@@ -442,158 +524,244 @@ const User = ({ cardTitle }) => {
             style={{ position: 'relative' }}
           >
             <CRow>
-              <CCol>
-                <CFormInput
-                  type="text"
-                  label={requiredField('First Name')}
-                  name="first_name"
-                  onChange={handleInputChange}
-                  value={form.values.first_name}
-                  required
-                  placeholder="First Name"
-                />
-                {form.touched.first_name && form.errors.first_name && (
-                  <CFormText className="text-danger">{form.errors.first_name}</CFormText>
-                )}
-              </CCol>
-              <CCol>
-                <CFormInput
-                  type="text"
-                  label="Middle Initial"
-                  name="middle_name"
-                  onChange={handleInputChange}
-                  value={form.values.middle_name}
-                  placeholder="Middle Initial"
-                />
-              </CCol>
-              <CCol>
-                <CFormInput
-                  type="text"
-                  label={requiredField('Last Name')}
-                  name="last_name"
-                  onChange={handleInputChange}
-                  value={form.values.last_name}
-                  required
-                  placeholder="Last Name"
-                />
-                {form.touched.last_name && form.errors.last_name && (
-                  <CFormText className="text-danger">{form.errors.last_name}</CFormText>
-                )}
-              </CCol>
-            </CRow>
+              <CCol md={2} className="mt-3 text-center  ">
+                <p className="text-center">Profile Photo</p>
+                <CFormLabel className="label" data-toggle="tooltip" title="Change your avatar">
+                  <CImage
+                    rounded
+                    thumbnail
+                    ref={avatarRef}
+                    id="avatar"
+                    src={
+                      form.values.photo
+                        ? form.values.photo
+                        : isProduction
+                        ? process.env.REACT_APP_BASEURL_PRODUCTION +
+                          'assets/image/user/defaultAvatar.png'
+                        : process.env.REACT_APP_BASEURL_DEVELOPMENT +
+                          'assets/image/user/defaultAvatar.png'
+                    }
+                    alt="Profile Photo"
+                    width="90%"
+                    height="90%"
+                  />
+                  <CFormInput
+                    type="file"
+                    className="d-none"
+                    name="image"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
+                </CFormLabel>
 
-            <CRow>
-              <CCol>
-                <CFormInput
-                  type="text"
-                  label={requiredField('Username')}
-                  name="username"
-                  onChange={handleInputChange}
-                  value={form.values.username}
-                  required
-                  placeholder="Username"
-                />
-                {form.touched.username && form.errors.username && (
-                  <CFormText className="text-danger">{form.errors.username}</CFormText>
-                )}
+                <CModal
+                  alignment="center"
+                  visible={cropPhotoModalVisible}
+                  onClose={() => setCropPhotoModalVisible(false)}
+                >
+                  <CModalBody>
+                    <h3>Crop Photo</h3>
+                    <Cropper
+                      ref={cropperRef}
+                      style={{
+                        height: 422,
+                        width: '90%',
+                        margin: '0 auto',
+                        marginTop: 25,
+                      }}
+                      zoomTo={0.5}
+                      aspectRatio={1}
+                      preview=".img-preview"
+                      src={imageUrl}
+                      viewMode={1}
+                      minCropBoxHeight={10}
+                      minCropBoxWidth={10}
+                      background={false}
+                      responsive={true}
+                      autoCropArea={1}
+                      checkOrientation={false}
+                      guides={true}
+                    />
+                  </CModalBody>
+                  <CModalFooter>
+                    <button
+                      type="button"
+                      onClick={() => setCropPhotoModalVisible(false)}
+                      className="btn btn-secondary"
+                      data-dismiss="modal"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCrop}
+                      className="btn btn-primary"
+                      id="crop"
+                    >
+                      Crop
+                    </button>
+                  </CModalFooter>
+                </CModal>
               </CCol>
-              {!form.values.hidePassword && (
-                <>
-                  <CCol>
-                    <CFormLabel>{requiredField('Password')}</CFormLabel>
-                    <CInputGroup className="mb-3">
-                      <CFormInput
-                        type={togglePassword ? 'password' : 'text'}
-                        name="password"
-                        onChange={handleInputChange}
-                        value={form.values.password}
-                        required
-                        placeholder="Password"
-                      />
-                      <CButton
-                        onClick={() => {
-                          setTogglePassword((prevShowPassword) => !prevShowPassword)
-                        }}
-                        type="button"
-                        color="secondary"
-                        variant="outline"
-                      >
-                        <FontAwesomeIcon icon={togglePassword ? faEye : faEyeSlash} />
-                      </CButton>
-                    </CInputGroup>
-                    {form.touched.password && form.errors.password && (
-                      <CFormText className="text-danger">{form.errors.password}</CFormText>
+              <CCol md={10}>
+                <CRow>
+                  <CCol md={4}>
+                    <CFormInput
+                      type="text"
+                      label={requiredField('First Name')}
+                      name="first_name"
+                      onChange={handleInputChange}
+                      value={form.values.first_name}
+                      required
+                      placeholder="First Name"
+                    />
+                    {form.touched.first_name && form.errors.first_name && (
+                      <CFormText className="text-danger">{form.errors.first_name}</CFormText>
                     )}
                   </CCol>
-                </>
-              )}
-              {!form.values.school_user && (
-                <CCol md={form.values.hidePassword ? 6 : 12}>
-                  <CFormLabel>{requiredField('Role Type')}</CFormLabel>
-                  <Select
-                    ref={selectRoleTypeInputRef}
-                    value={roleType.find((option) => option.value === form.values.role_type)}
-                    onChange={handleSelectChange}
-                    options={roleType}
-                    name="role_type"
-                    isSearchable
-                    placeholder="Search..."
-                    isClearable
-                    required
-                  />
-                  {form.touched.role_type && form.errors.role_type && (
-                    <CFormText className="text-danger">{form.errors.role_type}</CFormText>
+                  <CCol md={4}>
+                    <CFormInput
+                      type="text"
+                      label="Middle Initial"
+                      name="middle_name"
+                      onChange={handleInputChange}
+                      value={form.values.middle_name}
+                      placeholder="Middle Initial"
+                    />
+                  </CCol>
+                  <CCol md={4}>
+                    <CFormInput
+                      type="text"
+                      label={requiredField('Last Name')}
+                      name="last_name"
+                      onChange={handleInputChange}
+                      value={form.values.last_name}
+                      required
+                      placeholder="Last Name"
+                    />
+                    {form.touched.last_name && form.errors.last_name && (
+                      <CFormText className="text-danger">{form.errors.last_name}</CFormText>
+                    )}
+                  </CCol>
+                </CRow>
+                <CRow>
+                  <CCol md={6}>
+                    <CFormInput
+                      type="text"
+                      label={requiredField('Username')}
+                      name="username"
+                      onChange={handleInputChange}
+                      value={form.values.username}
+                      required
+                      placeholder="Username"
+                    />
+                    {form.touched.username && form.errors.username && (
+                      <CFormText className="text-danger">{form.errors.username}</CFormText>
+                    )}
+                  </CCol>
+                  {!form.values.hidePassword && (
+                    <>
+                      <CCol md={6}>
+                        <CFormLabel>{requiredField('Password')}</CFormLabel>
+                        <CInputGroup className="mb-3">
+                          <CFormInput
+                            type={togglePassword ? 'password' : 'text'}
+                            name="password"
+                            onChange={handleInputChange}
+                            value={form.values.password}
+                            required
+                            placeholder="Password"
+                          />
+                          <CButton
+                            onClick={() => {
+                              setTogglePassword((prevShowPassword) => !prevShowPassword)
+                            }}
+                            type="button"
+                            color="secondary"
+                            variant="outline"
+                          >
+                            <FontAwesomeIcon icon={togglePassword ? faEye : faEyeSlash} />
+                          </CButton>
+                        </CInputGroup>
+                        {form.touched.password && form.errors.password && (
+                          <CFormText className="text-danger">{form.errors.password}</CFormText>
+                        )}
+                      </CCol>
+                    </>
                   )}
-                </CCol>
-              )}
-            </CRow>
-            <CRow>
-              <CCol className="mt-4">
-                <CFormCheck
-                  name="school_user"
-                  onChange={handleInputChange}
-                  checked={form.values.school_user}
-                  label="Create a user for the school"
-                />
+                  {!form.values.school_user && (
+                    <CCol md={form.values.hidePassword ? 6 : 12}>
+                      <CFormLabel>{requiredField('Role Type')}</CFormLabel>
+                      <Select
+                        ref={selectRoleTypeInputRef}
+                        value={roleType.find((option) => option.value === form.values.role_type)}
+                        onChange={handleSelectChange}
+                        options={roleType}
+                        name="role_type"
+                        isSearchable
+                        placeholder="Search..."
+                        isClearable
+                        required
+                      />
+                      {form.touched.role_type && form.errors.role_type && (
+                        <CFormText className="text-danger">{form.errors.role_type}</CFormText>
+                      )}
+                    </CCol>
+                  )}
+                </CRow>
+                <CRow>
+                  <CCol className="mt-4">
+                    <CFormCheck
+                      name="school_user"
+                      onChange={handleInputChange}
+                      checked={form.values.school_user}
+                      label="Create a user for the school"
+                    />
+                  </CCol>
+                </CRow>
+
+                {form.values.school_user && (
+                  <CRow>
+                    <CCol className="mt-1">
+                      <hr />
+                      <CFormLabel>
+                        {
+                          <>
+                            {fetchSeniorHighSchoolLoading && <CSpinner size="sm" />}
+                            {requiredField(' School')}
+                          </>
+                        }
+                      </CFormLabel>
+                      <Select
+                        ref={selectSeniorHighSchoolInputRef}
+                        value={seniorHighSchool.find(
+                          (option) => option.value === form.values.school,
+                        )}
+                        onChange={handleSelectChange}
+                        options={seniorHighSchool}
+                        name="school"
+                        isSearchable
+                        placeholder="Search..."
+                        isClearable
+                        required
+                      />
+                      {form.touched.school && form.errors.school && (
+                        <CFormText className="text-danger">{form.errors.school}</CFormText>
+                      )}
+                    </CCol>
+                  </CRow>
+                )}
+
+                <hr />
+                <CRow>
+                  <CCol xs={12}>
+                    <CButton color="primary" type="submit" className="float-end">
+                      {form.values.hidePassword ? 'Update' : 'Submit'}
+                    </CButton>
+                  </CCol>
+                </CRow>
               </CCol>
             </CRow>
-
-            {form.values.school_user && (
-              <CRow>
-                <CCol className="mt-1">
-                  <hr />
-                  <CFormLabel>
-                    {
-                      <>
-                        {fetchSeniorHighSchoolLoading && <CSpinner size="sm" />}
-                        {requiredField(' School')}
-                      </>
-                    }
-                  </CFormLabel>
-                  <Select
-                    ref={selectSeniorHighSchoolInputRef}
-                    value={seniorHighSchool.find((option) => option.value === form.values.school)}
-                    onChange={handleSelectChange}
-                    options={seniorHighSchool}
-                    name="school"
-                    isSearchable
-                    placeholder="Search..."
-                    isClearable
-                    required
-                  />
-                  {form.touched.school && form.errors.school && (
-                    <CFormText className="text-danger">{form.errors.school}</CFormText>
-                  )}
-                </CCol>
-              </CRow>
-            )}
-
-            <hr />
-            <CCol xs={12}>
-              <CButton color="primary" type="submit" className="float-end">
-                {isEnableEdit ? 'Update' : 'Submit form'}
-              </CButton>
-            </CCol>
           </CForm>
           {operationLoading && <DefaultLoading />}
         </CModalBody>
