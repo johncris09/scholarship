@@ -57,7 +57,7 @@ const AppHeader = () => {
           ' ' +
           toSentenceCase(selected[0].middlename) +
           ' ' +
-          toSentenceCase(selected[0].suffix),
+          selected[0].suffix,
         { replace: true },
       )
     }
