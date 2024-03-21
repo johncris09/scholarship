@@ -348,7 +348,20 @@ class Tvet extends RestController
     }
 
 
-
+    public function total_status_get()
+    {
+        $tvet = new TvetModel;
+        $CryptoHelper = new CryptoHelper;
+        $result = array(
+            'type' => "Tvet",
+            'pending' => (int) $tvet->total_pending()->total_pending,
+            'approved' => (int) $tvet->total_approved()->total_approved,
+            'disapproved' => (int) $tvet->total_disapproved()->total_disapproved,
+            'archived' => (int) $tvet->total_archived()->total_archived,
+            'void' => (int) $tvet->total_void()->total_void,
+        );
+        $this->response($result, RestController::HTTP_OK);
+    }
 
     public function generate_report_get()
     {
