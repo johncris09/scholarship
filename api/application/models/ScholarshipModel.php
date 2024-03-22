@@ -1,6 +1,6 @@
 <?php
 
-defined('BASEPATH') or exit('No direct script access allowed');
+defined('BASEPATH') or exit ('No direct script access allowed');
 
 class ScholarshipModel extends CI_Model
 {
@@ -275,40 +275,49 @@ class ScholarshipModel extends CI_Model
 
         $query_sem = $this->db->query('SELECT current_semester FROM  config where id = 1')->row();
         $query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->row();
-
+        $this->db
+            ->select('  scholarship.*, "senior_high" as scholarship_type')
+            ->from('senior_high, scholarship  ')
+            ->where('senior_high.scholarship_id  = scholarship.id')
+            ->where('senior_high.semester', $query_sem->current_semester)
+            ->where('senior_high.school_year', $query_sy->current_sy)
+        ;
+        $query1 = $this->db->get_compiled_select();
+        $this->db
+            ->select('  scholarship.*, "college" as scholarship_type')
+            ->from('college, scholarship  ')
+            ->where('college.scholarship_id  = scholarship.id')
+            ->where('college.semester', $query_sem->current_semester)
+            ->where('college.school_year', $query_sy->current_sy)
+        ;
+        $query2 = $this->db->get_compiled_select();
+        $this->db
+            ->select('  scholarship.*, "tvet" as scholarship_type')
+            ->from('tvet, scholarship  ')
+            ->where('tvet.scholarship_id  = scholarship.id')
+            ->where('tvet.semester', $query_sem->current_semester)
+            ->where('tvet.school_year', $query_sy->current_sy)
+        ;
+        $query3 = $this->db->get_compiled_select();
 
         $query = "
-            SELECT DISTINCT
-                a1.lastname  ,
-                a1.firstname ,
-                a1.middlename ,
-                a1.suffix ,
-                a1.address , 
-                a1.father_name  ,
-                a1.mother_name  
-            FROM
-                scholarship a1
-            JOIN scholarship a2 ON
-                a1.father_name = a2.father_name and a1.mother_name = a2.mother_name
-            LEFT JOIN senior_high sh ON
-                a1.id = sh.scholarship_id
-            LEFT JOIN college c ON
-                a1.id = c.scholarship_id
-            LEFT JOIN tvet t ON
-                a1.id = t.scholarship_id
-            WHERE
-                a1.id <> a2.id  
-            AND sh.semester = '" . $query_sem->current_semester . "' 
-            AND c.semester = '" . $query_sem->current_semester . "' 
-            AND t.semester = '" . $query_sem->current_semester . "' 
-            AND sh.school_year = '" . $query_sy->current_sy . "' 
-            AND c.school_year = '" . $query_sy->current_sy . "' 
-            AND t.school_year = '" . $query_sy->current_sy . "'
-            order by a1.lastname, a1.firstname, a1.middlename asc
-             ";
+            SELECT DISTINCT  
+                id,
+                lastname,
+                firstname,
+                middlename,
+                suffix,
+                father_name,
+                mother_name,
+                scholarship_type
+            FROM (
+                $query1 UNION $query2 UNION $query3
+            ) AS all_scholarships  
+            ORDER BY lastname, firstname ASC ";
+
+
         $query = $this->db->query($query);
         return $query->result();
-
     }
     function get_all_sibling()
     {

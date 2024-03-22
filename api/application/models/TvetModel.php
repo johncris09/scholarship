@@ -185,8 +185,7 @@ class TvetModel extends CI_Model
 		$this->db->where_in('id', $id);
 		return $this->db->update($this->table, $data);
 	}
-
-
+ 
 
 	public function total_pending()
 	{

@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') or exit('No direct script access allowed');
+defined('BASEPATH') or exit ('No direct script access allowed');
 
 require APPPATH . 'libraries/RestController.php';
 require APPPATH . 'libraries/Format.php';
@@ -149,9 +149,9 @@ class College extends RestController
             'app_status' => $requestData['status'],
         );
 
-        if (isset($requestData['reason'])) {
-            $data['reason'] = $requestData['reason'];
-        }
+        if (isset ($requestData['reason'])) {
+            $data['reason'] = json_encode($requestData['reason']);
+        } 
         $result = $college->bulk_status_update($data, $ids);
 
         if ($result > 0) {
@@ -239,8 +239,8 @@ class College extends RestController
         $CryptoHelper = new CryptoHelper;
         $requestData = $this->input->get();
         $data = array(
-            'semester' => !empty($requestData['semester']) ? $requestData['semester'] : '',
-            'school_year' => !empty($requestData['school_year']) ? $requestData['school_year'] : '',
+            'semester' => !empty ($requestData['semester']) ? $requestData['semester'] : '',
+            'school_year' => !empty ($requestData['school_year']) ? $requestData['school_year'] : '',
         );
 
         $result = array(
@@ -261,8 +261,8 @@ class College extends RestController
         $CryptoHelper = new CryptoHelper;
         $requestData = $this->input->get();
         $data = array(
-            'semester' => !empty($requestData['semester']) ? $requestData['semester'] : '',
-            'school_year' => !empty($requestData['school_year']) ? $requestData['school_year'] : '',
+            'semester' => !empty ($requestData['semester']) ? $requestData['semester'] : '',
+            'school_year' => !empty ($requestData['school_year']) ? $requestData['school_year'] : '',
         );
         $result = $college->filter_total($data);
         $this->response($result, RestController::HTTP_OK);
@@ -367,32 +367,32 @@ class College extends RestController
         $CryptoHelper = new CryptoHelper;
         $requestData = $this->input->get();
         $data = [];
-        if (isset($requestData['school']) && !empty($requestData['school'])) {
+        if (isset ($requestData['school']) && !empty ($requestData['school'])) {
             $data['cs.id'] = $requestData['school'];
         }
-        if (isset($requestData['semester']) && !empty($requestData['semester'])) {
+        if (isset ($requestData['semester']) && !empty ($requestData['semester'])) {
             $data['semester'] = $requestData['semester'];
         }
-        if (isset($requestData['school_year']) && !empty($requestData['school_year'])) {
+        if (isset ($requestData['school_year']) && !empty ($requestData['school_year'])) {
             $data['school_year'] = $requestData['school_year'];
         }
-        if (isset($requestData['status']) && !empty($requestData['status'])) {
+        if (isset ($requestData['status']) && !empty ($requestData['status'])) {
             $data['app_status'] = $requestData['status'];
         }
-        if (isset($requestData['availment']) && !empty($requestData['availment'])) {
+        if (isset ($requestData['availment']) && !empty ($requestData['availment'])) {
             $data['availment'] = $requestData['availment'];
         }
-        if (isset($requestData['sex']) && !empty($requestData['sex'])) {
+        if (isset ($requestData['sex']) && !empty ($requestData['sex'])) {
             $data['sex'] = $requestData['sex'];
         }
-        if (isset($requestData['year_level']) && !empty($requestData['year_level'])) {
+        if (isset ($requestData['year_level']) && !empty ($requestData['year_level'])) {
             $data['year_level'] = $requestData['year_level'];
         }
-        if (isset($requestData['address']) && !empty($requestData['address'])) {
+        if (isset ($requestData['address']) && !empty ($requestData['address'])) {
             $data[' barangay.id'] = $requestData['address'];
         }
 
-        if (isset($requestData['course']) && !empty($requestData['course'])) {
+        if (isset ($requestData['course']) && !empty ($requestData['course'])) {
             $data[' course.id'] = $requestData['course'];
         }
 
@@ -400,7 +400,7 @@ class College extends RestController
 
         $this->response($result, RestController::HTTP_OK);
     }
- 
+
 
 
 

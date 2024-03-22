@@ -143,16 +143,13 @@ class Tvet extends RestController
 
         // Convert IDs to integers
         $ids = array_map('intval', $ids);
-
-
         $data = array(
             'app_status' => $requestData['status'],
         );
 
         if (isset ($requestData['reason'])) {
-            $data['reason'] = $requestData['reason'];
-        }
-
+            $data['reason'] = json_encode($requestData['reason']);
+        }  
         $result = $tvet->bulk_status_update($data, $ids);
 
         if ($result > 0) {

@@ -13,6 +13,12 @@ class CollegeModel extends CI_Model
 		return $this->db->insert($this->table, $data);
 	}
 
+	public function update($id, $data)
+	{
+		$this->db->where('id', $id);
+		return $this->db->update($this->table, $data);
+	}
+
 	public function get_by_status($data)
 	{
 

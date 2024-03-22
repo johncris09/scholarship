@@ -3,6 +3,7 @@ import './../../assets/css/react-paginate.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCancel, faEye, faFilter } from '@fortawesome/free-solid-svg-icons'
 import {
+  CAlert,
   CButton,
   CCard,
   CCardBody,
@@ -26,6 +27,8 @@ import {
   toSentenceCase,
 } from 'src/components/SystemConfiguration'
 import * as Yup from 'yup'
+import CIcon from '@coreui/icons-react'
+import { cilInfo } from '@coreui/icons'
 
 const Sibling = ({ cardTitle }) => {
   const [siblingData, setSiblingData] = useState([])
@@ -140,6 +143,10 @@ const Sibling = ({ cardTitle }) => {
       header: "Mother's Name",
       accessorFn: (row) => `${toSentenceCase(row.mother_name)}`,
     },
+    {
+      accessorKey: 'scholarship_type',
+      header: 'Scholarship Type',
+    },
   ]
   return (
     <>
@@ -147,92 +154,20 @@ const Sibling = ({ cardTitle }) => {
         <CCardHeader>{cardTitle}</CCardHeader>
         <CCardBody>
           <ToastContainer />
-          <CRow className="justify-content-center ">
-            <CCol md={6}>
-              <h5>
-                <FontAwesomeIcon icon={faFilter} /> Filter
-              </h5>
-              <CForm
-                id="filterForm"
-                className="row g-3 needs-validation mb-4"
-                noValidate
-                onSubmit={filterForm.handleSubmit}
-              >
-                <RequiredFieldNote />
-
-                <CRow className="my-1">
-                  <CCol md={6}>
-                    <CFormSelect
-                      label={requiredField('Semester')}
-                      name="semester"
-                      onChange={handleInputChange}
-                      value={filterForm.values.semester}
-                      required
-                    >
-                      <option value="">Select</option>
-                      {Semester.map((semester, index) => (
-                        <option key={index} value={semester}>
-                          {semester}
-                        </option>
-                      ))}
-                    </CFormSelect>
-                    {filterForm.touched.semester && filterForm.errors.semester && (
-                      <CFormText className="text-danger">{filterForm.errors.semester}</CFormText>
-                    )}
-                  </CCol>
-
-                  <CCol md={6}>
-                    <CFormSelect
-                      label={requiredField('School Year')}
-                      name="school_year"
-                      onChange={handleInputChange}
-                      value={filterForm.values.school_year}
-                      required
-                    >
-                      <option value="">Select</option>
-                      {SchoolYear.map((school_year, index) => (
-                        <option key={index} value={school_year}>
-                          {school_year}
-                        </option>
-                      ))}
-                    </CFormSelect>
-                    {filterForm.touched.school_year && filterForm.errors.school_year && (
-                      <CFormText className="text-danger">{filterForm.errors.school_year}</CFormText>
-                    )}
-                  </CCol>
-                </CRow>
-
-                <CRow className="justify-content-between mt-1">
-                  <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <CButton
-                      color="danger"
-                      size="sm"
-                      variant="outline"
-                      onClick={handleRemoveFilter}
-                    >
-                      <FontAwesomeIcon icon={faCancel} /> Remove Filter
-                    </CButton>
-                    <CButton
-                      size="sm"
-                      variant="outline"
-                      color="primary"
-                      onClick={handleViewAllData}
-                    >
-                      <FontAwesomeIcon icon={faEye} /> View All Data
-                    </CButton>
-                    <CButton color="primary" size="sm" type="submit">
-                      <FontAwesomeIcon icon={faFilter} /> Filter
-                    </CButton>
-                  </div>
-                </CRow>
-              </CForm>
-              {/* {loadingOperation && <DefaultLoading />} */}
-              <hr />
-            </CCol>
-          </CRow>
 
           <CRow>
-            <CCol>
+            <CCol md={12}>
+              <CAlert color="info" className="d-flex align-items-center">
+                <CIcon icon={cilInfo} className="flex-shrink-0 me-2" width={24} height={24} />
+                <div style={{ fontSize: 12 }}>
+                  This feature isn&apos;t 100% accurate due to typographical errors. To ensure
+                  accurate results, the procedure should involve grouping individuals by their
+                  mother&apos;s name and listing all possible siblings. Subsequently, this process
+                  should be repeated for the father&apos;s name. Finally, the results obtained from
+                  both procedures should be combined into a single list.
+                </div>
+              </CAlert>
+
               <MaterialReactTable
                 columns={column}
                 data={siblingData}

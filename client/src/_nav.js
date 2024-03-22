@@ -238,6 +238,13 @@ const _nav = (userInfo) => {
         component: CNavTitle,
         name: 'Utilities',
       },
+
+      {
+        component: CNavItem,
+        name: 'Sibling(s)',
+        to: '/sibling',
+        icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
+      },
       {
         component: CNavItem,
         name: 'Generate Report',

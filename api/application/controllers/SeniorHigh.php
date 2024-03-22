@@ -159,44 +159,43 @@ class SeniorHigh extends RestController
 
 
 	public function bulk_status_update_post()
-	{
+    {
 
-		$seniorhigh = new SeniorHighModel;
-		$requestData = json_decode($this->input->raw_input_stream, true);
+        $seniorhigh = new SeniorHighModel;
+        $requestData = json_decode($this->input->raw_input_stream, true);
 
-		// Extract IDs
-		// Object to array
-		$ids = array_map(function ($item) {
-			return $item['id'];
-		}, $requestData['data']);
+        // Extract IDs
+        // Object to array
+        $ids = array_map(function ($item) {
+            return $item['id'];
+        }, $requestData['data']);
 
-		// Convert IDs to integers
-		$ids = array_map('intval', $ids);
-		$data = array(
-			'app_status' => $requestData['status'],
-		);
+        // Convert IDs to integers
+        $ids = array_map('intval', $ids);
+        $data = array(
+            'app_status' => $requestData['status'],
+        );
 
-		if (isset($requestData['reason'])) {
-			$data['reason'] = $requestData['reason'];
-		}
+        if (isset ($requestData['reason'])) {
+            $data['reason'] = json_encode($requestData['reason']);
+        } 
+        $result = $seniorhigh->bulk_status_update($data, $ids);
 
-		$result = $seniorhigh->bulk_status_update($data, $ids);
+        if ($result > 0) {
+            $this->response([
+                'status' => true,
+                'message' => 'Application Updated.'
+            ], RestController::HTTP_OK);
+        } else {
 
-		if ($result > 0) {
-			$this->response([
-				'status' => true,
-				'message' => 'Application Updated.'
-			], RestController::HTTP_OK);
-		} else {
+            $this->response([
+                'status' => false,
+                'message' => 'Failed to update application.'
+            ], RestController::HTTP_BAD_REQUEST);
 
-			$this->response([
-				'status' => false,
-				'message' => 'Failed to update application.'
-			], RestController::HTTP_BAD_REQUEST);
+        }
 
-		}
-
-	}
+    }
 
 
 	public function total_get()

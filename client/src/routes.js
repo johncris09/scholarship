@@ -80,7 +80,7 @@ const routes = [
   {
     path: '/sibling',
     user: ['4BSVYawhFI8j779vM8q1', 'KmOlD4kHZC93Yp8Jirhc'],
-    name: 'Sibline(s)',
+    name: 'Sibling(s)',
     element: Sibling,
   },
   {

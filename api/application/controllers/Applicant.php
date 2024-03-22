@@ -24,6 +24,7 @@ class Applicant extends RestController
         $this->load->model('CollegeModel');
         $this->load->model('SystemSequenceModel');
         $this->load->helper(array('form', 'url'));
+        $this->load->helper('sort');
     }
     public function index_get()
     {
@@ -240,7 +241,7 @@ class Applicant extends RestController
             // Optionally, you can remove the temporary file
             unlink($temp_file);
             $data['photo'] = $time . '.png';
-        } 
+        }
         $insertApplicant = $model->insertNewApplicant($data);
 
 
@@ -586,9 +587,78 @@ class Applicant extends RestController
     function get_sibling_get()
     {
         $model = new ScholarshipModel;
-        $result = $model->get_sibling(); // current
-        $this->response($result, RestController::HTTP_OK);
+        $data = $model->get_sibling();
+
+        $grouped = [];
+
+        foreach ($data as $person) {
+            $key = $person->mother_name ?? $person->father_name;
+            if (!isset ($grouped[$key])) {
+                $grouped[$key] = [];
+            }
+            $grouped[$key][] = $person;
+        }
+        $grouped = array_filter($grouped, function ($group) {
+            return count($group) > 1;
+        });
+        $flattened = [];
+        foreach ($grouped as $group) {
+            foreach ($group as $person) {
+                $flattened[] = $person;
+            }
+        }
+
+
+        $matching_records = [];
+
+        $count = count($data);
+        for ($i = 0; $i < $count; $i++) {
+            for ($j = $i + 1; $j < $count; $j++) {
+                if ($data[$i]->mother_name == $data[$j]->mother_name || $data[$i]->father_name == $data[$j]->father_name) {
+                    $matching_records[] = $data[$i];
+                    $matching_records[] = $data[$j];
+                }
+            }
+        }
+
+        $matching_records = array_values( array_unique($matching_records, SORT_REGULAR));
+
+        // $sameMother = [];
+
+        // foreach ($matching_records as $entry) {
+        //     $key = $entry->mother_name;
+        //     if (!isset ($sameMother[$key])) {
+        //         $sameMother[$key] = [];
+        //     }
+        //     $sameMother[$key][] = ['id' => $entry->id, 'firstname' => $entry->firstname, 'father_name' => $entry->father_name];
+        // }
+
+
+        // $result = array_values(array_filter($sameMother, function($group) {
+        //     return count($group) > 1;
+        // }));
+        
+        
+        // $sameFather = [];
+
+        // foreach ($matching_records as $entry) {
+        //     $key = $entry->father_name;
+        //     if (!isset ($sameFather[$key])) {
+        //         $sameFather[$key] = [];
+        //     }
+        //     $sameFather[$key][] = ['id' => $entry->id, 'firstname' => $entry->firstname, 'father_name' => $entry->father_name];
+        // }
+
+
+        // $result = array_values(array_filter($sameFather, function($group) {
+        //     return count($group) > 1;
+        // }));
+
+
+        $this->response($matching_records, RestController::HTTP_OK);
     }
+
+
     function get_all_sibling_get()
     {
         $model = new ScholarshipModel;
