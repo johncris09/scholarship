@@ -80,6 +80,7 @@ const ManageApplication = ({
   const [fetchCourseLoading, setFetchCourseLoading] = useState(false)
   const [selectedRows, setSelectedRows] = useState([])
   const [modalBulkApproved, setModalBulkApprovedVisible] = useState(false)
+  const [modalBulkDisapproved, setModalBulkDisapproved] = useState(false)
   const [table, setTable] = useState([])
   const [editorState, setEditorState] = useState(() => EditorState.createEmpty())
 
@@ -160,7 +161,6 @@ const ManageApplication = ({
       })
       .then((response) => {
         setData(response.data)
-        console.info(response.data)
       })
       .catch((error) => {
         toast.error(handleError(error))
@@ -507,48 +507,85 @@ const ManageApplication = ({
           id: item.id,
         }
       })
+    disapprovedForm.setFieldValue('data', selectedRows)
+    setModalBulkDisapproved(true)
+    // Swal.fire({
+    //   title: 'Selected row(s) will be disapproved.',
+    //   text: 'Reason for disapproval (optional)',
+    //   input: 'textarea',
+    //   icon: 'info',
+    //   showCancelButton: true,
+    //   confirmButtonText: 'Ok',
+    //   confirmButtonColor: '#3085d6',
+    //   cancelButtonColor: '#d33',
+    // }).then(async (result) => {
+    //   if (result.isConfirmed) {
+    //     validationPrompt(() => {
+    //       setLoading(true)
+    //       api
+    //         .post(scholarship_type + '/bulk_status_update', {
+    //           data: selectedRows,
+    //           status: 'Disapproved',
+    //           reason: result.value,
+    //         })
 
-    Swal.fire({
-      title: 'Selected row(s) will be disapproved.',
-      text: 'Reason for disapproval (optional)',
-      input: 'textarea',
-      icon: 'info',
-      showCancelButton: true,
-      confirmButtonText: 'Ok',
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        validationPrompt(() => {
-          setLoading(true)
-          api
-            .post(scholarship_type + '/bulk_status_update', {
-              data: selectedRows,
-              status: 'Disapproved',
-              reason: result.value,
-            })
-
-            .then((response) => {
-              toast.success(response.data.message)
-              fetchData()
-              table.resetRowSelection()
-            })
-            .catch((error) => {
-              toast.error(handleError(error))
-            })
-            .finally(() => {
-              setLoading(false)
-            })
-        })
-      }
-    })
+    //         .then((response) => {
+    //           toast.success(response.data.message)
+    //           fetchData()
+    //           table.resetRowSelection()
+    //         })
+    //         .catch((error) => {
+    //           toast.error(handleError(error))
+    //         })
+    //         .finally(() => {
+    //           setLoading(false)
+    //         })
+    //     })
+    //   }
+    // })
   }
 
   const onEditorStateChange = (editorState) => {
     setEditorState(editorState) // Update the local state with the new EditorState
 
     applicationDetailsForm.setFieldValue('reason', editorState)
+    disapprovedForm.setFieldValue('reason', editorState)
   }
+
+  const disapprovedForm = useFormik({
+    initialValues: {
+      data: '',
+      status: 'Disapproved',
+      reason: '',
+    },
+    onSubmit: async (values) => {
+      const contentState = convertToRaw(values.reason.getCurrentContent())
+      const contentStateString = JSON.stringify(contentState)
+      const updatedValues = { ...values, reason: JSON.parse(contentStateString) }
+
+      validationPrompt(() => {
+        setLoadingOperation(true)
+        api
+          .post(scholarship_type + '/bulk_status_update', updatedValues)
+          .then((response) => {
+            console.info(response.data)
+            toast.success(response.data.message)
+            setModalBulkDisapproved(false)
+            fetchData()
+            disapprovedForm.resetForm()
+            // approvedForm.resetForm()
+            // clear select rows
+            setSelectedRows([])
+          })
+          .catch((error) => {
+            toast.error(handleError(error))
+          })
+          .finally(() => {
+            setLoadingOperation(false)
+          })
+      })
+    },
+  })
 
   return (
     <>
@@ -660,6 +697,7 @@ const ManageApplication = ({
             }}
             enableColumnResizing
             enableRowSelection
+            autoResetAll={true}
             enableGrouping
             enableSelectAll={true}
             columnFilterDisplayMode="popover"
@@ -1381,12 +1419,6 @@ const ManageApplication = ({
                       wrapperStyle={{ border: '.5px solid #F1F6F9' }}
                       onEditorStateChange={onEditorStateChange}
                     />
-                    {/* {applicationDetailsForm.touched.reason &&
-                    applicationDetailsForm.errors.reason ? (
-                      <CFormText className="text-danger">
-                        {applicationDetailsForm.errors.reason}
-                      </CFormText>
-                    ) : null} */}
                   </CCol>
                 </CRow>
 
@@ -1459,6 +1491,55 @@ const ManageApplication = ({
               </CButton>
               <CButton color="primary" size="sm" type="submit">
                 Approve
+              </CButton>
+            </CModalFooter>
+          </CForm>
+        </CModal>
+      </>
+      <>
+        <CModal
+          size="lg"
+          alignment="center"
+          backdrop="static"
+          visible={modalBulkDisapproved}
+          onClose={() => setModalBulkDisapproved(false)}
+        >
+          <CModalHeader onClose={() => setModalBulkDisapproved(false)}>
+            <CModalTitle> Bulk Disapproved </CModalTitle>
+          </CModalHeader>
+          <CForm
+            id="form"
+            className="row g-3 needs-validation"
+            onSubmit={disapprovedForm.handleSubmit}
+          >
+            <CModalBody>
+              <CRow className="my-1">
+                <CCol md={12}>
+                  <CFormLabel>Notes:</CFormLabel>
+                  <Editor
+                    editorState={editorState}
+                    wrapperClassName="demo-wrapper"
+                    editorClassName="demo-editor"
+                    editorStyle={{ height: 200, paddingLeft: 5, lineHeight: 0.1 }}
+                    wrapperStyle={{ border: '.5px solid #F1F6F9' }}
+                    onEditorStateChange={onEditorStateChange}
+                  />
+                </CCol>
+              </CRow>
+            </CModalBody>
+
+            {loadingOperation && <DefaultLoading />}
+
+            <CModalFooter>
+              <CButton
+                color="secondary"
+                size="sm"
+                onClick={() => setModalBulkApprovedVisible(false)}
+              >
+                Close
+              </CButton>
+              <CButton color="primary" size="sm" type="submit">
+                Disapprove
               </CButton>
             </CModalFooter>
           </CForm>
