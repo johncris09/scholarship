@@ -1,6 +1,6 @@
 <?php
 
-defined('BASEPATH') or exit('No direct script access allowed');
+defined('BASEPATH') or exit ('No direct script access allowed');
 
 class SeniorHighModel extends CI_Model
 {
@@ -180,7 +180,7 @@ class SeniorHighModel extends CI_Model
     }
 
     public function bulk_status_update($data, $id)
-    { 
+    {
         $this->db->where_in('id', $id);
         return $this->db->update($this->table, $data);
 
@@ -198,7 +198,7 @@ class SeniorHighModel extends CI_Model
             ->where('semester', $query_sem->current_semester)
             ->where('school_year', $query_sy->current_sy);
 
-        if (!empty($filterData['school'])) {
+        if (!empty ($filterData['school'])) {
             $this->db->where('school', intval($filterData['school']));
         }
         $query = $this->db->get($this->table);
@@ -223,7 +223,7 @@ class SeniorHighModel extends CI_Model
             ->where('school_year', $query_sy->current_sy);
 
 
-        if (!empty($filterData['school'])) {
+        if (!empty ($filterData['school'])) {
             $this->db->where('school', intval($filterData['school']));
         }
         $query = $this->db->get($this->table);
@@ -244,7 +244,7 @@ class SeniorHighModel extends CI_Model
             ->where('semester', $query_sem->current_semester)
             ->where('school_year', $query_sy->current_sy);
 
-        if (!empty($filterData['school'])) {
+        if (!empty ($filterData['school'])) {
             $this->db->where('school', intval($filterData['school']));
         }
         $query = $this->db->get($this->table);
@@ -264,7 +264,7 @@ class SeniorHighModel extends CI_Model
             ->where('app_status ', 'archived')
             ->where('semester', $query_sem->current_semester)
             ->where('school_year', $query_sy->current_sy);
-        if (!empty($filterData['school'])) {
+        if (!empty ($filterData['school'])) {
             $this->db->where('school', intval($filterData['school']));
         }
         $query = $this->db->get($this->table);
@@ -304,7 +304,7 @@ class SeniorHighModel extends CI_Model
             ->where('school_year', $query_sy->current_sy);
 
 
-        if (!empty($filterData['school'])) {
+        if (!empty ($filterData['school'])) {
             $this->db->where('school', intval($filterData['school']));
         }
 
@@ -352,7 +352,7 @@ class SeniorHighModel extends CI_Model
                 AND sh.school_year =   '$query_sy->current_sy' ";
 
 
-            if (!empty($filterData['school'])) {
+            if (!empty ($filterData['school'])) {
                 $queryString .= " AND sh.school = " . intval($filterData['school']);
             }
 
@@ -623,7 +623,7 @@ class SeniorHighModel extends CI_Model
             ->join('senior_high_school s', 'sh.school = s.id', 'LEFT')
             ->join('strand', 'sh.strand = strand.id', 'LEFT');
 
-        if (!empty($data)) {
+        if (!empty ($data)) {
             $this->db->where($data);
         }
         $this->db->order_by('lastname', 'asc');
@@ -666,8 +666,54 @@ class SeniorHighModel extends CI_Model
         return $query->row();
     }
 
- 
-      
+    public function get_data_by_gender($data)
+    {
+
+        $query_sem = $this->db->query('SELECT current_semester FROM  config where id = 1')->result()[0];
+        $query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->result()[0];
+
+
+        $this->db
+            ->select('
+            scholarship.sex as label,
+            count(*) as total ')
+            ->from('senior_high  ')
+            ->join('scholarship', ' senior_high.scholarship_id = scholarship.id');
+
+        if (!empty ($data)) {
+            $this->db->where($data);
+        } else {
+            $this->db->where('senior_high.semester', $query_sem->current_semester);
+
+            $this->db->where('senior_high.school_year', $query_sy->current_sy);
+        }
+
+
+        $this->db->group_by('sex');
+
+        $query = $this->db->get();
+
+        return $query->result();
+
+    }
+
+
+    public function all_gender()
+    {
+
+
+        $query = $this->db
+            ->select('
+            scholarship.sex as label,
+            count(*) as total ')
+            ->from('senior_high  ')
+            ->join('scholarship', ' senior_high.scholarship_id = scholarship.id')
+            ->group_by('sex')
+            ->get();
+
+        return $query->result();
+
+    }
 
 }
 

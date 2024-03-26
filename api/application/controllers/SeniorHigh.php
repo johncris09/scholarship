@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') or exit('No direct script access allowed');
+defined('BASEPATH') or exit ('No direct script access allowed');
 
 require APPPATH . 'libraries/RestController.php';
 require APPPATH . 'libraries/Format.php';
@@ -70,7 +70,7 @@ class SeniorHigh extends RestController
 
 
 		$seniorHighSchoolFilter = array(
-			'school' => !empty($requestData['school']) ? $requestData['school'] : ''
+			'school' => !empty ($requestData['school']) ? $requestData['school'] : ''
 		);
 
 		$result = array(
@@ -106,7 +106,7 @@ class SeniorHigh extends RestController
 			'school_year' => $requestData['school_year'],
 			'app_status' => $requestData['app_status'],
 			'reason' => json_encode($requestData['reason']),
-		); 
+		);
 
 		$update_result = $seniorhigh->update($id, $data);
 
@@ -159,43 +159,43 @@ class SeniorHigh extends RestController
 
 
 	public function bulk_status_update_post()
-    {
+	{
 
-        $seniorhigh = new SeniorHighModel;
-        $requestData = json_decode($this->input->raw_input_stream, true);
+		$seniorhigh = new SeniorHighModel;
+		$requestData = json_decode($this->input->raw_input_stream, true);
 
-        // Extract IDs
-        // Object to array
-        $ids = array_map(function ($item) {
-            return $item['id'];
-        }, $requestData['data']);
+		// Extract IDs
+		// Object to array
+		$ids = array_map(function ($item) {
+			return $item['id'];
+		}, $requestData['data']);
 
-        // Convert IDs to integers
-        $ids = array_map('intval', $ids);
-        $data = array(
-            'app_status' => $requestData['status'],
-        );
+		// Convert IDs to integers
+		$ids = array_map('intval', $ids);
+		$data = array(
+			'app_status' => $requestData['status'],
+		);
 
-        if (isset ($requestData['reason'])) {
-            $data['reason'] = json_encode($requestData['reason']);
-        } 
-        $result = $seniorhigh->bulk_status_update($data, $ids);
+		if (isset ($requestData['reason'])) {
+			$data['reason'] = json_encode($requestData['reason']);
+		}
+		$result = $seniorhigh->bulk_status_update($data, $ids);
 
-        if ($result > 0) {
-            $this->response([
-                'status' => true,
-                'message' => 'Application Updated.'
-            ], RestController::HTTP_OK);
-        } else {
+		if ($result > 0) {
+			$this->response([
+				'status' => true,
+				'message' => 'Application Updated.'
+			], RestController::HTTP_OK);
+		} else {
 
-            $this->response([
-                'status' => false,
-                'message' => 'Failed to update application.'
-            ], RestController::HTTP_BAD_REQUEST);
+			$this->response([
+				'status' => false,
+				'message' => 'Failed to update application.'
+			], RestController::HTTP_BAD_REQUEST);
 
-        }
+		}
 
-    }
+	}
 
 
 	public function total_get()
@@ -206,7 +206,7 @@ class SeniorHigh extends RestController
 
 
 		$seniorHighSchoolFilter = array(
-			'school' => !empty($requestData['school']) ? $requestData['school'] : ''
+			'school' => !empty ($requestData['school']) ? $requestData['school'] : ''
 		);
 
 		$result = (int) $seniorhigh->total($seniorHighSchoolFilter);
@@ -224,7 +224,7 @@ class SeniorHigh extends RestController
 
 
 		$seniorHighSchoolFilter = array(
-			'school' => !empty($requestData['school']) ? $requestData['school'] : ''
+			'school' => !empty ($requestData['school']) ? $requestData['school'] : ''
 		);
 		$data = $seniorhigh->get_status_by_barangay($seniorHighSchoolFilter);
 
@@ -263,8 +263,8 @@ class SeniorHigh extends RestController
 		$CryptoHelper = new CryptoHelper;
 		$requestData = $this->input->get();
 		$data = array(
-			'semester' => !empty($requestData['semester']) ? $requestData['semester'] : '',
-			'school_year' => !empty($requestData['school_year']) ? $requestData['school_year'] : '',
+			'semester' => !empty ($requestData['semester']) ? $requestData['semester'] : '',
+			'school_year' => !empty ($requestData['school_year']) ? $requestData['school_year'] : '',
 		);
 		$result = array(
 			'type' => "Senior High",
@@ -283,8 +283,8 @@ class SeniorHigh extends RestController
 		$CryptoHelper = new CryptoHelper;
 		$requestData = $this->input->get();
 		$data = array(
-			'semester' => !empty($requestData['semester']) ? $requestData['semester'] : '',
-			'school_year' => !empty($requestData['school_year']) ? $requestData['school_year'] : '',
+			'semester' => !empty ($requestData['semester']) ? $requestData['semester'] : '',
+			'school_year' => !empty ($requestData['school_year']) ? $requestData['school_year'] : '',
 		);
 		$result = $seniorhigh->filter_total($data);
 		$this->response($result, RestController::HTTP_OK);
@@ -400,32 +400,32 @@ class SeniorHigh extends RestController
 		$data = [];
 
 		$data = array();
-		if (isset($requestData['school']) && !empty($requestData['school'])) {
+		if (isset ($requestData['school']) && !empty ($requestData['school'])) {
 			$data['s.id'] = $requestData['school'];
 		}
-		if (isset($requestData['semester']) && !empty($requestData['semester'])) {
+		if (isset ($requestData['semester']) && !empty ($requestData['semester'])) {
 			$data['semester'] = $requestData['semester'];
 		}
-		if (isset($requestData['school_year']) && !empty($requestData['school_year'])) {
+		if (isset ($requestData['school_year']) && !empty ($requestData['school_year'])) {
 			$data['school_year'] = $requestData['school_year'];
 		}
-		if (isset($requestData['status']) && !empty($requestData['status'])) {
+		if (isset ($requestData['status']) && !empty ($requestData['status'])) {
 			$data['app_status'] = $requestData['status'];
 		}
-		if (isset($requestData['availment']) && !empty($requestData['availment'])) {
+		if (isset ($requestData['availment']) && !empty ($requestData['availment'])) {
 			$data['availment'] = $requestData['availment'];
 		}
-		if (isset($requestData['sex']) && !empty($requestData['sex'])) {
+		if (isset ($requestData['sex']) && !empty ($requestData['sex'])) {
 			$data['sex'] = $requestData['sex'];
 		}
-		if (isset($requestData['grade_level']) && !empty($requestData['grade_level'])) {
+		if (isset ($requestData['grade_level']) && !empty ($requestData['grade_level'])) {
 			$data['grade_level'] = $requestData['grade_level'];
 		}
-		if (isset($requestData['address']) && !empty($requestData['address'])) {
+		if (isset ($requestData['address']) && !empty ($requestData['address'])) {
 			$data['barangay.id'] = $requestData['address'];
 		}
 
-		if (isset($requestData['strand']) && !empty($requestData['strand'])) {
+		if (isset ($requestData['strand']) && !empty ($requestData['strand'])) {
 			$data['strand.id'] = $requestData['strand'];
 		}
 		$result = $seniorhigh->generate_report($data);
@@ -434,37 +434,71 @@ class SeniorHigh extends RestController
 	}
 
 
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
-	// _____________________
- 
+
+
+	public function get_data_by_gender_get()
+	{
+		$seniorhigh = new SeniorHighModel;
+		$requestData = $this->input->get();
+
+
+		$filter_data = [];
+
+		if (isset ($requestData['semester']) && !empty ($requestData['semester'])) {
+			$filter_data['semester'] = $requestData['semester'];
+		}
+		if (isset ($requestData['school_year']) && !empty ($requestData['school_year'])) {
+			$filter_data['school_year'] = $requestData['school_year'];
+		}
+		$result = $seniorhigh->get_data_by_gender($filter_data);
+		$data = [];
+
+
+		if (!$result) {
+			$data = array(
+				'male' => 0,
+				'female' => 0,
+			);
+		} else {
+			$data = array(
+				'male' => $result[1]->total,
+				'female' => $result[0]->total,
+			);
+
+		}
+
+
+		$this->response($data, RestController::HTTP_OK);
+	}
 
 
 
+
+
+	public function all_gender_get()
+	{
+		$seniorhigh = new SeniorHighModel;
+
+		$result = $seniorhigh->all_gender();
+		$data = [];
+
+
+		if (!$result) {
+			$data = array(
+				'male' => 0,
+				'female' => 0,
+			);
+		} else {
+			$data = array(
+				'male' => $result[1]->total,
+				'female' => $result[0]->total,
+			);
+
+		}
+
+
+		$this->response($data, RestController::HTTP_OK);
+	}
 
 
 }

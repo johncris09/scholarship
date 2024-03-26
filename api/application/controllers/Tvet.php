@@ -149,7 +149,7 @@ class Tvet extends RestController
 
         if (isset ($requestData['reason'])) {
             $data['reason'] = json_encode($requestData['reason']);
-        }  
+        }
         $result = $tvet->bulk_status_update($data, $ids);
 
         if ($result > 0) {
@@ -401,7 +401,64 @@ class Tvet extends RestController
     }
 
 
+    public function get_data_by_gender_get()
+    {
+        $tvet = new TvetModel;
+        $requestData = $this->input->get();
 
 
+        $filter_data = [];
+
+        if (isset ($requestData['semester']) && !empty ($requestData['semester'])) {
+            $filter_data['semester'] = $requestData['semester'];
+        }
+        if (isset ($requestData['school_year']) && !empty ($requestData['school_year'])) {
+            $filter_data['school_year'] = $requestData['school_year'];
+        }
+        $result = $tvet->get_data_by_gender($filter_data);
+        $data = [];
+
+
+        if (!$result) {
+            $data = array(
+                'male' => 0,
+                'female' => 0,
+            );
+        } else {
+            $data = array(
+                'male' => $result[1]->total,
+                'female' => $result[0]->total,
+            );
+
+        }
+
+
+        $this->response($data, RestController::HTTP_OK);
+    }
+    public function all_gender_get()
+	{
+        $tvet = new TvetModel;
+
+		$result = $tvet->all_gender();
+		$data = [];
+
+
+		if (!$result) {
+			$data = array(
+				'male' => 0,
+				'female' => 0,
+			);
+		} else {
+			$data = array(
+				'male' => $result[1]->total,
+				'female' => $result[0]->total,
+			);
+
+		}
+
+
+		$this->response($data, RestController::HTTP_OK);
+	}
+    
 
 }

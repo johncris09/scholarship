@@ -13,24 +13,28 @@ import CIcon from '@coreui/icons-react'
 import { useNavigate } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
 import { WholePageLoading, api } from '../SystemConfiguration'
+import Avatar from './Avatar'
 
-const isProduction = false
+const isProduction = true
 const AppHeaderDropdown = () => {
   const navigate = useNavigate()
   const [operationLoading, setOperationLoading] = useState(false)
   const [photo, setPhoto] = useState('')
+  const [userId, setUserId] = useState('')
   useEffect(() => {
     fetchData()
 
     // Setup interval to fetch data every 5 seconds (5000 milliseconds)
-    const intervalId = setInterval(fetchData, 1000)
+    // const intervalId = setInterval(fetchData, 1000)
 
-    // Cleanup function to clear interval when the component unmounts
-    return () => clearInterval(intervalId)
+    // // // Cleanup function to clear interval when the component unmounts
+    // return () => clearInterval(intervalId)
   }, [photo])
   const fetchData = async () => {
     try {
       const user = jwtDecode(localStorage.getItem('scholarshipToken'))
+      console.info(user)
+      setUserId(user.id)
       await api
         .get('user/find/' + user.id)
         .then((response) => {
@@ -97,12 +101,7 @@ const AppHeaderDropdown = () => {
     <>
       <CDropdown className="_avatar" variant="nav-item">
         <CDropdownToggle placement="bottom-end" className="py-0 " caret={false}>
-          <CAvatar
-            src={photo}
-            title="Profile Photo"
-            size="md"
-            style={{ width: '50px', height: '50px' }}
-          />
+          <Avatar userId={userId} />
         </CDropdownToggle>
         <CDropdownMenu className="pt-0" placement="bottom-end">
           <CDropdownItem href="#/login" onClick={handleLogout}>

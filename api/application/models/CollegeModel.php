@@ -610,5 +610,53 @@ class CollegeModel extends CI_Model
 		return $query->result();
 
 	} 
+	
+	public function get_data_by_gender($data)
+    {
+
+        $query_sem = $this->db->query('SELECT current_semester FROM  config where id = 1')->result()[0];
+        $query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->result()[0];
+
+
+        $this->db
+            ->select('
+            scholarship.sex as label,
+            count(*) as total ')
+            ->from('college  ')
+            ->join('scholarship', ' college.scholarship_id = scholarship.id');
+
+        if (!empty ($data)) {
+            $this->db->where($data);
+        } else {
+            $this->db->where('college.semester', $query_sem->current_semester);
+
+            $this->db->where('college.school_year', $query_sy->current_sy);
+        }
+ 
+
+        $this->db->group_by('sex');
+
+        $query = $this->db->get();
+
+        return $query->result();
+
+    }
+
+	public function all_gender()
+    {
+
+
+        $query = $this->db
+            ->select('
+            scholarship.sex as label,
+            count(*) as total ')
+            ->from('college  ')
+            ->join('scholarship', ' college.scholarship_id = scholarship.id')
+            ->group_by('sex')
+            ->get();
+
+        return $query->result();
+
+    }
 
 }

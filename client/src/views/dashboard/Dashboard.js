@@ -59,14 +59,41 @@ const Dashboard = ({ cardTitle }) => {
   const [statusAddressChartData, setStatusAddressChartData] = useState([])
   const [activeKey, setActiveKey] = useState(1)
   const [user, setUser] = useState([])
+  const [loadingGenderChart, setLoadingGenderChart] = useState(false)
+  const [genderChartData, setGenderChartData] = useState([])
 
   useEffect(() => {
     fetchTotalStatus()
     fetchTotal()
     fetchStatusAddress()
+    fetchGender()
     fetchOnlineUser()
     setUser(jwtDecode(localStorage.getItem('scholarshipToken')))
   }, [])
+
+  const fetchGender = async () => {
+    setLoadingGenderChart(true)
+    await Promise.all([
+      api.get('senior_high/get_data_by_gender'),
+      api.get('college/get_data_by_gender'),
+      api.get('tvet/get_data_by_gender'),
+    ])
+      .then((responses) => {
+        const response = responses.map((response) => response.data)
+        const newData = {
+          senior_high: response[0],
+          college: response[1],
+          tvet: response[2],
+        }
+        setGenderChartData(newData)
+      })
+      .catch((error) => {
+        toast.error(handleError(error))
+      })
+      .finally(() => {
+        setLoadingGenderChart(false)
+      })
+  }
 
   const fetchOnlineUser = () => {
     setLoadingOnline(true)
@@ -153,23 +180,26 @@ const Dashboard = ({ cardTitle }) => {
     setLoadingTotal(false)
     setLoadingOperation(true)
     setLoadingChart(true)
+    setLoadingGenderChart(true)
     filterForm.resetForm()
     fetchTotal()
     fetchStatusAddress()
     fetchTotalStatus()
+    fetchGender()
   }
 
-  const handleViewAllData = () => {
+  const handleViewAllData = async () => {
     setLoadingTotal(false)
     setLoadingTotal(true)
     setLoadingOperation(true)
     setLoadingChart(true)
+    setLoadingGenderChart(true)
 
     filterForm.resetForm()
     setValidated(false)
 
     // Widget
-    Promise.all([
+    await Promise.all([
       api.get('senior_high/all_total_status'),
       api.get('college/all_total_status'),
       api.get('tvet/all_total_status'),
@@ -187,7 +217,7 @@ const Dashboard = ({ cardTitle }) => {
       })
 
     // Fetch total data
-    Promise.all([
+    await Promise.all([
       api.get('senior_high/all_total'),
       api.get('college/all_total'),
       api.get('tvet/all_total'),
@@ -211,8 +241,31 @@ const Dashboard = ({ cardTitle }) => {
         setLoadingOperation(false)
       })
 
+    // gender
+    await Promise.all([
+      api.get('senior_high/all_gender'),
+      api.get('college/all_gender'),
+      api.get('tvet/all_gender'),
+    ])
+      .then((responses) => {
+        const response = responses.map((response) => response.data)
+        // console.info(response)
+        const newData = {
+          senior_high: response[0],
+          college: response[1],
+          tvet: response[2],
+        }
+        setGenderChartData(newData)
+      })
+      .catch((error) => {
+        toast.error(handleError(error))
+      })
+      .finally(() => {
+        setLoadingGenderChart(false)
+      })
+
     // chart status in every barangay
-    Promise.all([
+    await Promise.all([
       api.get('senior_high/all_status_by_barangay'),
       api.get('college/all_status_by_barangay'),
       api.get('tvet/all_status_by_barangay'),
@@ -256,8 +309,9 @@ const Dashboard = ({ cardTitle }) => {
       setLoadingTotal(true)
       setLoadingOperation(true)
       setLoadingChart(true)
+      setLoadingGenderChart(true)
       // Fetch total status data
-      Promise.all([
+      await Promise.all([
         api.get('senior_high/filter_total_status', { params: values }),
         api.get('college/filter_total_status', { params: values }),
         api.get('tvet/filter_total_status', { params: values }),
@@ -275,7 +329,7 @@ const Dashboard = ({ cardTitle }) => {
         })
 
       // Widget
-      Promise.all([
+      await Promise.all([
         api.get('senior_high/filter_total', { params: values }),
         api.get('college/filter_total', { params: values }),
         api.get('tvet/filter_total', { params: values }),
@@ -299,8 +353,31 @@ const Dashboard = ({ cardTitle }) => {
           setLoadingOperation(false)
         })
 
+      // gender
+      await Promise.all([
+        api.get('senior_high/get_data_by_gender', { params: values }),
+        api.get('college/get_data_by_gender', { params: values }),
+        api.get('tvet/get_data_by_gender', { params: values }),
+      ])
+        .then((responses) => {
+          const response = responses.map((response) => response.data)
+          // console.info(response)
+          const newData = {
+            senior_high: response[0],
+            college: response[1],
+            tvet: response[2],
+          }
+          setGenderChartData(newData)
+        })
+        .catch((error) => {
+          toast.error(handleError(error))
+        })
+        .finally(() => {
+          setLoadingGenderChart(false)
+        })
+
       // chart status in every barangay
-      Promise.all([
+      await Promise.all([
         api.get('senior_high/filter_status_by_barangay', { params: values }),
         api.get('college/filter_status_by_barangay', { params: values }),
         api.get('tvet/filter_status_by_barangay', { params: values }),
@@ -332,6 +409,7 @@ const Dashboard = ({ cardTitle }) => {
       <ToastContainer />
 
       <h5>Welcome {user.firstname},</h5>
+
       <CRow className="justify-content-center mt-2">
         <CCol md={12}>
           <CCard className="mb-4" id="filter">
@@ -417,11 +495,12 @@ const Dashboard = ({ cardTitle }) => {
                 </CRow>
               </CForm>
 
-              {loadingOperation && <WidgetLoading />}
+              {/* {loadingOperation && <WidgetLoading />} */}
             </CCardBody>
           </CCard>
         </CCol>
       </CRow>
+
       {!loadingTotal ? (
         <CRow>
           <CCol id="totalDataSeniorHigh">
@@ -613,6 +692,177 @@ const Dashboard = ({ cardTitle }) => {
           </CCol>
         </CRow>
       )}
+
+      <CRow className="justify-content-center mb-4">
+        <CCol md={12}>
+          <CCard id="chart">
+            <CCardBody>
+              <h5>Gender Statistics</h5>
+              <CNav variant="pills" layout="justified">
+                <CNavItem role="presentation">
+                  <CNavLink
+                    active={activeKey === 1}
+                    component="button"
+                    role="tab"
+                    aria-controls="senior-high-tab-pane"
+                    aria-selected={activeKey === 1}
+                    onClick={() => {
+                      setActiveKey(1)
+                      toast.dismiss()
+                    }}
+                  >
+                    Senior High
+                  </CNavLink>
+                </CNavItem>
+                <CNavItem role="presentation">
+                  <CNavLink
+                    active={activeKey === 2}
+                    component="button"
+                    role="tab"
+                    aria-controls="college-tab-pane"
+                    aria-selected={activeKey === 2}
+                    onClick={() => {
+                      setActiveKey(2)
+                      toast.dismiss()
+                    }}
+                  >
+                    College
+                  </CNavLink>
+                </CNavItem>
+                <CNavItem role="presentation">
+                  <CNavLink
+                    active={activeKey === 3}
+                    component="button"
+                    role="tab"
+                    aria-controls="tvet-tab-pane"
+                    aria-selected={activeKey === 3}
+                    onClick={() => {
+                      setActiveKey(3)
+                      toast.dismiss()
+                    }}
+                  >
+                    Tvet
+                  </CNavLink>
+                </CNavItem>
+              </CNav>
+              <CTabContent>
+                <CTabPane
+                  role="tabpanel"
+                  aria-labelledby="senior-high-tab-pane"
+                  visible={activeKey === 1}
+                  style={{ position: 'relative' }}
+                >
+                  {loadingGenderChart ? (
+                    <>
+                      <div className="d-grid gap-2 d-md-flex justify-content-center mt-2">
+                        <Skeleton variant="rounded" width={90} height={15} />
+                        <Skeleton variant="rounded" width={90} height={15} />
+                      </div>
+                      <div className="d-grid gap-2 d-md-flex justify-content-center mt-3">
+                        <Skeleton variant="circular" height={350} width={350} />
+                      </div>
+                    </>
+                  ) : (
+                    <CChart
+                      className="mx-auto"
+                      type="doughnut"
+                      style={{ height: 400, width: 400 }}
+                      data={{
+                        labels: ['Male', 'Female'],
+                        datasets: [
+                          {
+                            backgroundColor: ['#378CE7', '#FF5BAE'],
+                            data:
+                              genderChartData.senior_high === undefined
+                                ? [0, 0]
+                                : [
+                                    genderChartData.senior_high.male,
+                                    genderChartData.senior_high.female,
+                                  ],
+                          },
+                        ],
+                      }}
+                    />
+                  )}
+                </CTabPane>
+                <CTabPane
+                  role="tabpanel"
+                  aria-labelledby="college-tab-pane"
+                  visible={activeKey === 2}
+                  style={{ position: 'relative' }}
+                >
+                  {loadingGenderChart ? (
+                    <>
+                      <div className="d-grid gap-2 d-md-flex justify-content-center mt-2">
+                        <Skeleton variant="rounded" width={90} height={15} />
+                        <Skeleton variant="rounded" width={90} height={15} />
+                      </div>
+                      <div className="d-grid gap-2 d-md-flex justify-content-center mt-3">
+                        <Skeleton variant="circular" height={350} width={350} />
+                      </div>
+                    </>
+                  ) : (
+                    <CChart
+                      className=" mx-auto"
+                      type="doughnut"
+                      style={{ height: 400, width: 400 }}
+                      data={{
+                        labels: ['Male', 'Female'],
+                        datasets: [
+                          {
+                            backgroundColor: ['#378CE7', '#FF5BAE'],
+                            data:
+                              genderChartData.college === undefined
+                                ? [0, 0]
+                                : [genderChartData.college.male, genderChartData.college.female],
+                          },
+                        ],
+                      }}
+                    />
+                  )}
+                </CTabPane>
+                <CTabPane
+                  role="tabpanel"
+                  aria-labelledby="tvet-tab-pane"
+                  visible={activeKey === 3}
+                  style={{ position: 'relative' }}
+                >
+                  {loadingGenderChart ? (
+                    <>
+                      <div className="d-grid gap-2 d-md-flex justify-content-center mt-2">
+                        <Skeleton variant="rounded" width={90} height={15} />
+                        <Skeleton variant="rounded" width={90} height={15} />
+                      </div>
+                      <div className="d-grid gap-2 d-md-flex justify-content-center mt-3">
+                        <Skeleton variant="circular" height={350} width={350} />
+                      </div>
+                    </>
+                  ) : (
+                    <CChart
+                      className=" mx-auto"
+                      type="doughnut"
+                      style={{ height: 400, width: 400 }}
+                      data={{
+                        labels: ['Male', 'Female'],
+                        datasets: [
+                          {
+                            backgroundColor: ['#378CE7', '#FF5BAE'],
+                            data:
+                              genderChartData.tvet === undefined
+                                ? [0, 0]
+                                : [genderChartData.tvet.male, genderChartData.tvet.female],
+                          },
+                        ],
+                      }}
+                    />
+                  )}
+                </CTabPane>
+              </CTabContent>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
+
       {!loadingChart ? (
         <CRow className="justify-content-center mt-4">
           <CCol md={12}>

@@ -401,8 +401,76 @@ class College extends RestController
         $this->response($result, RestController::HTTP_OK);
     }
 
+	
+	
+	public function get_data_by_gender_get()
+	{
+        $college = new CollegeModel;
+		$requestData = $this->input->get();
 
 
+		$filter_data = [];
 
+		if (isset ($requestData['semester']) && !empty ($requestData['semester'])) {
+			$filter_data['semester'] = $requestData['semester'];
+		}
+		if (isset ($requestData['school_year']) && !empty ($requestData['school_year'])) {
+			$filter_data['school_year'] = $requestData['school_year'];
+		}
+		$result = $college->get_data_by_gender($filter_data);
+		$data = [];
+
+
+		if (!$result) {
+			$data = array(
+				'male' => 0,
+				'female' => 0,
+			);
+		} else {
+			$data = array(
+				'male' => $result[1]->total,
+				'female' => $result[0]->total,
+			);
+
+		}
+
+
+		$this->response($data, RestController::HTTP_OK);
+	}
+
+
+    public function all_gender_get()
+	{
+        $college = new CollegeModel;
+
+		$result = $college->all_gender();
+		$data = [];
+
+
+		if (!$result) {
+			$data = array(
+				'male' => 0,
+				'female' => 0,
+			);
+		} else {
+			$data = array(
+				'male' => $result[1]->total,
+				'female' => $result[0]->total,
+			);
+
+		}
+
+
+		$this->response($data, RestController::HTTP_OK);
+	}
+    
+
+
+	public function all_total_get()
+	{
+        $college = new CollegeModel; 
+		$result = (int) $college->all_total();
+		$this->response($result, RestController::HTTP_OK);
+	}
 
 }

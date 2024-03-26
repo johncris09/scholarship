@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') or exit('No direct script access allowed');
+defined('BASEPATH') or exit ('No direct script access allowed');
 
 
 // ╭━━━┳━━━┳╮╱╭┳━━━┳╮╱╱╭━━━┳━━━┳━━━┳╮╱╭┳━━┳━━━╮
@@ -51,7 +51,7 @@ $route['system_sequence/tvet_appno'] = 'SystemSequence/tvet_appno';
 // Senior High
 $route['senior_high'] = 'SeniorHigh';
 $route['senior_high/find/(:any)'] = 'SeniorHigh/find/$1';
-$route['senior_high/insert'] = 'SeniorHigh/insert'; 
+$route['senior_high/insert'] = 'SeniorHigh/insert';
 $route['senior_high/filter_approved'] = 'SeniorHigh/filter_approved';
 $route['senior_high/get_by_status'] = 'SeniorHigh/get_by_status';
 $route['senior_high/all_status_by_barangay'] = 'SeniorHigh/all_status_by_barangay';
@@ -66,6 +66,8 @@ $route['senior_high/total'] = 'SeniorHigh/total';
 $route['senior_high/filter_total'] = 'SeniorHigh/filter_total';
 $route['senior_high/all_total'] = 'SeniorHigh/all_total';
 $route['senior_high/get_status_by_barangay'] = 'SeniorHigh/get_status_by_barangay';
+$route['senior_high/get_data_by_gender'] = 'SeniorHigh/get_data_by_gender';
+$route['senior_high/all_gender'] = 'SeniorHigh/all_gender';
 $route['senior_high/generate_report'] = 'SeniorHigh/generate_report';
 $route['senior_high/update/(:any)'] = 'SeniorHigh/update/$1';
 $route['senior_high/update_status/(:any)'] = 'SeniorHigh/update_status/$1';
@@ -76,7 +78,7 @@ $route['senior_high/bulk_disapproved'] = 'SeniorHigh/bulk_disapproved';
 $route['college'] = 'College';
 $route['college/select'] = 'College/select';
 $route['college/find/(:any)'] = 'College/find/$1';
-$route['college/insert'] = 'College/insert'; 
+$route['college/insert'] = 'College/insert';
 $route['college/filter_approved'] = 'College/filter_approved';
 $route['college/get_by_status'] = 'College/get_by_status';
 $route['college/all_status_by_barangay'] = 'College/all_status_by_barangay';
@@ -91,6 +93,8 @@ $route['college/total'] = 'College/total';
 $route['college/filter_total'] = 'College/filter_total';
 $route['college/all_total'] = 'College/all_total';
 $route['college/get_status_by_barangay'] = 'College/get_status_by_barangay';
+$route['college/get_data_by_gender'] = 'College/get_data_by_gender';
+$route['college/all_gender'] = 'College/all_gender';
 $route['college/generate_report'] = 'College/generate_report';
 $route['college/update/(:any)'] = 'College/update/$1';
 $route['college/update_status/(:any)'] = 'College/update_status/$1';
@@ -101,7 +105,7 @@ $route['college/bulk_disapproved'] = 'College/bulk_disapproved';
 // Tvet
 $route['tvet'] = 'Tvet';
 $route['tvet/insert'] = 'Tvet/insert';
-$route['tvet/find/(:any)'] = 'Tvet/find/$1'; 
+$route['tvet/find/(:any)'] = 'Tvet/find/$1';
 $route['tvet/filter_approved'] = 'Tvet/filter_approved';
 $route['tvet/get_by_status'] = 'Tvet/get_by_status';
 $route['tvet/all_status_by_barangay'] = 'Tvet/all_status_by_barangay';
@@ -116,6 +120,8 @@ $route['tvet/total'] = 'Tvet/total';
 $route['tvet/filter_total'] = 'Tvet/filter_total';
 $route['tvet/all_total'] = 'Tvet/all_total';
 $route['tvet/get_status_by_barangay'] = 'Tvet/get_status_by_barangay';
+$route['tvet/get_data_by_gender'] = 'Tvet/get_data_by_gender';
+$route['tvet/all_gender'] = 'Tvet/all_gender';
 $route['tvet/generate_report'] = 'Tvet/generate_report';
 $route['tvet/update/(:any)'] = 'Tvet/update/$1';
 $route['tvet/update_status/(:any)'] = 'Tvet/update_status/$1';
