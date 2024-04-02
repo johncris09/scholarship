@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') or exit ('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 require APPPATH . '/libraries/CreatorJwt.php';
 require APPPATH . 'libraries/RestController.php';
@@ -61,7 +61,7 @@ class User extends RestController
         $tokenData['expiresIn'] = "1000";
         $jwtToken = $this->objOfJwt->GenerateToken($tokenData);
 
- 
+
 
         $this->response([
           'status' => true,
@@ -98,7 +98,7 @@ class User extends RestController
   public function find_get($id)
   {
 
-    $model = new UserModel; 
+    $model = new UserModel;
     $result = $model->find($id);
     $this->response($result, RestController::HTTP_OK);
 
@@ -119,12 +119,12 @@ class User extends RestController
       'username' => $requestData['username'],
       'password' => md5($requestData['password']),
       'role' => $requestData['role_type'],
-      'school' => empty ($requestData['school']) ? null : $requestData['school'],
+      'school' => empty($requestData['school']) ? null : $requestData['school'],
     );
 
 
 
-    if (isset ($requestData['photo']) && !empty ($requestData['photo'])) {
+    if (isset($requestData['photo']) && !empty($requestData['photo'])) {
 
       $photo = $requestData['photo'];
       $image_array_1 = explode(";", $photo);
@@ -193,47 +193,43 @@ class User extends RestController
 
     $model = new UserModel;
     $requestData = json_decode($this->input->raw_input_stream, true);
-    if (isset ($requestData['first_name'])) {
+    if (isset($requestData['first_name'])) {
       $data['firstname'] = $requestData['first_name'];
     }
-    if (isset ($requestData['last_name'])) {
+    if (isset($requestData['last_name'])) {
       $data['lastname'] = $requestData['last_name'];
     }
-    if (isset ($requestData['middle_name'])) {
+    if (isset($requestData['middle_name'])) {
       $data['middlename'] = $requestData['middle_name'];
     }
-    if (isset ($requestData['username'])) {
+    if (isset($requestData['username'])) {
       $data['username'] = $requestData['username'];
     }
-    if (isset ($requestData['role'])) {
+    if (isset($requestData['role'])) {
       $data['role'] = $requestData['role'];
     }
-    if (isset ($requestData['school'])) {
+    if (isset($requestData['school'])) {
       $data['school'] = $requestData['school'];
     }
-    if (isset ($requestData['isLogin'])) {
+    if (isset($requestData['isLogin'])) {
       $data['isLogin'] = $requestData['isLogin'];
       if ($requestData['isLogin']) {
         $data['login_time'] = date('Y-m-d H:i:s');
       } else {
         $data['logout_time'] = date('Y-m-d H:i:s');
       }
-    }
+    } 
+
+
+    if (isset($requestData['photo']) && !empty($requestData['photo'])) {
 
 
 
-    // Read the image file content
-    $image_data = file_get_contents($requestData['photo']);
+      // Read the image file content
+      $image_data = file_get_contents($requestData['photo']);
 
-    // Convert the image data to base64 format
-    $image_base64 = base64_encode($image_data);
-
-
-
-
-    if (isset ($requestData['photo']) && !empty ($requestData['photo'])) {
-
-
+      // Convert the image data to base64 format
+      // $image_base64 = base64_encode($image_data);
       $image_data = file_get_contents($requestData['photo']);
 
 
