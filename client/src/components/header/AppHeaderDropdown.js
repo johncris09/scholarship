@@ -15,11 +15,9 @@ import { jwtDecode } from 'jwt-decode'
 import { WholePageLoading, api } from '../SystemConfiguration'
 import Avatar from './Avatar'
 
-const isProduction = true
 const AppHeaderDropdown = () => {
   const navigate = useNavigate()
   const [operationLoading, setOperationLoading] = useState(false)
-  const [photo, setPhoto] = useState('')
   const [userId, setUserId] = useState('')
   useEffect(() => {
     fetchData()
@@ -29,47 +27,46 @@ const AppHeaderDropdown = () => {
 
     // // // Cleanup function to clear interval when the component unmounts
     // return () => clearInterval(intervalId)
-  }, [photo])
+  }, [])
   const fetchData = async () => {
     try {
       const user = jwtDecode(localStorage.getItem('scholarshipToken'))
-      console.info(user)
       setUserId(user.id)
-      await api
-        .get('user/find/' + user.id)
-        .then((response) => {
-          if (response.data.photo) {
-            if (isProduction) {
-              setPhoto(
-                process.env.REACT_APP_BASEURL_PRODUCTION +
-                  'assets/image/user/' +
-                  response.data.photo,
-              )
-            } else {
-              setPhoto(
-                process.env.REACT_APP_BASEURL_DEVELOPMENT +
-                  'assets/image/user/' +
-                  response.data.photo,
-              )
-            }
-          } else {
-            if (isProduction) {
-              setPhoto(
-                process.env.REACT_APP_BASEURL_PRODUCTION + 'assets/image/user/defaultAvatar.png',
-              )
-            } else {
-              setPhoto(
-                process.env.REACT_APP_BASEURL_DEVELOPMENT + 'assets/image/user/defaultAvatar.png',
-              )
-            }
-          }
-        })
-        .catch((error) => {
-          // toast.error(handleErforror(error))
-        })
-        .finally(() => {
-          // setFetchSenifororHighSchoolLoading(false)
-        })
+      // await api
+      //   .get('user/find/' + user.id)
+      //   .then((response) => {
+      //     if (response.data.photo) {
+      //       if (isProduction) {
+      //         setPhoto(
+      //           process.env.REACT_APP_BASEURL_PRODUCTION +
+      //             'assets/image/user/' +
+      //             response.data.photo,
+      //         )
+      //       } else {
+      //         setPhoto(
+      //           process.env.REACT_APP_BASEURL_DEVELOPMENT +
+      //             'assets/image/user/' +
+      //             response.data.photo,
+      //         )
+      //       }
+      //     } else {
+      //       if (isProduction) {
+      //         setPhoto(
+      //           process.env.REACT_APP_BASEURL_PRODUCTION + 'assets/image/user/defaultAvatar.png',
+      //         )
+      //       } else {
+      //         setPhoto(
+      //           process.env.REACT_APP_BASEURL_DEVELOPMENT + 'assets/image/user/defaultAvatar.png',
+      //         )
+      //       }
+      //     }
+      //   })
+      //   .catch((error) => {
+      //     // toast.error(handleErforror(error))
+      //   })
+      //   .finally(() => {
+      //     // setFetchSenifororHighSchoolLoading(false)
+      //   })
     } catch (err) {
       console.info(err)
     }
