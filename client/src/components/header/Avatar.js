@@ -2,7 +2,7 @@ import { CAvatar } from '@coreui/react'
 import React, { useState, useEffect } from 'react'
 import { api } from '../SystemConfiguration'
 
-const isProduction = true
+const isProduction = false
 const Avatar = ({ userId }) => {
   const [photo, setPhoto] = useState('')
   useEffect(() => {
@@ -34,7 +34,7 @@ const Avatar = ({ userId }) => {
         }
       })
       .catch((error) => {
-        console.info('some error here')
+        console.error(error)
       })
       .finally(() => {
         // setFetchSenifororHighSchoolLoading(false)
@@ -46,6 +46,7 @@ const Avatar = ({ userId }) => {
         src={photo}
         title="Profile Photo"
         size="md"
+        alt="Profile Photo"
         style={{ width: '50px', height: '50px' }}
       />
     </>
