@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') or exit ('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 require APPPATH . 'libraries/RestController.php';
 require APPPATH . 'libraries/Format.php';
@@ -70,7 +70,7 @@ class SeniorHigh extends RestController
 
 
 		$seniorHighSchoolFilter = array(
-			'school' => !empty ($requestData['school']) ? $requestData['school'] : ''
+			'school' => !empty($requestData['school']) ? $requestData['school'] : ''
 		);
 
 		$result = array(
@@ -176,7 +176,7 @@ class SeniorHigh extends RestController
 			'app_status' => $requestData['status'],
 		);
 
-		if (isset ($requestData['reason'])) {
+		if (isset($requestData['reason'])) {
 			$data['reason'] = json_encode($requestData['reason']);
 		}
 		$result = $seniorhigh->bulk_status_update($data, $ids);
@@ -206,7 +206,7 @@ class SeniorHigh extends RestController
 
 
 		$seniorHighSchoolFilter = array(
-			'school' => !empty ($requestData['school']) ? $requestData['school'] : ''
+			'school' => !empty($requestData['school']) ? $requestData['school'] : ''
 		);
 
 		$result = (int) $seniorhigh->total($seniorHighSchoolFilter);
@@ -224,7 +224,7 @@ class SeniorHigh extends RestController
 
 
 		$seniorHighSchoolFilter = array(
-			'school' => !empty ($requestData['school']) ? $requestData['school'] : ''
+			'school' => !empty($requestData['school']) ? $requestData['school'] : ''
 		);
 		$data = $seniorhigh->get_status_by_barangay($seniorHighSchoolFilter);
 
@@ -232,9 +232,9 @@ class SeniorHigh extends RestController
 		// Initialize arrays for labels and datasets
 		$labels = array();
 		$datasets = array(
-			array('label' => 'Approved', 'backgroundColor' => '#0dcaf0', 'data' => array()),
-			array('label' => 'Pending', 'backgroundColor' => '#ffc107', 'data' => array()),
-			array('label' => 'Disapproved', 'backgroundColor' => '#f87979', 'data' => array())
+			array('label' => 'Approved', 'backgroundColor' => '#0dcaf0','borderColor' => '#0dcaf0', 'data' => array()),
+			array('label' => 'Pending',  'backgroundColor' => '#ffc107', 'borderColor' => '#ffc107', 'data' => array()),
+			array('label' => 'Disapproved',  'backgroundColor' => '#f87979', 'borderColor' => '#f87979', 'data' => array())
 		);
 
 		// Populate labels and datasets
@@ -263,8 +263,8 @@ class SeniorHigh extends RestController
 		$CryptoHelper = new CryptoHelper;
 		$requestData = $this->input->get();
 		$data = array(
-			'semester' => !empty ($requestData['semester']) ? $requestData['semester'] : '',
-			'school_year' => !empty ($requestData['school_year']) ? $requestData['school_year'] : '',
+			'semester' => !empty($requestData['semester']) ? $requestData['semester'] : '',
+			'school_year' => !empty($requestData['school_year']) ? $requestData['school_year'] : '',
 		);
 		$result = array(
 			'type' => "Senior High",
@@ -283,8 +283,8 @@ class SeniorHigh extends RestController
 		$CryptoHelper = new CryptoHelper;
 		$requestData = $this->input->get();
 		$data = array(
-			'semester' => !empty ($requestData['semester']) ? $requestData['semester'] : '',
-			'school_year' => !empty ($requestData['school_year']) ? $requestData['school_year'] : '',
+			'semester' => !empty($requestData['semester']) ? $requestData['semester'] : '',
+			'school_year' => !empty($requestData['school_year']) ? $requestData['school_year'] : '',
 		);
 		$result = $seniorhigh->filter_total($data);
 		$this->response($result, RestController::HTTP_OK);
@@ -400,32 +400,32 @@ class SeniorHigh extends RestController
 		$data = [];
 
 		$data = array();
-		if (isset ($requestData['school']) && !empty ($requestData['school'])) {
+		if (isset($requestData['school']) && !empty($requestData['school'])) {
 			$data['s.id'] = $requestData['school'];
 		}
-		if (isset ($requestData['semester']) && !empty ($requestData['semester'])) {
+		if (isset($requestData['semester']) && !empty($requestData['semester'])) {
 			$data['semester'] = $requestData['semester'];
 		}
-		if (isset ($requestData['school_year']) && !empty ($requestData['school_year'])) {
+		if (isset($requestData['school_year']) && !empty($requestData['school_year'])) {
 			$data['school_year'] = $requestData['school_year'];
 		}
-		if (isset ($requestData['status']) && !empty ($requestData['status'])) {
+		if (isset($requestData['status']) && !empty($requestData['status'])) {
 			$data['app_status'] = $requestData['status'];
 		}
-		if (isset ($requestData['availment']) && !empty ($requestData['availment'])) {
+		if (isset($requestData['availment']) && !empty($requestData['availment'])) {
 			$data['availment'] = $requestData['availment'];
 		}
-		if (isset ($requestData['sex']) && !empty ($requestData['sex'])) {
+		if (isset($requestData['sex']) && !empty($requestData['sex'])) {
 			$data['sex'] = $requestData['sex'];
 		}
-		if (isset ($requestData['grade_level']) && !empty ($requestData['grade_level'])) {
+		if (isset($requestData['grade_level']) && !empty($requestData['grade_level'])) {
 			$data['grade_level'] = $requestData['grade_level'];
 		}
-		if (isset ($requestData['address']) && !empty ($requestData['address'])) {
+		if (isset($requestData['address']) && !empty($requestData['address'])) {
 			$data['barangay.id'] = $requestData['address'];
 		}
 
-		if (isset ($requestData['strand']) && !empty ($requestData['strand'])) {
+		if (isset($requestData['strand']) && !empty($requestData['strand'])) {
 			$data['strand.id'] = $requestData['strand'];
 		}
 		$result = $seniorhigh->generate_report($data);
@@ -444,10 +444,10 @@ class SeniorHigh extends RestController
 
 		$filter_data = [];
 
-		if (isset ($requestData['semester']) && !empty ($requestData['semester'])) {
+		if (isset($requestData['semester']) && !empty($requestData['semester'])) {
 			$filter_data['semester'] = $requestData['semester'];
 		}
-		if (isset ($requestData['school_year']) && !empty ($requestData['school_year'])) {
+		if (isset($requestData['school_year']) && !empty($requestData['school_year'])) {
 			$filter_data['school_year'] = $requestData['school_year'];
 		}
 		$result = $seniorhigh->get_data_by_gender($filter_data);
