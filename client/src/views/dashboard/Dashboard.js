@@ -26,7 +26,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCancel, faCircle, faEye, faFilter } from '@fortawesome/free-solid-svg-icons'
 import { useFormik } from 'formik'
 import { ToastContainer, toast } from 'react-toastify'
-import { CChart } from '@coreui/react-chartjs'
+import { CChart, CChartBar } from '@coreui/react-chartjs'
 import { jwtDecode } from 'jwt-decode'
 import 'animate.css'
 import {
@@ -58,6 +58,7 @@ const Dashboard = ({ cardTitle }) => {
   const [loadingOperation, setLoadingOperation] = useState(true)
   const [statusAddressChartData, setStatusAddressChartData] = useState([])
   const [activeKey, setActiveKey] = useState(1)
+  const [activeGenderKey, setActiveGenderKey] = useState(1)
   const [user, setUser] = useState([])
   const [loadingGenderChart, setLoadingGenderChart] = useState(false)
   const [genderChartData, setGenderChartData] = useState([])
@@ -404,6 +405,10 @@ const Dashboard = ({ cardTitle }) => {
     },
   })
 
+  function getRandomPercentage(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min + '%'
+  }
+
   return (
     <>
       <ToastContainer />
@@ -701,13 +706,13 @@ const Dashboard = ({ cardTitle }) => {
               <CNav variant="pills" layout="justified">
                 <CNavItem role="presentation">
                   <CNavLink
-                    active={activeKey === 1}
+                    active={activeGenderKey === 1}
                     component="button"
                     role="tab"
-                    aria-controls="senior-high-tab-pane"
-                    aria-selected={activeKey === 1}
+                    aria-controls="senior-high-gender-tab-pane"
+                    aria-selected={activeGenderKey === 1}
                     onClick={() => {
-                      setActiveKey(1)
+                      setActiveGenderKey(1)
                       toast.dismiss()
                     }}
                   >
@@ -716,13 +721,13 @@ const Dashboard = ({ cardTitle }) => {
                 </CNavItem>
                 <CNavItem role="presentation">
                   <CNavLink
-                    active={activeKey === 2}
+                    active={activeGenderKey === 2}
                     component="button"
                     role="tab"
-                    aria-controls="college-tab-pane"
-                    aria-selected={activeKey === 2}
+                    aria-controls="college-gender-tab-pane"
+                    aria-selected={activeGenderKey === 2}
                     onClick={() => {
-                      setActiveKey(2)
+                      setActiveGenderKey(2)
                       toast.dismiss()
                     }}
                   >
@@ -731,13 +736,13 @@ const Dashboard = ({ cardTitle }) => {
                 </CNavItem>
                 <CNavItem role="presentation">
                   <CNavLink
-                    active={activeKey === 3}
+                    active={activeGenderKey === 3}
                     component="button"
                     role="tab"
-                    aria-controls="tvet-tab-pane"
-                    aria-selected={activeKey === 3}
+                    aria-controls="tvet-gender-tab-pane"
+                    aria-selected={activeGenderKey === 3}
                     onClick={() => {
-                      setActiveKey(3)
+                      setActiveGenderKey(3)
                       toast.dismiss()
                     }}
                   >
@@ -748,8 +753,8 @@ const Dashboard = ({ cardTitle }) => {
               <CTabContent>
                 <CTabPane
                   role="tabpanel"
-                  aria-labelledby="senior-high-tab-pane"
-                  visible={activeKey === 1}
+                  aria-labelledby="senior-high-gender-tab-pane"
+                  visible={activeGenderKey === 1}
                   style={{ position: 'relative' }}
                 >
                   {loadingGenderChart ? (
@@ -787,8 +792,8 @@ const Dashboard = ({ cardTitle }) => {
                 </CTabPane>
                 <CTabPane
                   role="tabpanel"
-                  aria-labelledby="college-tab-pane"
-                  visible={activeKey === 2}
+                  aria-labelledby="college-gender-tab-pane"
+                  visible={activeGenderKey === 2}
                   style={{ position: 'relative' }}
                 >
                   {loadingGenderChart ? (
@@ -823,8 +828,8 @@ const Dashboard = ({ cardTitle }) => {
                 </CTabPane>
                 <CTabPane
                   role="tabpanel"
-                  aria-labelledby="tvet-tab-pane"
-                  visible={activeKey === 3}
+                  aria-labelledby="tvet-gender-tab-pane"
+                  visible={activeGenderKey === 3}
                   style={{ position: 'relative' }}
                 >
                   {loadingGenderChart ? (
@@ -868,10 +873,6 @@ const Dashboard = ({ cardTitle }) => {
           <CCol md={12}>
             <CCard id="chart">
               <CCardBody>
-                <p className="text-medium-emphasis small">
-                  A chart that shows the application status for each address.
-                </p>
-
                 <CNav variant="pills" layout="justified">
                   <CNavItem role="presentation">
                     <CNavLink
@@ -926,8 +927,22 @@ const Dashboard = ({ cardTitle }) => {
                     visible={activeKey === 1}
                     style={{ position: 'relative' }}
                   >
-                    <CChart
-                      type="bar"
+                    <CChartBar
+                      height={300}
+                      options={{
+                        indexAxis: 'y',
+
+                        responsive: true,
+                        plugins: {
+                          legend: {
+                            position: 'top',
+                          },
+                          title: {
+                            display: true,
+                            text: 'Application status for each address',
+                          },
+                        },
+                      }}
                       data={
                         statusAddressChartData.senior_high === undefined
                           ? []
@@ -941,8 +956,22 @@ const Dashboard = ({ cardTitle }) => {
                     visible={activeKey === 2}
                     style={{ position: 'relative' }}
                   >
-                    <CChart
-                      type="bar"
+                    <CChartBar
+                      height={300}
+                      options={{
+                        indexAxis: 'y',
+
+                        responsive: true,
+                        plugins: {
+                          legend: {
+                            position: 'top',
+                          },
+                          title: {
+                            display: true,
+                            text: 'Application status for each address',
+                          },
+                        },
+                      }}
                       data={
                         statusAddressChartData.college === undefined
                           ? []
@@ -956,8 +985,22 @@ const Dashboard = ({ cardTitle }) => {
                     visible={activeKey === 3}
                     style={{ position: 'relative' }}
                   >
-                    <CChart
-                      type="bar"
+                    <CChartBar
+                      height={300}
+                      options={{
+                        indexAxis: 'y',
+
+                        responsive: true,
+                        plugins: {
+                          legend: {
+                            position: 'top',
+                          },
+                          title: {
+                            display: true,
+                            text: 'Application status for each address',
+                          },
+                        },
+                      }}
                       data={
                         statusAddressChartData.tvet === undefined ? [] : statusAddressChartData.tvet
                       }
@@ -974,10 +1017,6 @@ const Dashboard = ({ cardTitle }) => {
           <CCol md={12}>
             <CCard>
               <CCardBody>
-                <p className="text-medium-emphasis small">
-                  <Skeleton variant="rectangular" width={400} />
-                </p>
-
                 <CNav variant="pills" layout="justified">
                   <CNavItem className="nav-item px-3" role="presentation">
                     <Skeleton variant="rounded" height={35} />
@@ -991,14 +1030,35 @@ const Dashboard = ({ cardTitle }) => {
                 </CNav>
 
                 <CTabContent>
-                  <div className="d-grid gap-2 d-md-flex mt-2 justify-content-md-center">
-                    <Skeleton variant="rounded" height={10} width={110} />
-                    <Skeleton variant="rounded" height={10} width={110} />
-                    <Skeleton variant="rounded" height={10} width={110} />
+                  <div className="d-grid gap-2 d-md-flex mt-3 mb-3 justify-content-md-center">
+                    <Skeleton variant="rounded" height={10} width={400} />
                   </div>
-                  <div className="container-fluid px-3 pt-2">
-                    <Skeleton variant="rounded" height={400} />
+                  <div className="d-grid gap-2 d-md-flex mt-2 mb-4 justify-content-md-center">
+                    <Skeleton variant="rounded" height={20} width={110} />
+                    <Skeleton variant="rounded" height={20} width={110} />
+                    <Skeleton variant="rounded" height={20} width={110} />
                   </div>
+
+                  {[...Array(20)].map((_, index) => (
+                    <CRow key={index} className="mt-3">
+                      <CCol md="1">
+                        <Skeleton
+                          className="float-end"
+                          variant="rounded"
+                          width={getRandomPercentage(30, 70)}
+                          height={10}
+                        />
+                      </CCol>
+                      <CCol>
+                        <Skeleton
+                          className="float-start"
+                          variant="rounded"
+                          width={getRandomPercentage(30, 70)}
+                          height={10}
+                        />
+                      </CCol>
+                    </CRow>
+                  ))}
                 </CTabContent>
               </CCardBody>
             </CCard>
