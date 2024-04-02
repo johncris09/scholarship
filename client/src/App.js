@@ -4,7 +4,16 @@ import './scss/style.scss'
 import 'react-toastify/dist/ReactToastify.css'
 import Test from './test/Test'
 import 'https://cdn.lordicon.com/lordicon.js'
-
+console.log(
+  `%c
+╭━━━┳━━━┳╮╱╭┳━━━┳╮╱╱╭━━━┳━━━┳━━━┳╮╱╭┳━━┳━━━╮
+┃╭━╮┃╭━╮┃┃╱┃┃╭━╮┃┃╱╱┃╭━╮┃╭━╮┃╭━╮┃┃╱┃┣┫┣┫╭━╮┃
+┃╰━━┫┃╱╰┫╰━╯┃┃╱┃┃┃╱╱┃┃╱┃┃╰━╯┃╰━━┫╰━╯┃┃┃┃╰━╯┃
+╰━━╮┃┃╱╭┫╭━╮┃┃╱┃┃┃╱╭┫╰━╯┃╭╮╭┻━━╮┃╭━╮┃┃┃┃╭━━╯
+┃╰━╯┃╰━╯┃┃╱┃┃╰━╯┃╰━╯┃╭━╮┃┃┃╰┫╰━╯┃┃╱┃┣┫┣┫┃
+╰━━━┻━━━┻╯╱╰┻━━━┻━━━┻╯╱╰┻╯╰━┻━━━┻╯╱╰┻━━┻╯`,
+  'color:#39f;   font-size:10px;   ',
+)
 const loading = (
   <div className="pt-3 text-center">
     <div className="sk-spinner sk-spinner-pulse"></div>
