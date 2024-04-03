@@ -64,7 +64,7 @@ class Applicant extends RestController
 
         $query_sem = $this->db->query('SELECT current_semester FROM  config where id = 1')->row();
         $query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->row();
-
+         
         $data = [];
         if ($requestData['scholarship_type'] == "senior_high") {
             $data = array(
@@ -188,8 +188,7 @@ class Applicant extends RestController
 
         $reference_number = ucwords($requestData['scholarship_type'][0]) . '' . preg_replace("/\D+/", "", $query_sem->current_semester)
             . '-' . str_replace(["SY: 20", "-20"], "", $query_sy->current_sy) . '-' . $this->getFirstLetters($requestData['firstname']) . '' . $this->getFirstLetters($requestData['lastname']) . '' . date('-mdy', strtotime($requestData['birthdate']));
-
-
+ 
         $data = array(
             'reference_number' => $reference_number,
             'lastname' => preg_replace('/\s+/', ' ', $requestData['lastname']),
@@ -304,13 +303,11 @@ class Applicant extends RestController
                 'app_sem_number' => $app_number->seq_sem,
                 'app_id_number' => (int) $app_number->seq_appno + 1,
                 'school' => $requestData['school'],
-                'course' => $requestData['course'],
+                'course' => $requestData['tvetCourse'],
                 'hour_number' => $requestData['hourNumber'],
-                // 'year_level' => $requestData['year_level'],
                 'semester' => $query_sem->current_semester,
                 'school_year' => $query_sy->current_sy,
-                'availment' => $requestData['availment'],
-
+                'availment' => $requestData['availment'], 
                 'app_status' => 'Pending',
             );
 
