@@ -630,124 +630,279 @@ const Dashboard = ({ cardTitle }) => {
           </CCol>
         </CRow>
       )}
-      {!loadingTotal ? (
-        <CRow>
-          <CCol id="totalStatusData">
-            <CTable responsive>
-              <CTableHead>
-                <CTableRow>
-                  <CTableHeaderCell scope="col">Scholarship Type</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">Approved</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">Pending</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">Disapproved</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">Archived</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">Voided</CTableHeaderCell>
+      <CRow>
+        <CCol id="totalStatusData">
+          <CTable responsive>
+            <CTableHead>
+              <CTableRow>
+                <CTableHeaderCell scope="col">
+                  {!loadingTotal ? (
+                    'Scholarship Type'
+                  ) : (
+                    <Skeleton
+                      variant="rounded"
+                      width={140}
+                      height={15}
+                      className="my-1"
+                      animation="wave"
+                    />
+                  )}
+                </CTableHeaderCell>
+                <CTableHeaderCell scope="col">
+                  {!loadingTotal ? (
+                    'Approved'
+                  ) : (
+                    <Skeleton
+                      variant="rounded"
+                      width={140}
+                      height={15}
+                      className="my-1"
+                      animation="wave"
+                    />
+                  )}
+                </CTableHeaderCell>
+                <CTableHeaderCell scope="col">
+                  {!loadingTotal ? (
+                    'Pending'
+                  ) : (
+                    <Skeleton
+                      variant="rounded"
+                      width={140}
+                      height={15}
+                      className="my-1"
+                      animation="wave"
+                    />
+                  )}
+                </CTableHeaderCell>
+                <CTableHeaderCell scope="col">
+                  {!loadingTotal ? (
+                    'Disapproved'
+                  ) : (
+                    <Skeleton
+                      variant="rounded"
+                      width={140}
+                      height={15}
+                      className="my-1"
+                      animation="wave"
+                    />
+                  )}
+                </CTableHeaderCell>
+                <CTableHeaderCell scope="col">
+                  {!loadingTotal ? (
+                    'Archived'
+                  ) : (
+                    <Skeleton
+                      variant="rounded"
+                      width={140}
+                      height={15}
+                      className="my-1"
+                      animation="wave"
+                    />
+                  )}
+                </CTableHeaderCell>
+                <CTableHeaderCell scope="col">
+                  {!loadingTotal ? (
+                    'Voided'
+                  ) : (
+                    <Skeleton
+                      variant="rounded"
+                      width={140}
+                      height={15}
+                      className="my-1"
+                      animation="wave"
+                    />
+                  )}
+                </CTableHeaderCell>
+              </CTableRow>
+            </CTableHead>
+            <CTableBody>
+              {totalStatusData.map((data, index) => (
+                <CTableRow key={index}>
+                  <CTableHeaderCell scope="row">
+                    {index === 0 &&
+                      (!loadingTotal ? (
+                        'Senior High'
+                      ) : (
+                        <Skeleton
+                          variant="rounded"
+                          width={100}
+                          height={15}
+                          className="my-1"
+                          animation="wave"
+                        />
+                      ))}
+                    {index === 1 &&
+                      (!loadingTotal ? (
+                        'College'
+                      ) : (
+                        <Skeleton
+                          variant="rounded"
+                          width={60}
+                          height={15}
+                          className="my-1"
+                          animation="wave"
+                        />
+                      ))}
+                    {index === 2 &&
+                      (!loadingTotal ? (
+                        'Tvet'
+                      ) : (
+                        <Skeleton
+                          variant="rounded"
+                          width={30}
+                          height={15}
+                          className="my-1"
+                          animation="wave"
+                        />
+                      ))}
+                  </CTableHeaderCell>
+                  <CTableDataCell>
+                    {!loadingTotal ? (
+                      data.approved
+                    ) : (
+                      <Skeleton
+                        variant="rounded"
+                        width={50}
+                        height={15}
+                        className="my-1"
+                        animation="wave"
+                      />
+                    )}
+                  </CTableDataCell>
+                  <CTableDataCell>
+                    {!loadingTotal ? (
+                      data.pending
+                    ) : (
+                      <Skeleton
+                        variant="rounded"
+                        width={50}
+                        height={15}
+                        className="my-1"
+                        animation="wave"
+                      />
+                    )}
+                  </CTableDataCell>
+                  <CTableDataCell>
+                    {!loadingTotal ? (
+                      data.disapproved
+                    ) : (
+                      <Skeleton
+                        variant="rounded"
+                        width={50}
+                        height={15}
+                        className="my-1"
+                        animation="wave"
+                      />
+                    )}
+                  </CTableDataCell>
+                  <CTableDataCell>
+                    {!loadingTotal ? (
+                      data.archived
+                    ) : (
+                      <Skeleton
+                        variant="rounded"
+                        width={50}
+                        height={15}
+                        className="my-1"
+                        animation="wave"
+                      />
+                    )}
+                  </CTableDataCell>
+                  <CTableDataCell>
+                    {!loadingTotal ? (
+                      data.void
+                    ) : (
+                      <Skeleton
+                        variant="rounded"
+                        width={50}
+                        height={15}
+                        className="my-1"
+                        animation="wave"
+                      />
+                    )}
+                  </CTableDataCell>
                 </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {totalStatusData.map((data, index) => (
-                  <CTableRow key={index}>
-                    <CTableHeaderCell scope="row">
-                      {index === 0 && 'Senior High'}
-                      {index === 1 && 'College'}
-                      {index === 2 && 'Tvet'}
-                    </CTableHeaderCell>
-                    <CTableDataCell>{data.approved}</CTableDataCell>
-                    <CTableDataCell>{data.pending}</CTableDataCell>
-                    <CTableDataCell>{data.disapproved}</CTableDataCell>
-                    <CTableDataCell>{data.archived}</CTableDataCell>
-                    <CTableDataCell>{data.void}</CTableDataCell>
-                  </CTableRow>
-                ))}
-              </CTableBody>
-            </CTable>
-          </CCol>
-        </CRow>
-      ) : (
-        <CRow>
-          <CCol>
-            <Skeleton
-              variant="rounded"
-              width={'100%'}
-              className="my-1"
-              animation="wave"
-              height={30}
-            />
-            <Skeleton
-              variant="rounded"
-              width={'100%'}
-              className="my-1"
-              animation="wave"
-              height={30}
-            />
-            <Skeleton
-              variant="rounded"
-              width={'100%'}
-              className="my-1"
-              animation="wave"
-              height={30}
-            />
-            <Skeleton
-              variant="rounded"
-              width={'100%'}
-              className="my-1"
-              animation="wave"
-              height={30}
-            />
-          </CCol>
-        </CRow>
-      )}
+              ))}
+            </CTableBody>
+          </CTable>
+        </CCol>
+      </CRow>
 
       <CRow className="justify-content-center mb-4">
         <CCol md={12}>
           <CCard id="chart">
             <CCardBody>
-              <h5>Gender Statistics</h5>
+              <h5>
+                {!loadingGenderChart ? (
+                  'Gender Statistics'
+                ) : (
+                  <Skeleton variant="rounded" width={170} />
+                )}
+              </h5>
               <CNav variant="pills" layout="justified">
                 <CNavItem role="presentation">
-                  <CNavLink
-                    active={activeGenderKey === 1}
-                    component="button"
-                    role="tab"
-                    aria-controls="senior-high-gender-tab-pane"
-                    aria-selected={activeGenderKey === 1}
-                    onClick={() => {
-                      setActiveGenderKey(1)
-                      toast.dismiss()
-                    }}
-                  >
-                    Senior High
-                  </CNavLink>
+                  {!loadingGenderChart ? (
+                    <CNavLink
+                      active={activeGenderKey === 1}
+                      component="button"
+                      role="tab"
+                      aria-controls="senior-high-gender-tab-pane"
+                      aria-selected={activeGenderKey === 1}
+                      onClick={() => {
+                        setActiveGenderKey(1)
+                        toast.dismiss()
+                      }}
+                    >
+                      Senior High
+                    </CNavLink>
+                  ) : (
+                    <CNavItem className="nav-item px-3" role="presentation">
+                      <Skeleton variant="rounded" height={40} />
+                    </CNavItem>
+                  )}
+                </CNavItem>
+
+                <CNavItem role="presentation">
+                  {!loadingGenderChart ? (
+                    <CNavLink
+                      active={activeGenderKey === 2}
+                      component="button"
+                      role="tab"
+                      aria-controls="college-gender-tab-pane"
+                      aria-selected={activeGenderKey === 2}
+                      onClick={() => {
+                        setActiveGenderKey(2)
+                        toast.dismiss()
+                      }}
+                    >
+                      College
+                    </CNavLink>
+                  ) : (
+                    <CNavItem className="nav-item px-3" role="presentation">
+                      <Skeleton variant="rounded" height={40} />
+                    </CNavItem>
+                  )}
                 </CNavItem>
                 <CNavItem role="presentation">
-                  <CNavLink
-                    active={activeGenderKey === 2}
-                    component="button"
-                    role="tab"
-                    aria-controls="college-gender-tab-pane"
-                    aria-selected={activeGenderKey === 2}
-                    onClick={() => {
-                      setActiveGenderKey(2)
-                      toast.dismiss()
-                    }}
-                  >
-                    College
-                  </CNavLink>
-                </CNavItem>
-                <CNavItem role="presentation">
-                  <CNavLink
-                    active={activeGenderKey === 3}
-                    component="button"
-                    role="tab"
-                    aria-controls="tvet-gender-tab-pane"
-                    aria-selected={activeGenderKey === 3}
-                    onClick={() => {
-                      setActiveGenderKey(3)
-                      toast.dismiss()
-                    }}
-                  >
-                    Tvet
-                  </CNavLink>
+                  {!loadingGenderChart ? (
+                    <CNavLink
+                      active={activeGenderKey === 3}
+                      component="button"
+                      role="tab"
+                      aria-controls="tvet-gender-tab-pane"
+                      aria-selected={activeGenderKey === 3}
+                      onClick={() => {
+                        setActiveGenderKey(3)
+                        toast.dismiss()
+                      }}
+                    >
+                      Tvet
+                    </CNavLink>
+                  ) : (
+                    <CNavItem className="nav-item px-3" role="presentation">
+                      <Skeleton variant="rounded" height={40} />
+                    </CNavItem>
+                  )}
                 </CNavItem>
               </CNav>
               <CTabContent>
