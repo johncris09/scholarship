@@ -20,10 +20,11 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
+  CWidgetStatsB,
   CWidgetStatsF,
 } from '@coreui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCancel, faCircle, faEye, faFilter } from '@fortawesome/free-solid-svg-icons'
+import { faCancel, faCircle, faEye, faFilter, faHashtag } from '@fortawesome/free-solid-svg-icons'
 import { useFormik } from 'formik'
 import { ToastContainer, toast } from 'react-toastify'
 import { CChart, CChartBar } from '@coreui/react-chartjs'
@@ -45,6 +46,8 @@ import * as Yup from 'yup'
 import CountUp from 'react-countup'
 import { Skeleton } from '@mui/material'
 import 'intro.js/introjs.css'
+import { cilChartLine, cilChartPie, cilListNumbered } from '@coreui/icons'
+import CIcon from '@coreui/icons-react'
 
 const Dashboard = ({ cardTitle }) => {
   const [loading, setLoading] = useState(false)
@@ -62,6 +65,8 @@ const Dashboard = ({ cardTitle }) => {
   const [user, setUser] = useState([])
   const [loadingGenderChart, setLoadingGenderChart] = useState(false)
   const [genderChartData, setGenderChartData] = useState([])
+  const [loadingFourPsBeneficiary, setLoadingFourPsBeneficiary] = useState(false)
+  const [fourPsBeneficiary, setFourPsBeneficiary] = useState([])
 
   useEffect(() => {
     fetchTotalStatus()
@@ -69,9 +74,34 @@ const Dashboard = ({ cardTitle }) => {
     fetchStatusAddress()
     fetchGender()
     fetchOnlineUser()
+    fetchFourPsBeneficiary()
     setUser(jwtDecode(localStorage.getItem('scholarshipToken')))
   }, [])
 
+  const fetchFourPsBeneficiary = () => {
+    setLoadingFourPsBeneficiary(true)
+    Promise.all([
+      api.get('senior_high/get_fourps_beneficiary'),
+      api.get('college/get_fourps_beneficiary'),
+      api.get('tvet/get_fourps_beneficiary'),
+    ])
+      .then((responses) => {
+        const response = responses.map((response) => response.data)
+        const newData = {
+          senior_high: response[0],
+          college: response[1],
+          tvet: response[2],
+        }
+        console.info(newData)
+        setFourPsBeneficiary(newData)
+      })
+      .catch((error) => {
+        toast.error(handleError(error))
+      })
+      .finally(() => {
+        setLoadingFourPsBeneficiary(false)
+      })
+  }
   const fetchGender = async () => {
     setLoadingGenderChart(true)
     await Promise.all([
@@ -86,6 +116,7 @@ const Dashboard = ({ cardTitle }) => {
           college: response[1],
           tvet: response[2],
         }
+        console.info(newData)
         setGenderChartData(newData)
       })
       .catch((error) => {
@@ -182,11 +213,13 @@ const Dashboard = ({ cardTitle }) => {
     setLoadingOperation(true)
     setLoadingChart(true)
     setLoadingGenderChart(true)
+    setLoadingFourPsBeneficiary(true)
     filterForm.resetForm()
     fetchTotal()
     fetchStatusAddress()
     fetchTotalStatus()
     fetchGender()
+    fetchFourPsBeneficiary()
   }
 
   const handleViewAllData = async () => {
@@ -195,6 +228,7 @@ const Dashboard = ({ cardTitle }) => {
     setLoadingOperation(true)
     setLoadingChart(true)
     setLoadingGenderChart(true)
+    setLoadingFourPsBeneficiary(true)
 
     filterForm.resetForm()
     setValidated(false)
@@ -264,7 +298,28 @@ const Dashboard = ({ cardTitle }) => {
       .finally(() => {
         setLoadingGenderChart(false)
       })
-
+    // 4p's Beneficiary
+    await Promise.all([
+      api.get('senior_high/all_fourps_beneficiary'),
+      api.get('college/all_fourps_beneficiary'),
+      api.get('tvet/all_fourps_beneficiary'),
+    ])
+      .then((responses) => {
+        const response = responses.map((response) => response.data)
+        // console.info(response)
+        const newData = {
+          senior_high: response[0],
+          college: response[1],
+          tvet: response[2],
+        }
+        setFourPsBeneficiary(newData)
+      })
+      .catch((error) => {
+        toast.error(handleError(error))
+      })
+      .finally(() => {
+        setLoadingFourPsBeneficiary(false)
+      })
     // chart status in every barangay
     await Promise.all([
       api.get('senior_high/all_status_by_barangay'),
@@ -311,6 +366,7 @@ const Dashboard = ({ cardTitle }) => {
       setLoadingOperation(true)
       setLoadingChart(true)
       setLoadingGenderChart(true)
+      setLoadingFourPsBeneficiary(true)
       // Fetch total status data
       await Promise.all([
         api.get('senior_high/filter_total_status', { params: values }),
@@ -329,6 +385,30 @@ const Dashboard = ({ cardTitle }) => {
           setLoadingOperation(false)
         })
 
+      // 4p's Beneficiary
+      await Promise.all([
+        api.get('senior_high/get_fourps_beneficiary', { params: values }),
+        api.get('college/get_fourps_beneficiary', { params: values }),
+        api.get('tvet/get_fourps_beneficiary', { params: values }),
+      ])
+        .then((responses) => {
+          const [responseSeniorHigh, responseCollege, responseTvet] = responses.map(
+            (response) => response.data,
+          )
+          const newData = {
+            senior_high: responseSeniorHigh,
+            college: responseCollege,
+            tvet: responseTvet,
+          }
+          setFourPsBeneficiary(newData)
+        })
+        .catch((error) => {
+          console.error('Error fetching total data:', error)
+        })
+        .finally(() => {
+          setLoadingTotal(false)
+          setLoadingFourPsBeneficiary(false)
+        })
       // Widget
       await Promise.all([
         api.get('senior_high/filter_total', { params: values }),
@@ -353,7 +433,6 @@ const Dashboard = ({ cardTitle }) => {
           setLoadingTotal(false)
           setLoadingOperation(false)
         })
-
       // gender
       await Promise.all([
         api.get('senior_high/get_data_by_gender', { params: values }),
@@ -827,6 +906,109 @@ const Dashboard = ({ cardTitle }) => {
           </CTable>
         </CCol>
       </CRow>
+
+      {!loadingFourPsBeneficiary ? (
+        <CRow>
+          <h5>4&apos;Ps Beneficiary</h5>
+          <CCol md={4}>
+            <CWidgetStatsF
+              className="mb-3"
+              color="primary"
+              icon={<FontAwesomeIcon icon={faHashtag} style={{ height: 35 }} />}
+              title="Senior High"
+              value={fourPsBeneficiary.senior_high}
+            />
+          </CCol>
+          <CCol md={4}>
+            <CWidgetStatsF
+              className="mb-3"
+              color="primary"
+              icon={<FontAwesomeIcon icon={faHashtag} style={{ height: 35 }} />}
+              title="College"
+              value={fourPsBeneficiary.college}
+            />
+          </CCol>
+          <CCol md={4}>
+            <CWidgetStatsF
+              className="mb-3"
+              color="primary"
+              icon={<FontAwesomeIcon icon={faHashtag} style={{ height: 35 }} />}
+              title="Tvet"
+              value={fourPsBeneficiary.tvet}
+            />
+          </CCol>
+        </CRow>
+      ) : (
+        <CRow>
+          <h5>
+            <Skeleton variant="rectangular" width={170} />
+          </h5>
+
+          <CCol>
+            <div className="card mb-3" style={{ borderRadius: '10px' }}>
+              <div className="card-body d-flex align-items-center p-0">
+                <div className="me-3 text-white bg-transparent p-4">
+                  <Skeleton variant="rectangular" height={55} width={55} />
+                </div>
+                <div>
+                  <div className="fs-6 fw-semibold text-transparent">
+                    <p>
+                      <Skeleton variant="rectangular" width={30} />
+                    </p>
+                  </div>
+                  <div className="text-medium-emphasis text-uppercase fw-semibold small">
+                    <p>
+                      <Skeleton variant="rectangular" width={100} />
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CCol>
+          <CCol>
+            <div className="card mb-3" style={{ borderRadius: '10px' }}>
+              <div className="card-body d-flex align-items-center p-0">
+                <div className=" text-white bg-transparent p-4">
+                  <Skeleton variant="rectangular" height={55} width={55} />
+                </div>
+                <div>
+                  <div className="fs-6 fw-semibold text-transparent">
+                    <p>
+                      <Skeleton variant="rectangular" width={30} />
+                    </p>
+                  </div>
+                  <div className="text-medium-emphasis text-uppercase fw-semibold small">
+                    <p>
+                      <Skeleton variant="rectangular" width={100} />
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CCol>
+          <CCol>
+            <div className="card mb-3" style={{ borderRadius: '10px' }}>
+              <div className="card-body d-flex align-items-center p-0">
+                <div className="me-3 text-white bg-transparent p-4">
+                  <Skeleton variant="rectangular" height={55} width={55} />
+                </div>
+                <div>
+                  <div className="fs-6 fw-semibold text-transparent">
+                    <p>
+                      <Skeleton variant="rectangular" width={30} />
+                    </p>
+                  </div>
+                  <div className="text-medium-emphasis text-uppercase fw-semibold small">
+                    <p>
+                      <Skeleton variant="rectangular" width={100} />
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CCol>
+        </CRow>
+      )}
 
       <CRow className="justify-content-center mb-4">
         <CCol md={12}>

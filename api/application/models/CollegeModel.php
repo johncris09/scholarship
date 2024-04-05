@@ -1,6 +1,6 @@
 <?php
 
-defined('BASEPATH') or exit ('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 class CollegeModel extends CI_Model
 {
@@ -600,7 +600,7 @@ class CollegeModel extends CI_Model
 			->join('course', 'c.course = course.id', 'LEFT');
 
 
-		if (!empty ($data)) {
+		if (!empty($data)) {
 			$this->db->where($data);
 		}
 
@@ -609,54 +609,105 @@ class CollegeModel extends CI_Model
 		$query = $this->db->get();
 		return $query->result();
 
-	} 
-	
+	}
+
 	public function get_data_by_gender($data)
+	{
+
+		$query_sem = $this->db->query('SELECT current_semester FROM  config where id = 1')->result()[0];
+		$query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->result()[0];
+
+
+		$this->db
+			->select('
+            scholarship.sex as label,
+            count(*) as total ')
+			->from('college  ')
+			->join('scholarship', ' college.scholarship_id = scholarship.id');
+
+		if (!empty($data)) {
+			$this->db->where($data);
+		} else {
+			$this->db->where('college.semester', $query_sem->current_semester);
+
+			$this->db->where('college.school_year', $query_sy->current_sy);
+		}
+
+
+		$this->db->group_by('sex');
+
+		$query = $this->db->get();
+
+		return $query->result();
+
+	}
+
+	public function all_gender()
+	{
+
+
+		$query = $this->db
+			->select('
+            scholarship.sex as label,
+            count(*) as total ')
+			->from('college  ')
+			->join('scholarship', ' college.scholarship_id = scholarship.id')
+			->group_by('sex')
+			->get();
+
+		return $query->result();
+
+	}
+
+
+	public function get_fourps_beneficiary($data)
+	{
+
+		$query_sem = $this->db->query('SELECT current_semester FROM  config where id = 1')->result()[0];
+		$query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->result()[0];
+
+
+		$this->db
+			->select('
+            count(*) as total ')
+			->from('college  ')
+			->join('scholarship', ' college.scholarship_id = scholarship.id');
+
+		if (!empty($data)) {
+			$this->db->where($data);
+		} else {
+			$this->db->where('college.semester', $query_sem->current_semester);
+			$this->db->where('college.school_year', $query_sy->current_sy);
+		}
+		$this->db
+			->like('college.app_status', 'approved', 'both')
+			->where('college.app_status !=', 'disapproved');
+		$this->db->where('fourps_beneficiary ', 1);
+		$query = $this->db->get();
+
+		return $query->row();
+
+	}
+
+
+
+    public function all_fourps_beneficiary()
     {
-
-        $query_sem = $this->db->query('SELECT current_semester FROM  config where id = 1')->result()[0];
-        $query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->result()[0];
-
 
         $this->db
             ->select('
-            scholarship.sex as label,
-            count(*) as total ')
+        count(*) as total ')
             ->from('college  ')
             ->join('scholarship', ' college.scholarship_id = scholarship.id');
 
-        if (!empty ($data)) {
-            $this->db->where($data);
-        } else {
-            $this->db->where('college.semester', $query_sem->current_semester);
-
-            $this->db->where('college.school_year', $query_sy->current_sy);
-        }
- 
-
-        $this->db->group_by('sex');
-
+        
+        $this->db
+            ->like('college.app_status', 'approved', 'both')
+            ->where('college.app_status !=', 'disapproved');
+        $this->db->where('fourps_beneficiary ', 1);
         $query = $this->db->get();
 
-        return $query->result();
+        return $query->row();
 
     }
-
-	public function all_gender()
-    {
-
-
-        $query = $this->db
-            ->select('
-            scholarship.sex as label,
-            count(*) as total ')
-            ->from('college  ')
-            ->join('scholarship', ' college.scholarship_id = scholarship.id')
-            ->group_by('sex')
-            ->get();
-
-        return $query->result();
-
-    }
-
 }

@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') or exit ('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 
 // ╭━━━┳━━━┳╮╱╭┳━━━┳╮╱╱╭━━━┳━━━┳━━━┳╮╱╭┳━━┳━━━╮
@@ -73,6 +73,9 @@ $route['senior_high/update/(:any)'] = 'SeniorHigh/update/$1';
 $route['senior_high/update_status/(:any)'] = 'SeniorHigh/update_status/$1';
 $route['senior_high/bulk_status_update'] = 'SeniorHigh/bulk_status_update';
 $route['senior_high/bulk_disapproved'] = 'SeniorHigh/bulk_disapproved';
+$route['senior_high/get_fourps_beneficiary'] = 'SeniorHigh/get_fourps_beneficiary';
+$route['senior_high/all_fourps_beneficiary'] = 'SeniorHigh/all_fourps_beneficiary';
+
 
 // College
 $route['college'] = 'College';
@@ -100,6 +103,9 @@ $route['college/update/(:any)'] = 'College/update/$1';
 $route['college/update_status/(:any)'] = 'College/update_status/$1';
 $route['college/bulk_status_update'] = 'College/bulk_status_update';
 $route['college/bulk_disapproved'] = 'College/bulk_disapproved';
+$route['college/get_fourps_beneficiary'] = 'College/get_fourps_beneficiary';
+$route['college/all_fourps_beneficiary'] = 'College/all_fourps_beneficiary';
+ 
 
 
 // Tvet
@@ -127,8 +133,9 @@ $route['tvet/update/(:any)'] = 'Tvet/update/$1';
 $route['tvet/update_status/(:any)'] = 'Tvet/update_status/$1';
 $route['tvet/bulk_status_update'] = 'Tvet/bulk_status_update';
 $route['tvet/bulk_disapproved'] = 'Tvet/bulk_disapproved';
-
-
+$route['tvet/get_fourps_beneficiary'] = 'Tvet/get_fourps_beneficiary';
+$route['tvet/all_fourps_beneficiary'] = 'Tvet/all_fourps_beneficiary';
+ 
 
 
 

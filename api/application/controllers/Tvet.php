@@ -461,4 +461,40 @@ class Tvet extends RestController
 	}
     
 
+
+	public function get_fourps_beneficiary_get()
+	{
+        $tvet = new TvetModel;
+		$requestData = $this->input->get();
+
+
+
+        $filter_data = [];
+        if (isset($requestData['semester']) && !empty($requestData['semester'])) {
+            $filter_data['semester'] = $requestData['semester'];
+        }
+        if (isset($requestData['school_year']) && !empty($requestData['school_year'])) {
+            $filter_data['school_year'] = $requestData['school_year'];
+        }
+        $result = $tvet->get_fourps_beneficiary($filter_data);
+
+         
+
+		$this->response( (int) $result->total, RestController::HTTP_OK);
+   
+	}
+
+
+
+	 
+    public function all_fourps_beneficiary_get()
+    {
+        $tvet = new TvetModel;  
+ 
+        $result = $tvet->all_fourps_beneficiary(); 
+         
+
+		$this->response( (int) $result->total, RestController::HTTP_OK);
+    }
+
 }

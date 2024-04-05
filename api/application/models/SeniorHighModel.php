@@ -1,6 +1,6 @@
 <?php
 
-defined('BASEPATH') or exit ('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 class SeniorHighModel extends CI_Model
 {
@@ -198,7 +198,7 @@ class SeniorHighModel extends CI_Model
             ->where('semester', $query_sem->current_semester)
             ->where('school_year', $query_sy->current_sy);
 
-        if (!empty ($filterData['school'])) {
+        if (!empty($filterData['school'])) {
             $this->db->where('school', intval($filterData['school']));
         }
         $query = $this->db->get($this->table);
@@ -223,7 +223,7 @@ class SeniorHighModel extends CI_Model
             ->where('school_year', $query_sy->current_sy);
 
 
-        if (!empty ($filterData['school'])) {
+        if (!empty($filterData['school'])) {
             $this->db->where('school', intval($filterData['school']));
         }
         $query = $this->db->get($this->table);
@@ -244,7 +244,7 @@ class SeniorHighModel extends CI_Model
             ->where('semester', $query_sem->current_semester)
             ->where('school_year', $query_sy->current_sy);
 
-        if (!empty ($filterData['school'])) {
+        if (!empty($filterData['school'])) {
             $this->db->where('school', intval($filterData['school']));
         }
         $query = $this->db->get($this->table);
@@ -264,7 +264,7 @@ class SeniorHighModel extends CI_Model
             ->where('app_status ', 'archived')
             ->where('semester', $query_sem->current_semester)
             ->where('school_year', $query_sy->current_sy);
-        if (!empty ($filterData['school'])) {
+        if (!empty($filterData['school'])) {
             $this->db->where('school', intval($filterData['school']));
         }
         $query = $this->db->get($this->table);
@@ -304,7 +304,7 @@ class SeniorHighModel extends CI_Model
             ->where('school_year', $query_sy->current_sy);
 
 
-        if (!empty ($filterData['school'])) {
+        if (!empty($filterData['school'])) {
             $this->db->where('school', intval($filterData['school']));
         }
 
@@ -352,7 +352,7 @@ class SeniorHighModel extends CI_Model
                 AND sh.school_year =   '$query_sy->current_sy' ";
 
 
-            if (!empty ($filterData['school'])) {
+            if (!empty($filterData['school'])) {
                 $queryString .= " AND sh.school = " . intval($filterData['school']);
             }
 
@@ -623,7 +623,7 @@ class SeniorHighModel extends CI_Model
             ->join('senior_high_school s', 'sh.school = s.id', 'LEFT')
             ->join('strand', 'sh.strand = strand.id', 'LEFT');
 
-        if (!empty ($data)) {
+        if (!empty($data)) {
             $this->db->where($data);
         }
         $this->db->order_by('lastname', 'asc');
@@ -680,11 +680,10 @@ class SeniorHighModel extends CI_Model
             ->from('senior_high  ')
             ->join('scholarship', ' senior_high.scholarship_id = scholarship.id');
 
-        if (!empty ($data)) {
+        if (!empty($data)) {
             $this->db->where($data);
         } else {
             $this->db->where('senior_high.semester', $query_sem->current_semester);
-
             $this->db->where('senior_high.school_year', $query_sy->current_sy);
         }
 
@@ -714,6 +713,57 @@ class SeniorHighModel extends CI_Model
         return $query->result();
 
     }
+
+
+    public function get_fourps_beneficiary($data)
+    {
+
+        $query_sem = $this->db->query('SELECT current_semester FROM  config where id = 1')->result()[0];
+        $query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->result()[0];
+
+
+        $this->db
+            ->select('
+            count(*) as total ')
+            ->from('senior_high  ')
+            ->join('scholarship', ' senior_high.scholarship_id = scholarship.id');
+
+        if (!empty($data)) {
+            $this->db->where($data);
+        } else {
+            $this->db->where('senior_high.semester', $query_sem->current_semester);
+            $this->db->where('senior_high.school_year', $query_sy->current_sy);
+        }
+        $this->db
+            ->like('senior_high.app_status', 'approved', 'both')
+            ->where('senior_high.app_status !=', 'disapproved');
+        $this->db->where('fourps_beneficiary ', 1);
+        $query = $this->db->get();
+
+        return $query->row();
+
+    }
+
+    public function all_fourps_beneficiary()
+    {
+
+        $this->db
+            ->select('
+        count(*) as total ')
+            ->from('senior_high  ')
+            ->join('scholarship', ' senior_high.scholarship_id = scholarship.id');
+
+        
+        $this->db
+            ->like('senior_high.app_status', 'approved', 'both')
+            ->where('senior_high.app_status !=', 'disapproved');
+        $this->db->where('fourps_beneficiary ', 1);
+        $query = $this->db->get();
+
+        return $query->row();
+
+    }
+
 
 }
 

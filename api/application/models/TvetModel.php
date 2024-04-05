@@ -664,4 +664,55 @@ class TvetModel extends CI_Model
 
     }
 
+
+ 
+
+    public function get_fourps_beneficiary($data)
+    {
+
+        $query_sem = $this->db->query('SELECT current_semester FROM  config where id = 1')->result()[0];
+        $query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->result()[0];
+
+
+		$this->db
+			->select('
+            count(*) as total ')
+			->from('tvet  ')
+			->join('scholarship', ' tvet.scholarship_id = scholarship.id');
+
+		if (!empty($data)) {
+			$this->db->where($data);
+		} else {
+			$this->db->where('tvet.semester', $query_sem->current_semester);
+			$this->db->where('tvet.school_year', $query_sy->current_sy);
+		}
+		$this->db
+			->like('tvet.app_status', 'approved', 'both')
+			->where('tvet.app_status !=', 'disapproved');
+		$this->db->where('fourps_beneficiary ', 1);
+		$query = $this->db->get();
+
+		return $query->row();
+
+    }
+
+    public function all_fourps_beneficiary()
+    {
+
+        $this->db
+            ->select('
+        count(*) as total ')
+            ->from('tvet  ')
+            ->join('scholarship', ' tvet.scholarship_id = scholarship.id');
+
+        
+        $this->db
+            ->like('tvet.app_status', 'approved', 'both')
+            ->where('tvet.app_status !=', 'disapproved');
+        $this->db->where('fourps_beneficiary ', 1);
+        $query = $this->db->get();
+
+        return $query->row();
+
+    }
 }

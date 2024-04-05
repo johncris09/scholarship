@@ -232,9 +232,9 @@ class SeniorHigh extends RestController
 		// Initialize arrays for labels and datasets
 		$labels = array();
 		$datasets = array(
-			array('label' => 'Approved', 'backgroundColor' => '#0dcaf0','borderColor' => '#0dcaf0', 'data' => array()),
-			array('label' => 'Pending',  'backgroundColor' => '#ffc107', 'borderColor' => '#ffc107', 'data' => array()),
-			array('label' => 'Disapproved',  'backgroundColor' => '#f87979', 'borderColor' => '#f87979', 'data' => array())
+			array('label' => 'Approved', 'backgroundColor' => '#0dcaf0', 'borderColor' => '#0dcaf0', 'data' => array()),
+			array('label' => 'Pending', 'backgroundColor' => '#ffc107', 'borderColor' => '#ffc107', 'data' => array()),
+			array('label' => 'Disapproved', 'backgroundColor' => '#f87979', 'borderColor' => '#f87979', 'data' => array())
 		);
 
 		// Populate labels and datasets
@@ -499,6 +499,37 @@ class SeniorHigh extends RestController
 
 		$this->response($data, RestController::HTTP_OK);
 	}
+ 
+
+	public function get_fourps_beneficiary_get()
+    {
+		$seniorhigh = new SeniorHighModel;
+        $requestData = $this->input->get();
 
 
+        $filter_data = [];
+
+        if (isset($requestData['semester']) && !empty($requestData['semester'])) {
+            $filter_data['semester'] = $requestData['semester'];
+        }
+        if (isset($requestData['school_year']) && !empty($requestData['school_year'])) {
+            $filter_data['school_year'] = $requestData['school_year'];
+        }
+        $result = $seniorhigh->get_fourps_beneficiary($filter_data);
+
+         
+
+		$this->response( (int) $result->total, RestController::HTTP_OK);
+    }
+
+
+	public function all_fourps_beneficiary_get()
+    {
+		$seniorhigh = new SeniorHighModel; 
+ 
+        $result = $seniorhigh->all_fourps_beneficiary(); 
+         
+
+		$this->response( (int) $result->total, RestController::HTTP_OK);
+    }
 }
