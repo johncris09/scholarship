@@ -1,32 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import './../../assets/css/react-paginate.css'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCancel, faEye, faFilter } from '@fortawesome/free-solid-svg-icons'
-import {
-  CAlert,
-  CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCol,
-  CForm,
-  CFormSelect,
-  CFormText,
-  CRow,
-} from '@coreui/react'
+import { CAlert, CCard, CCardBody, CCardHeader, CCol, CRow } from '@coreui/react'
 import { ToastContainer, toast } from 'react-toastify'
 import MaterialReactTable from 'material-react-table'
-import { useFormik } from 'formik'
-import {
-  RequiredFieldNote,
-  SchoolYear,
-  Semester,
-  api,
-  handleError,
-  requiredField,
-  toSentenceCase,
-} from 'src/components/SystemConfiguration'
-import * as Yup from 'yup'
+import { api, handleError, toSentenceCase } from 'src/components/SystemConfiguration'
 import CIcon from '@coreui/icons-react'
 import { cilInfo } from '@coreui/icons'
 
@@ -50,66 +27,6 @@ const Sibling = ({ cardTitle }) => {
       .finally(() => {
         setFetchSiblingLoading(false)
       })
-  }
-  const handleViewAllData = async () => {
-    filterForm.resetForm()
-
-    setFetchSiblingLoading(true)
-    await api
-      .get('get_all_sibling')
-      .then((response) => {
-        setSiblingData(response.data)
-      })
-      .catch((error) => {
-        console.info(error)
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchSiblingLoading(false)
-      })
-  }
-
-  const filterFormValidationSchema = Yup.object().shape({
-    semester: Yup.string().required('Semester is required'),
-    school_year: Yup.string().required('School Year is required'),
-  })
-
-  const filterForm = useFormik({
-    initialValues: {
-      semester: '',
-      school_year: '',
-    },
-    validationSchema: filterFormValidationSchema,
-    onSubmit: async (values) => {
-      setFetchSiblingLoading(true)
-      await api
-        .get('filter_sibling', {
-          params: {
-            ...values,
-          },
-        })
-        .then((response) => {
-          setSiblingData(response.data)
-        })
-        .catch((error) => {
-          console.info(error)
-          toast.error(handleError(error))
-        })
-        .finally(() => {
-          setFetchSiblingLoading(false)
-        })
-    },
-  })
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    filterForm.setFieldValue(name, value)
-  }
-
-  const handleRemoveFilter = () => {
-    filterForm.resetForm()
-    setFetchSiblingLoading(true)
-    fetchSibling()
   }
 
   const column = [
@@ -146,6 +63,15 @@ const Sibling = ({ cardTitle }) => {
     {
       accessorKey: 'scholarship_type',
       header: 'Scholarship Type',
+      accessorFn: (row) => {
+        if (row.scholarship_type === 'senior_high') {
+          return 'Senior High'
+        } else if (row.scholarship_type === 'college') {
+          return 'College'
+        } else if (row.scholarship_type === 'tvet') {
+          return 'Tvet'
+        }
+      },
     },
   ]
   return (

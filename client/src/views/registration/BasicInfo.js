@@ -174,7 +174,8 @@ const BasicInfo = ({ id }) => {
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-      setOperationLoading(true)
+      // setOperationLoading(true)
+      setFetchDataLoading(true)
       await api
         .put('applicant/update/' + values.id, values)
         .then((response) => {
@@ -184,7 +185,8 @@ const BasicInfo = ({ id }) => {
           toast.error(handleError(error))
         })
         .finally(() => {
-          setOperationLoading(false)
+          // setOperationLoading(false)
+          setFetchDataLoading(false)
         })
     },
   })
@@ -766,7 +768,7 @@ const BasicInfo = ({ id }) => {
           </CCol>
         </CRow>
       </CForm>
-      {operationLoading && <DefaultLoading />}
+      {/* {operationLoading && <DefaultLoading />} */}
     </>
   )
 }

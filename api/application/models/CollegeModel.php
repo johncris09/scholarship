@@ -51,6 +51,7 @@ class CollegeModel extends CI_Model
 				c.school_year,
 				c.app_status,
                 c.reason,
+				c.fourps_beneficiary,
                 barangay.id AS barangay_id,
                 cs.id AS college_school_id,
                 course.id AS course_id')
@@ -106,6 +107,7 @@ class CollegeModel extends CI_Model
 				c.school_year,
 				c.app_status,
 				c.reason,
+				c.fourps_beneficiary,
                 barangay.id AS barangay_id,
                 cs.id AS college_school_id,
                 course.id AS course_id')
@@ -158,6 +160,7 @@ class CollegeModel extends CI_Model
 				c.school_year,
 				c.app_status,
 				c.reason,
+				c.fourps_beneficiary,
                 barangay.id AS barangay_id,
                 cs.id AS college_school_id,
                 course.id AS course_id')
@@ -590,6 +593,7 @@ class CollegeModel extends CI_Model
 				c.school_year,
 				c.app_status, 
 				c.reason,
+				c.fourps_beneficiary,
                 barangay.id AS barangay_id,
                 cs.id AS college_school_id,
                 course.id AS course_id')

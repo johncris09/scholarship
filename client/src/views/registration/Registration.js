@@ -10,6 +10,7 @@ import {
   CCardHeader,
   CCol,
   CForm,
+  CFormCheck,
   CFormInput,
   CFormLabel,
   CFormSelect,
@@ -489,6 +490,7 @@ const Registration = ({ cardTitle }) => {
       grade_level: '',
       year_level: '',
       availment: '',
+      fourps_beneficiary: false,
     },
     validationSchema: newApplicantFormValidationSchema,
     onSubmit: async (values) => {
@@ -531,7 +533,8 @@ const Registration = ({ cardTitle }) => {
   }
 
   const handleInputNewApplicantForm = (e) => {
-    const { name, value } = e.target
+    const { name, value, checked } = e.target
+
     if (name === 'birthdate') {
       newApplicantForm.setFieldValue('age', calculateAge(value))
     }
@@ -571,6 +574,10 @@ const Registration = ({ cardTitle }) => {
       newApplicantForm.setFieldValue(name, toSentenceCase(value))
     } else {
       newApplicantForm.setFieldValue(name, value)
+    }
+
+    if (name === 'fourps_beneficiary') {
+      newApplicantForm.setFieldValue(name, checked)
     }
   }
 
@@ -1040,6 +1047,18 @@ const Registration = ({ cardTitle }) => {
                               name="mother_occupation"
                               onChange={handleInputNewApplicantForm}
                               value={newApplicantForm.values.mother_occupation}
+                            />
+                          </CCol>
+                        </CRow>
+                        <CRow className="my-1">
+                          <CCol md={12}>
+                            <CFormCheck
+                              id="fourps_beneficiary"
+                              name="fourps_beneficiary"
+                              value={newApplicantForm.values.fourps_beneficiary}
+                              onChange={handleInputNewApplicantForm}
+                              checked={newApplicantForm.values.fourps_beneficiary ? true : false}
+                              label="4p's Beneficiary"
                             />
                           </CCol>
                         </CRow>

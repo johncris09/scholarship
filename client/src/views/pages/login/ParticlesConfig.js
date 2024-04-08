@@ -49,7 +49,7 @@ const ParticlesConfig = [
           mode: 'grab',
           parallax: {
             enable: true,
-            force: 60,
+            force: 50,
             smooth: 10,
           },
         },

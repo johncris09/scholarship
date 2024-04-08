@@ -1,7 +1,7 @@
 <?php
 
 // namespace App\Classes;
-defined('BASEPATH') or exit ('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 require APPPATH . 'libraries/RestController.php';
 require APPPATH . 'libraries/Format.php';
@@ -59,12 +59,13 @@ class Applicant extends RestController
         $system_sequence = new SystemSequenceModel;
 
         $requestData = json_decode($this->input->raw_input_stream, true);
+
         $app_number = $this->getApplicationNumber($requestData['scholarship_type']);
 
 
         $query_sem = $this->db->query('SELECT current_semester FROM  config where id = 1')->row();
         $query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->row();
-         
+
         $data = [];
         if ($requestData['scholarship_type'] == "senior_high") {
             $data = array(
@@ -79,6 +80,7 @@ class Applicant extends RestController
                 'school_year' => $query_sy->current_sy,
                 'availment' => $requestData['availment'],
                 'app_status' => 'Pending',
+                'fourps_beneficiary' => $requestData['fourps_beneficiary'],
             );
             $result = $senior_high->insert($data);
 
@@ -102,6 +104,7 @@ class Applicant extends RestController
                 'school_year' => $query_sy->current_sy,
                 'availment' => $requestData['availment'],
                 'app_status' => 'Pending',
+                'fourps_beneficiary' => $requestData['fourps_beneficiary'],
 
             );
 
@@ -115,7 +118,7 @@ class Applicant extends RestController
 
         } else if ($requestData['scholarship_type'] == "tvet") {
             $data = array(
-                'scholarship_id' => $requestData['scholarship_id'],
+                'escholarship_id' => $requestData['scholarship_id'],
                 'app_year_number' => $app_number->seq_year,
                 'app_sem_number' => $app_number->seq_sem,
                 'app_id_number' => (int) $app_number->seq_appno + 1,
@@ -126,6 +129,7 @@ class Applicant extends RestController
                 'school_year' => $query_sy->current_sy,
                 'availment' => $requestData['availment'],
                 'app_status' => 'Pending',
+                'fourps_beneficiary' => $requestData['fourps_beneficiary'],
             );
 
             $result = $tvet->insert($data);
@@ -183,12 +187,12 @@ class Applicant extends RestController
         $query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->row();
 
         $requestData = json_decode($this->input->raw_input_stream, true);
-
+        // $this->response( $requestData, RestController::HTTP_OK);
         $app_number = $this->getApplicationNumber($requestData['scholarship_type']);
 
         $reference_number = ucwords($requestData['scholarship_type'][0]) . '' . preg_replace("/\D+/", "", $query_sem->current_semester)
             . '-' . str_replace(["SY: 20", "-20"], "", $query_sy->current_sy) . '-' . $this->getFirstLetters($requestData['firstname']) . '' . $this->getFirstLetters($requestData['lastname']) . '' . date('-mdy', strtotime($requestData['birthdate']));
- 
+
         $data = array(
             'reference_number' => $reference_number,
             'lastname' => preg_replace('/\s+/', ' ', $requestData['lastname']),
@@ -211,7 +215,7 @@ class Applicant extends RestController
 
 
 
-        if (isset ($requestData['photo']) && !empty ($requestData['photo'])) {
+        if (isset($requestData['photo']) && !empty($requestData['photo'])) {
 
             $photo = $requestData['photo'];
             $image_array_1 = explode(";", $photo);
@@ -258,6 +262,7 @@ class Applicant extends RestController
                 'availment' => $requestData['availment'],
                 // 'ctc' => $requestData['ctc'],
                 'app_status' => 'Pending',
+                'fourps_beneficiary' => $requestData['fourps_beneficiary'],
             );
 
 
@@ -282,8 +287,8 @@ class Applicant extends RestController
                 'semester' => $query_sem->current_semester,
                 'school_year' => $query_sy->current_sy,
                 'availment' => $requestData['availment'],
-
                 'app_status' => 'Pending',
+                'fourps_beneficiary' => $requestData['fourps_beneficiary'],
             );
 
 
@@ -307,8 +312,9 @@ class Applicant extends RestController
                 'hour_number' => $requestData['hourNumber'],
                 'semester' => $query_sem->current_semester,
                 'school_year' => $query_sy->current_sy,
-                'availment' => $requestData['availment'], 
+                'availment' => $requestData['availment'],
                 'app_status' => 'Pending',
+                'fourps_beneficiary' => $requestData['fourps_beneficiary'],
             );
 
 
@@ -508,8 +514,9 @@ class Applicant extends RestController
                 'semester' => $requestData['semester'],
                 'school_year' => $requestData['school_year'],
                 'availment' => $requestData['availment'],
-                // 'ctc' => $requestData['ctc'],
                 'app_status' => $requestData['app_status'],
+                'fourps_beneficiary' => $requestData['fourps_beneficiary'],
+                'reason' => json_encode($requestData['reason']),
             );
 
 
@@ -529,8 +536,9 @@ class Applicant extends RestController
                 'semester' => $requestData['semester'],
                 'school_year' => $requestData['school_year'],
                 'availment' => $requestData['availment'],
-                // 'ctc' => $requestData['ctc'],
                 'app_status' => $requestData['app_status'],
+                'fourps_beneficiary' => $requestData['fourps_beneficiary'],
+                'reason' => json_encode($requestData['reason']),
             );
 
 
@@ -550,6 +558,8 @@ class Applicant extends RestController
                 'school_year' => $requestData['school_year'],
                 'availment' => $requestData['availment'],
                 'app_status' => $requestData['app_status'],
+                'fourps_beneficiary' => $requestData['fourps_beneficiary'],
+                'reason' => json_encode($requestData['reason']),
             );
 
 
@@ -590,7 +600,7 @@ class Applicant extends RestController
 
         foreach ($data as $person) {
             $key = $person->mother_name ?? $person->father_name;
-            if (!isset ($grouped[$key])) {
+            if (!isset($grouped[$key])) {
                 $grouped[$key] = [];
             }
             $grouped[$key][] = $person;
@@ -618,7 +628,7 @@ class Applicant extends RestController
             }
         }
 
-        $matching_records = array_values( array_unique($matching_records, SORT_REGULAR));
+        $matching_records = array_values(array_unique($matching_records, SORT_REGULAR));
 
         // $sameMother = [];
 
@@ -634,8 +644,8 @@ class Applicant extends RestController
         // $result = array_values(array_filter($sameMother, function($group) {
         //     return count($group) > 1;
         // }));
-        
-        
+
+
         // $sameFather = [];
 
         // foreach ($matching_records as $entry) {

@@ -43,6 +43,7 @@ class SeniorHighModel extends CI_Model
                 sh.school_year,
                 sh.app_status,
                 sh.reason,
+                sh.fourps_beneficiary,
                 barangay.id AS barangay_id,
                 s.id AS senior_high_school_id,
                 strand.id AS strand_id')
@@ -97,6 +98,7 @@ class SeniorHighModel extends CI_Model
             sh.school_year,
             sh.app_status,
             sh.reason,
+            sh.fourps_beneficiary,
             barangay.id AS barangay_id,
             s.id AS senior_high_school_id,
             strand.id AS strand_id')
@@ -148,6 +150,7 @@ class SeniorHighModel extends CI_Model
             sh.school_year,
             sh.app_status,
             sh.reason,
+            sh.fourps_beneficiary,
             barangay.id AS barangay_id,
             s.id AS senior_high_school_id,
             strand.id AS strand_id')

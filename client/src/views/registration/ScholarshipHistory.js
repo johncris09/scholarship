@@ -18,6 +18,7 @@ import {
   CButton,
   CCol,
   CForm,
+  CFormCheck,
   CFormInput,
   CFormLabel,
   CFormSelect,
@@ -41,6 +42,9 @@ import {
   ApplicationYearNumber,
 } from './ApplicationNumber'
 import { EditSharp } from '@mui/icons-material'
+import { EditorState, convertToRaw, convertFromRaw } from 'draft-js'
+import { Editor } from 'react-draft-wysiwyg'
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
 
 const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
   const selectStrandInputRef = useRef()
@@ -68,10 +72,10 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
 
   const [applicationDetailsEditModalVisible, setApplicationDetailsEditModalVisible] =
     useState(false)
+  const [editorState, setEditorState] = useState(() => EditorState.createEmpty())
 
   useEffect(() => {
     fetchApplicationDetails()
-
     fetchSeniorHighSchool()
     fetchCollegeSchool()
     fetchTvetSchool()
@@ -264,10 +268,35 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
       accessorKey: 'scholarship_type',
       header: 'Scholarship Type',
     },
+    {
+      accessorKey: 'reason',
+      header: 'Note(s)',
+      accessorFn: (row) => {
+        const contentStateString = row.reason
+
+        if (contentStateString === null) {
+          return '' // Return empty string if content state is null
+        } else {
+          const contentState = convertFromRaw(JSON.parse(contentStateString))
+          const plainText = contentState
+            .getBlocksAsArray()
+            .map((block) => block.getText())
+            .join('\n')
+          return plainText
+        }
+      },
+      includeInExport: false,
+    },
+    {
+      accessorKey: 'fourps_beneficiary',
+      header: "4'ps Beneficiary",
+      accessorFn: (row) => (parseInt(row.fourps_beneficiary) === 1 ? 'Yes' : 'No'),
+      includeInExport: true,
+    },
   ]
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
+    const { name, value, checked } = e.target
     applicationDetailsForm.setFieldValue(name, value)
 
     if (name === 'scholarship_type') {
@@ -293,6 +322,11 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
     }
 
     addNewApplicationDetailsForm.setFieldValue(name, value)
+
+    if (name === 'fourps_beneficiary') {
+      addNewApplicationDetailsForm.setFieldValue(name, checked)
+      applicationDetailsForm.setFieldValue(name, checked)
+    }
   }
 
   const handleSelectChange = (selectedOption, ref) => {
@@ -363,12 +397,18 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
       school_year: '',
       availment: '',
       app_status: '',
+      reason: '',
+      fourps_beneficiary: true,
     },
     validationSchema: applicationDetailsFormValidationSchema,
     onSubmit: async (values) => {
+      const contentState = convertToRaw(values.reason.getCurrentContent())
+      const contentStateString = JSON.stringify(contentState)
+      const updatedValues = { ...values, reason: JSON.parse(contentStateString) }
+
       setOperationLoading(true)
       await api
-        .put('applicant/update_applicant_details/' + values.id, values)
+        .put('applicant/update_applicant_details/' + values.id, updatedValues)
         .then((response) => {
           fetchApplicationDetails()
           toast.success(response.data.message)
@@ -386,6 +426,11 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
     },
   })
 
+  const onEditorStateChange = (editorState) => {
+    setEditorState(editorState) // Update the local state with the new EditorState
+
+    applicationDetailsForm.setFieldValue('reason', editorState)
+  }
   const addNewApplicationDetailsFormValidationSchema = Yup.object().shape({
     school: Yup.string().required('School is required'),
     strand: Yup.string().when('scholarship_type', {
@@ -443,6 +488,7 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
       grade_level: '',
       year_level: '',
       availment: '',
+      fourps_beneficiary: false,
     },
     validationSchema: addNewApplicationDetailsFormValidationSchema,
     onSubmit: async (values) => {
@@ -515,7 +561,6 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
               <IconButton
                 color="warning"
                 onClick={() => {
-                  console.info(row.original)
                   if (row.original.scholarship_type === 'Senior High') {
                     applicationDetailsForm.setFieldValue('scholarship_type', 'senior_high')
                     applicationDetailsForm.setFieldValue('school', row.original.school_id)
@@ -533,7 +578,10 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                     applicationDetailsForm.setFieldValue('tvetCourse', row.original.course_id)
                     applicationDetailsForm.setFieldValue('hourNumber', row.original.unit)
                   }
-
+                  applicationDetailsForm.setFieldValue(
+                    'fourps_beneficiary',
+                    parseInt(row.original.fourps_beneficiary) === 1 ? true : false,
+                  )
                   applicationDetailsForm.setFieldValue('app_status', row.original.app_status)
                   applicationDetailsForm.setFieldValue('id', row.original.id)
                   applicationDetailsForm.setFieldValue('school_year', row.original.school_year)
@@ -549,6 +597,17 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
 
                   applicationDetailsForm.setFieldValue('semester', row.original.semester)
                   applicationDetailsForm.setFieldValue('availment', row.original.availment)
+                  const contentStateString = row.original.reason
+
+                  if (contentStateString === null) {
+                    setEditorState(EditorState.createEmpty())
+                    applicationDetailsForm.setFieldValue('reason', EditorState.createEmpty())
+                  } else {
+                    const contentState = convertFromRaw(JSON.parse(contentStateString))
+                    const editorState = EditorState.createWithContent(contentState)
+                    setEditorState(editorState)
+                    applicationDetailsForm.setFieldValue('reason', editorState)
+                  }
 
                   setApplicationDetailsEditModalVisible(true)
                 }}
@@ -674,7 +733,18 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                       )}
                   </CCol>
                 </CRow>
-
+                <CRow className="my-1">
+                  <CCol md={12}>
+                    <CFormCheck
+                      id="fourps_beneficiary"
+                      name="fourps_beneficiary"
+                      value={applicationDetailsForm.values.fourps_beneficiary}
+                      onChange={handleInputChange}
+                      checked={applicationDetailsForm.values.fourps_beneficiary ? true : false}
+                      label="4p's Beneficiary"
+                    />
+                  </CCol>
+                </CRow>
                 <CRow className="my-1">
                   {/* if senior high */}
                   {applicationDetailsForm.values.scholarship_type === 'senior_high' && (
@@ -1119,10 +1189,23 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                   )}
                 </CRow>
 
+                <CRow className="my-1">
+                  <CCol md={12}>
+                    <CFormLabel>Notes (optional)</CFormLabel>
+                    <Editor
+                      editorState={editorState}
+                      wrapperClassName="demo-wrapper"
+                      editorClassName="demo-editor"
+                      editorStyle={{ height: 200, paddingLeft: 5, lineHeight: 0.1 }}
+                      wrapperStyle={{ border: '.5px solid #F1F6F9' }}
+                      onEditorStateChange={onEditorStateChange}
+                    />
+                  </CCol>
+                </CRow>
                 <CRow className="mt-4">
                   <div className="d-grid gap-2">
                     <CButton shape="rounded-pill" color="primary" type="submit">
-                      Submit
+                      Update Details
                     </CButton>
                   </div>
                 </CRow>
@@ -1223,7 +1306,20 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                     <h4 className="text-danger text-decoration-underline">Pending</h4>
                   </CCol>
                 </CRow>
-
+                <CRow className="my-1">
+                  <CCol md={12}>
+                    <CFormCheck
+                      id="fourps_beneficiary"
+                      name="fourps_beneficiary"
+                      value={addNewApplicationDetailsForm.values.fourps_beneficiary}
+                      onChange={handleInputChange}
+                      checked={
+                        addNewApplicationDetailsForm.values.fourps_beneficiary ? true : false
+                      }
+                      label="4p's Beneficiary"
+                    />
+                  </CCol>
+                </CRow>
                 <CRow className="my-1">
                   {/* if senior high */}
                   {addNewApplicationDetailsForm.values.scholarship_type === 'senior_high' && (

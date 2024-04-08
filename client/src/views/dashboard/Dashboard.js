@@ -92,7 +92,6 @@ const Dashboard = ({ cardTitle }) => {
           college: response[1],
           tvet: response[2],
         }
-        console.info(newData)
         setFourPsBeneficiary(newData)
       })
       .catch((error) => {
@@ -116,7 +115,6 @@ const Dashboard = ({ cardTitle }) => {
           college: response[1],
           tvet: response[2],
         }
-        console.info(newData)
         setGenderChartData(newData)
       })
       .catch((error) => {

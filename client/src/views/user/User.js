@@ -148,7 +148,7 @@ const User = ({ cardTitle }) => {
       school: '',
       photo: '',
     },
-    // validationSchema: validationSchema,
+    validationSchema: validationSchema,
     onSubmit: async (values) => {
       if (values.hidePassword) {
         setOperationLoading(true)

@@ -46,6 +46,7 @@ class TvetModel extends CI_Model
 				t.school_year,
 				t.app_status,
 				t.reason,
+				t.fourps_beneficiary,
                 barangay.id AS barangay_id,
                 ts.id AS tvet_school_id,
                 tc.id AS tvet_course_id')
@@ -100,6 +101,7 @@ class TvetModel extends CI_Model
 				t.school_year,
 				t.app_status,
 				t.reason,
+				t.fourps_beneficiary,
                 barangay.id AS barangay_id,
                 ts.id AS tvet_school_id,
                 tc.id AS tvet_course_id')
@@ -150,6 +152,7 @@ class TvetModel extends CI_Model
 				t.school_year,
 				t.app_status,
 				t.reason,
+				t.fourps_beneficiary,
                 barangay.id AS barangay_id,
                 ts.id AS tvet_school_id,
                 tc.id AS tvet_course_id')
@@ -573,6 +576,7 @@ class TvetModel extends CI_Model
 				t.school_year,
 				t.app_status,
 				t.reason,
+				t.fourps_beneficiary,
                 barangay.id AS barangay_id,
                 ts.id AS tvet_school_id,
                 tc.id AS tvet_course_id')

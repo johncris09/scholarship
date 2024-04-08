@@ -159,7 +159,8 @@ class ScholarshipModel extends CI_Model
             c.semester,
             c.school_year,
             c.app_status,
-            c.app_status,
+            c.reason,
+            c.fourps_beneficiary as fourps_beneficiary,
             "College" AS scholarship_type,
             cs.id as school_id,
             course.id as course_id'
@@ -186,7 +187,8 @@ class ScholarshipModel extends CI_Model
             sh.semester,
             sh.school_year,
             sh.app_status,
-            sh.app_status,
+            sh.reason,
+            sh.fourps_beneficiary as fourps_beneficiary,
             "Senior High" AS scholarship_type,
             s.id as school_id,
             strand.id as course_id'
@@ -213,7 +215,8 @@ class ScholarshipModel extends CI_Model
             t.semester,
             t.school_year,
             t.app_status,
-            t.app_status,
+            t.reason,
+            t.fourps_beneficiary as fourps_beneficiary,
             "Tvet" AS scholarship_type,
             ts.id as school_id,
             tc.id as course_id'
