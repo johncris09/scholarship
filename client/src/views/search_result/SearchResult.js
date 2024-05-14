@@ -6,6 +6,7 @@ import { api } from 'src/components/SystemConfiguration'
 import { useParams } from 'react-router-dom'
 import BasicInfo from '../registration/BasicInfo'
 import ScholarshipHistory from '../registration/ScholarshipHistory'
+import RedFlag from '../red_flag/RedFlag'
 
 const SearchResult = ({ cardTitle }) => {
   const { id } = useParams()
@@ -41,6 +42,9 @@ const SearchResult = ({ cardTitle }) => {
           <BasicInfo id={scholarshipID} />
           <ScholarshipHistory scholarshipId={scholarshipID} hasNewRecordButton={false} />
         </>
+      </CCard>
+      <CCard className="mb-4">
+        <RedFlag scholarshipId={scholarshipID} />
       </CCard>
     </>
   )

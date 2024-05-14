@@ -105,7 +105,7 @@ $route['college/bulk_status_update'] = 'College/bulk_status_update';
 $route['college/bulk_disapproved'] = 'College/bulk_disapproved';
 $route['college/get_fourps_beneficiary'] = 'College/get_fourps_beneficiary';
 $route['college/all_fourps_beneficiary'] = 'College/all_fourps_beneficiary';
- 
+
 
 
 // Tvet
@@ -135,7 +135,7 @@ $route['tvet/bulk_status_update'] = 'Tvet/bulk_status_update';
 $route['tvet/bulk_disapproved'] = 'Tvet/bulk_disapproved';
 $route['tvet/get_fourps_beneficiary'] = 'Tvet/get_fourps_beneficiary';
 $route['tvet/all_fourps_beneficiary'] = 'Tvet/all_fourps_beneficiary';
- 
+
 
 
 
@@ -245,3 +245,11 @@ $route['test/bulk_delete/'] = 'Test/bulk_delete/';
 // Scholar
 $route['consolidate_senior_high'] = 'Scholar/consolidate_senior_high';
 $route['consolidate_college'] = 'Scholar/consolidate_college';
+
+
+
+// Red Flag
+$route['red_flag'] = 'RedFlag/index';
+$route['red_flag/insert'] = 'RedFlag/insert';
+$route['red_flag/applicant/(:any)'] = 'RedFlag/applicant/$1';
+$route['red_flag/delete/(:any)'] = 'RedFlag/delete/$1';
