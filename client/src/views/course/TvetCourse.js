@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import './../../assets/css/react-paginate.css'
 import Swal from 'sweetalert2'
 import {
@@ -28,24 +28,16 @@ import {
   DefaultLoading,
   RequiredFieldNote,
   api,
-  handleError,
   requiredField,
   validationPrompt,
 } from 'src/components/SystemConfiguration'
 import * as Yup from 'yup'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-const TvetCourse = ({ cardTitle }) => {
-  const [data, setData] = useState([])
-  const [validated, setValidated] = useState(true)
-  const [fetchDataLoading, setFetchDataLoading] = useState(true)
-  const [courseOperationLoading, setDataOperationLoading] = useState(false)
+const Course = ({ cardTitle }) => {
+  const queryClient = useQueryClient()
   const [modalVisible, setModalVisible] = useState(false)
   const [isEnableEdit, setIsEnableEdit] = useState(false)
-  const [editId, setEditId] = useState('')
-
-  useEffect(() => {
-    fetchData()
-  }, [])
 
   const column = [
     {
@@ -54,72 +46,92 @@ const TvetCourse = ({ cardTitle }) => {
     },
   ]
 
-  const fetchData = () => {
-    api
-      .get('tvet_course')
-      .then((response) => {
-        setData(response.data)
-      })
-      .catch((error) => {
-        toast.error(error)
-        // toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchDataLoading(false)
-      })
-  }
+  const course = useQuery({
+    queryFn: async () =>
+      await api.get('tvet_course').then((response) => {
+        return response.data
+      }),
+    queryKey: ['tvet_course'],
+    staleTime: Infinity,
+  })
 
   const validationSchema = Yup.object().shape({
     course: Yup.string().required('Course is required'),
   })
-  const formik = useFormik({
+  const form = useFormik({
     initialValues: {
+      id: '',
       course: '',
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-      !isEnableEdit
-        ? // add new data
-          await api
-            .post('tvet_course/insert', values)
-            .then((response) => {
-              toast.success(response.data.message)
-              fetchData()
-              formik.resetForm()
-              setValidated(false)
-            })
-            .catch((error) => {
-              toast.error(handleError(error))
-            })
-            .finally(() => {
-              setDataOperationLoading(false)
-            })
-        : // update data
-          await api
-            .put('tvet_course/update/' + editId, values)
-            .then((response) => {
-              toast.success(response.data.message)
-              fetchData()
-              setValidated(false)
-              setModalVisible(false)
-            })
-            .catch((error) => {
-              toast.error(handleError(error))
-            })
-            .finally(() => {
-              setDataOperationLoading(false)
-            })
+      if (values.id) {
+        await updateCourse.mutate(values)
+      } else {
+        await insertCourse.mutate(values)
+      }
+    },
+  })
+
+  const insertCourse = useMutation({
+    mutationFn: async (course) => {
+      return await api.post('tvet_course/insert', course)
+    },
+    onSuccess: async (response) => {
+      if (response.data.status) {
+        toast.success(response.data.message)
+      }
+      form.resetForm()
+      await queryClient.invalidateQueries(['tvet_course'])
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+
+  const updateCourse = useMutation({
+    mutationFn: async (course) => {
+      return await api.put('tvet_course/update/' + course.id, course)
+    },
+    onSuccess: async (response) => {
+      if (response.data.status) {
+        toast.success(response.data.message)
+      }
+      form.resetForm()
+      setModalVisible(false)
+      await queryClient.invalidateQueries(['tvet_course'])
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+
+  const deleteCourse = useMutation({
+    mutationFn: async (id) => {
+      return await api.delete('tvet_course/delete/' + id)
+    },
+    onSuccess: async (response) => {
+      if (response.data.status) {
+        toast.success(response.data.message, { autoClose: false })
+      }
+      await queryClient.invalidateQueries(['tvet_course'])
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
     },
   })
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    formik.setFieldValue(name, value)
+    form.setFieldValue(name, value)
   }
 
   return (
     <>
-      <ToastContainer />
+      <ToastContainer autoClose={10000} />
       <CCard className="mb-4">
         <CCardHeader>
           {cardTitle}
@@ -128,9 +140,9 @@ const TvetCourse = ({ cardTitle }) => {
               size="sm"
               color="primary"
               onClick={() => {
-                formik.resetForm()
+                form.resetForm()
                 setIsEnableEdit(false)
-                setValidated(false)
+
                 setModalVisible(!modalVisible)
               }}
             >
@@ -141,13 +153,38 @@ const TvetCourse = ({ cardTitle }) => {
         <CCardBody>
           <MaterialReactTable
             columns={column}
-            data={data}
+            data={!course.isLoading && course.data}
             state={{
-              isLoading: fetchDataLoading,
-              isSaving: fetchDataLoading,
-              showLoadingOverlay: fetchDataLoading,
-              showProgressBars: fetchDataLoading,
-              showSkeletons: fetchDataLoading,
+              isLoading:
+                course.isLoading ||
+                course.isFetching ||
+                insertCourse.isPending ||
+                updateCourse.isPending ||
+                deleteCourse.isPending,
+              isSaving:
+                course.isLoading ||
+                course.isFetching ||
+                insertCourse.isPending ||
+                updateCourse.isPending ||
+                deleteCourse.isPending,
+              showLoadingOverlay:
+                course.isLoading ||
+                course.isFetching ||
+                insertCourse.isPending ||
+                updateCourse.isPending ||
+                deleteCourse.isPending,
+              showProgressBars:
+                course.isLoading ||
+                course.isFetching ||
+                insertCourse.isPending ||
+                updateCourse.isPending ||
+                deleteCourse.isPending,
+              showSkeletons:
+                course.isLoading ||
+                course.isFetching ||
+                insertCourse.isPending ||
+                updateCourse.isPending ||
+                deleteCourse.isPending,
             }}
             muiCircularProgressProps={{
               color: 'secondary',
@@ -175,12 +212,12 @@ const TvetCourse = ({ cardTitle }) => {
                   <IconButton
                     color="warning"
                     onClick={() => {
-                      setEditId(row.original.id)
-                      formik.setValues({
+                      form.setValues({
+                        id: row.original.id,
                         course: row.original.course,
                       })
-                      setIsEnableEdit(true)
                       setModalVisible(true)
+                      setIsEnableEdit(true)
                     }}
                   >
                     <EditSharp />
@@ -189,7 +226,7 @@ const TvetCourse = ({ cardTitle }) => {
                 <Tooltip title="Delete">
                   <IconButton
                     color="error"
-                    onClick={() => {
+                    onClick={async () => {
                       Swal.fire({
                         title: 'Are you sure?',
                         text: "You won't be able to revert this!",
@@ -200,24 +237,8 @@ const TvetCourse = ({ cardTitle }) => {
                         confirmButtonText: 'Yes, delete it!',
                       }).then(async (result) => {
                         if (result.isConfirmed) {
-                          validationPrompt(() => {
-                            let id = row.original.id
-
-                            setFetchDataLoading(true)
-
-                            api
-                              .delete('tvet_course/delete/' + id)
-                              .then((response) => {
-                                fetchData()
-
-                                toast.success(response.data.message)
-                              })
-                              .catch((error) => {
-                                toast.error(handleError(error))
-                              })
-                              .finally(() => {
-                                setFetchDataLoading(false)
-                              })
+                          validationPrompt(async () => {
+                            await deleteCourse.mutate(row.original.id)
                           })
                         }
                       })
@@ -229,27 +250,15 @@ const TvetCourse = ({ cardTitle }) => {
               </Box>
             )}
           />
-
-          {fetchDataLoading && <DefaultLoading />}
         </CCardBody>
       </CCard>
 
-      <CModal
-        alignment="center"
-        backdrop="static"
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-      >
+      <CModal alignment="center" visible={modalVisible} onClose={() => setModalVisible(false)}>
         <CModalHeader onClose={() => setModalVisible(false)}>
           <CModalTitle> {isEnableEdit ? `Edit ${cardTitle}` : `Add New ${cardTitle}`}</CModalTitle>
         </CModalHeader>
 
-        <CForm
-          id="form"
-          className="row g-3 needs-validation"
-          noValidate
-          onSubmit={formik.handleSubmit}
-        >
+        <CForm id="form" className="row g-3  " onSubmit={form.handleSubmit}>
           <CModalBody>
             <RequiredFieldNote />
 
@@ -261,17 +270,14 @@ const TvetCourse = ({ cardTitle }) => {
                   label={requiredField('Course')}
                   name="course"
                   onChange={handleInputChange}
-                  value={formik.values.course}
-                  required
+                  value={form.values.course}
                 />
               </CCol>
-              {formik.touched.course && formik.errors.course && (
-                <CFormText className="text-danger">{formik.errors.course}</CFormText>
+              {form.touched.course && form.errors.course && (
+                <CFormText className="text-danger">{form.errors.course}</CFormText>
               )}
             </CRow>
           </CModalBody>
-
-          {courseOperationLoading && <DefaultLoading />}
 
           <CModalFooter>
             <CButton
@@ -286,9 +292,10 @@ const TvetCourse = ({ cardTitle }) => {
             </CButton>
           </CModalFooter>
         </CForm>
+        {(insertCourse.isPending || updateCourse.isPending) && <DefaultLoading />}
       </CModal>
     </>
   )
 }
 
-export default TvetCourse
+export default Course

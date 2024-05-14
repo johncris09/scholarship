@@ -53,10 +53,6 @@ const Course = ({ cardTitle }) => {
       }),
     queryKey: ['course'],
     staleTime: Infinity,
-
-    onSuccess: async () => {
-      await queryClient.invalidateQueries(['course'])
-    },
   })
 
   const validationSchema = Yup.object().shape({
