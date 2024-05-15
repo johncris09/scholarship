@@ -14,12 +14,10 @@ class Course extends RestController
 		// Construct the parent class
 		parent::__construct();
 		$this->load->model('CourseModel');
-		$this->load->helper('crypto_helper');
 	}
 	public function index_get()
 	{
 		$model = new CourseModel;
-		$CryptoHelper = new CryptoHelper;
 		$result = $model->getAll();
 		$this->response($result, RestController::HTTP_OK);
 	}
@@ -39,7 +37,7 @@ class Course extends RestController
 		if ($result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'New Course Created.'
+				'message' => 'Successfully Inserted'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -82,7 +80,7 @@ class Course extends RestController
 		if ($update_result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'Course Updated.'
+				'message' => 'Successfully Updated.'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -102,7 +100,7 @@ class Course extends RestController
 		if ($result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'Course Deleted.'
+				'message' => 'Successfully Deleted.'
 			], RestController::HTTP_OK);
 		} else {
 

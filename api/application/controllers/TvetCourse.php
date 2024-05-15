@@ -39,7 +39,7 @@ class TvetCourse extends RestController
 		if ($result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'New Course Created.'
+				'message' => 'Successfully Inserted'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -82,7 +82,7 @@ class TvetCourse extends RestController
 		if ($update_result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'Course Updated.'
+				'message' => 'Successfully Updated.'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -108,7 +108,7 @@ class TvetCourse extends RestController
 
 			$this->response([
 				'status' => false,
-				'message' => 'Failed to delete course.'
+				'message' => 'Successfully Deleted.'
 			], RestController::HTTP_BAD_REQUEST);
 
 		}

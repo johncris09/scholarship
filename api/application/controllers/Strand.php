@@ -13,17 +13,15 @@ class Strand extends RestController
 	{
 		// Construct the parent class
 		parent::__construct();
-		$this->load->model('StrandModel');
-		$this->load->helper('crypto_helper');
+		$this->load->model('StrandModel');  
 	}
 	public function index_get()
 	{
 		$strand = new StrandModel;
-		$CryptoHelper = new CryptoHelper;
-		$result =   $strand->getAll();
+		$result = $strand->getAll();
 		$this->response($result, RestController::HTTP_OK);
 	}
- 
+
 	public function insert_post()
 	{
 
@@ -31,7 +29,7 @@ class Strand extends RestController
 		$requestData = json_decode($this->input->raw_input_stream, true);
 
 		$data = array(
-			'Strand' => $requestData['strand'], 
+			'Strand' => $requestData['strand'],
 
 		);
 
@@ -40,7 +38,7 @@ class Strand extends RestController
 		if ($result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'New Strand Created.'
+				'message' => 'Successfully Inserted'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -72,7 +70,7 @@ class Strand extends RestController
 		$requestData = json_decode($this->input->raw_input_stream, true);
 
 		$data = array(
-			'Strand' => $requestData['strand'], 
+			'Strand' => $requestData['strand'],
 
 		);
 
@@ -81,7 +79,7 @@ class Strand extends RestController
 		if ($update_result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'Strand Updated.'
+				'message' => 'Successfully Updated.'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -101,7 +99,7 @@ class Strand extends RestController
 		if ($result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'Strand Deleted.'
+				'message' => 'Successfully Deleted.'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -111,6 +109,6 @@ class Strand extends RestController
 			], RestController::HTTP_BAD_REQUEST);
 
 		}
-	} 
+	}
 
 }

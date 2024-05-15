@@ -238,7 +238,19 @@ const Course = ({ cardTitle }) => {
                       }).then(async (result) => {
                         if (result.isConfirmed) {
                           validationPrompt(async () => {
-                            await deleteCourse.mutate(row.original.id)
+                            let id = row.original.id
+
+                            await api
+                              .delete('tvet_course/delete/' + id)
+                              .then(async (response) => {
+                                await queryClient.invalidateQueries(['tvet_course'])
+
+                                toast.success(response.data.message)
+                              })
+                              .catch((error) => {
+                                console.info(error.response.data)
+                                // toast.error(handleError(error))
+                              })
                           })
                         }
                       })

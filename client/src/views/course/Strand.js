@@ -108,22 +108,6 @@ const Strand = ({ cardTitle }) => {
     },
   })
 
-  const deleteCourse = useMutation({
-    mutationFn: async (id) => {
-      return await api.delete('strand/delete/' + id)
-    },
-    onSuccess: async (response) => {
-      if (response.data.status) {
-        toast.success(response.data.message, { autoClose: false })
-      }
-      await queryClient.invalidateQueries(['strand'])
-    },
-    onError: (error) => {
-      console.info(error.response.data)
-      // toast.error(error.response.data.message)
-    },
-  })
-
   const handleInputChange = (e) => {
     const { name, value } = e.target
     form.setFieldValue(name, value)
@@ -159,32 +143,27 @@ const Strand = ({ cardTitle }) => {
                 strand.isLoading ||
                 strand.isFetching ||
                 insertCourse.isPending ||
-                updateCourse.isPending ||
-                deleteCourse.isPending,
+                updateCourse.isPending,
               isSaving:
                 strand.isLoading ||
                 strand.isFetching ||
                 insertCourse.isPending ||
-                updateCourse.isPending ||
-                deleteCourse.isPending,
+                updateCourse.isPending,
               showLoadingOverlay:
                 strand.isLoading ||
                 strand.isFetching ||
                 insertCourse.isPending ||
-                updateCourse.isPending ||
-                deleteCourse.isPending,
+                updateCourse.isPending,
               showProgressBars:
                 strand.isLoading ||
                 strand.isFetching ||
                 insertCourse.isPending ||
-                updateCourse.isPending ||
-                deleteCourse.isPending,
+                updateCourse.isPending,
               showSkeletons:
                 strand.isLoading ||
                 strand.isFetching ||
                 insertCourse.isPending ||
-                updateCourse.isPending ||
-                deleteCourse.isPending,
+                updateCourse.isPending,
             }}
             muiCircularProgressProps={{
               color: 'secondary',
@@ -238,7 +217,19 @@ const Strand = ({ cardTitle }) => {
                       }).then(async (result) => {
                         if (result.isConfirmed) {
                           validationPrompt(async () => {
-                            await deleteCourse.mutate(row.original.id)
+                            let id = row.original.id
+
+                            await api
+                              .delete('strand/delete/' + id)
+                              .then(async (response) => {
+                                await queryClient.invalidateQueries(['strand'])
+
+                                toast.success(response.data.message)
+                              })
+                              .catch((error) => {
+                                console.info(error.response.data)
+                                // toast.error(handleError(error))
+                              })
                           })
                         }
                       })
