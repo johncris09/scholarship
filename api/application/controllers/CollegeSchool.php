@@ -9,31 +9,30 @@ use chriskacerguis\RestServer\RestController;
 class CollegeSchool extends RestController
 {
 
-    function __construct()
-    {
-        // Construct the parent class
-        parent::__construct();
-        $this->load->model('collegeSchoolModel');
-		$this->load->helper('crypto_helper');
-    }
-    public function index_get()
-    {
-        $model = new collegeSchoolModel; 
-		$result =   $model->getAll();
-        $this->response($result, RestController::HTTP_OK);
-    } 
+	function __construct()
+	{
+		// Construct the parent class
+		parent::__construct();
+		$this->load->model('collegeSchoolModel');
+	}
+	public function index_get()
+	{
+		$model = new collegeSchoolModel;
+		$result = $model->getAll();
+		$this->response($result, RestController::HTTP_OK);
+	}
 
- 
+
 	public function insert_post()
 	{
 
 		$model = new CollegeSchoolModel;
 		$requestData = json_decode($this->input->raw_input_stream, true);
-  
+
 		$data = array(
 			'abbreviation' => $requestData['abbreviation'],
 			'school' => $requestData['school_name'],
-			'address' => $requestData['address'], 
+			'address' => $requestData['address'],
 
 		);
 
@@ -42,7 +41,7 @@ class CollegeSchool extends RestController
 		if ($result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'New College School Created.'
+				'message' => 'Successfully Inserted'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -72,20 +71,20 @@ class CollegeSchool extends RestController
 		$model = new CollegeSchoolModel;
 
 		$requestData = json_decode($this->input->raw_input_stream, true);
-	  
+
 		$data = array(
 			'abbreviation' => $requestData['abbreviation'],
 			'school' => $requestData['school_name'],
-			'address' => $requestData['address'], 
+			'address' => $requestData['address'],
 		);
-		 
+
 
 		$update_result = $model->update($id, $data);
 
 		if ($update_result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'College School Updated.'
+				'message' => 'Successfully Updated.'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -105,7 +104,7 @@ class CollegeSchool extends RestController
 		if ($result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'College School Deleted.'
+				'message' => 'Successfully Deleted.'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -130,14 +129,14 @@ class CollegeSchool extends RestController
 		}, $requestData);
 
 		// Convert IDs to integers
-		$ids = array_map('intval', $ids); 
+		$ids = array_map('intval', $ids);
 
-		$result = $model->bulk_delete($ids); 
+		$result = $model->bulk_delete($ids);
 
 		if ($result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'College School Deleted.'
+				'message' => 'Successfully Deleted.'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -149,5 +148,5 @@ class CollegeSchool extends RestController
 		}
 
 	}
-    
+
 }

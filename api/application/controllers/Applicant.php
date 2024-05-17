@@ -59,7 +59,7 @@ class Applicant extends RestController
         $system_sequence = new SystemSequenceModel;
 
         $requestData = json_decode($this->input->raw_input_stream, true);
-
+		
         $app_number = $this->getApplicationNumber($requestData['scholarship_type']);
 
 
@@ -90,7 +90,7 @@ class Applicant extends RestController
             $system_sequence->update(1, $appno_data);
 
 
-        } else if ($requestData['scholarship_type'] == "college") {
+        } else 	if ($requestData['scholarship_type'] == "college") {
             $data = array(
                 'scholarship_id' => $requestData['scholarship_id'],
                 'app_year_number' => $app_number->seq_year,
@@ -118,7 +118,7 @@ class Applicant extends RestController
 
         } else if ($requestData['scholarship_type'] == "tvet") {
             $data = array(
-                'escholarship_id' => $requestData['scholarship_id'],
+                'scholarship_id' => $requestData['scholarship_id'],
                 'app_year_number' => $app_number->seq_year,
                 'app_sem_number' => $app_number->seq_sem,
                 'app_id_number' => (int) $app_number->seq_appno + 1,
@@ -139,8 +139,7 @@ class Applicant extends RestController
             );
             $system_sequence->update(3, $appno_data);
 
-        }
-
+        } 
         if ($result > 0) {
             $this->response([
                 'status' => true,
@@ -151,7 +150,7 @@ class Applicant extends RestController
             $this->response([
                 'status' => false,
                 'message' => 'Failed to create record.'
-            ], RestController::HTTP_OK);
+            ], RestController::HTTP_BAD_REQUEST);
 
         }
     }

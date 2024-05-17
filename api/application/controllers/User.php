@@ -24,8 +24,7 @@ class User extends RestController
 
   public function index_get()
   {
-    $user = new UserModel;
-    $CryptoHelper = new CryptoHelper;
+    $user = new UserModel; 
     $result = $user->get();
     $this->response($result, RestController::HTTP_OK);
   }
@@ -33,8 +32,7 @@ class User extends RestController
 
   public function online_get()
   {
-    $user = new UserModel;
-    $CryptoHelper = new CryptoHelper;
+    $user = new UserModel; 
     $result = $user->get_online();
     $this->response($result, RestController::HTTP_OK);
   }

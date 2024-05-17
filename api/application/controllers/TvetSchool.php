@@ -42,7 +42,7 @@ class TvetSchool extends RestController
 		if ($result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'New College School Created.'
+				'message' => 'Successfully Inserted'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -85,7 +85,7 @@ class TvetSchool extends RestController
 		if ($update_result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'College School Updated.'
+				'message' => 'Successfully Updated.'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -105,7 +105,7 @@ class TvetSchool extends RestController
 		if ($result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'College School Deleted.'
+				'message' => 'Successfully Deleted.'
 			], RestController::HTTP_OK);
 		} else {
 

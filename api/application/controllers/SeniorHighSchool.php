@@ -14,14 +14,13 @@ class SeniorHighSchool extends RestController
 		// Construct the parent class
 		parent::__construct();
 		$this->load->model('SeniorHighSchoolModel');
-		$this->load->helper('crypto_helper');
 	}
 	public function index_get()
 	{
-		$model = new SeniorHighSchoolModel; 
-		$result = $model->getAll(); 
+		$model = new SeniorHighSchoolModel;
+		$result = $model->getAll();
 		$this->response($result, RestController::HTTP_OK);
-	} 
+	}
 
 
 	public function insert_post()
@@ -29,11 +28,11 @@ class SeniorHighSchool extends RestController
 
 		$model = new SeniorHighSchoolModel;
 		$requestData = json_decode($this->input->raw_input_stream, true);
- 
-		$data = array(  
+
+		$data = array(
 			'abbreviation' => $requestData['abbreviation'],
 			'school' => $requestData['school_name'],
-			'address' => $requestData['address'], 
+			'address' => $requestData['address'],
 
 		);
 
@@ -42,7 +41,7 @@ class SeniorHighSchool extends RestController
 		if ($result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'New Senior High School Created.'
+				'message' => 'Successfully Inserted'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -76,7 +75,7 @@ class SeniorHighSchool extends RestController
 		$data = array(
 			'abbreviation' => $requestData['abbreviation'],
 			'school' => $requestData['school_name'],
-			'address' => $requestData['address'], 
+			'address' => $requestData['address'],
 		);
 
 
@@ -85,7 +84,7 @@ class SeniorHighSchool extends RestController
 		if ($update_result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'Senior High School Updated.'
+				'message' => 'Successfully Updated.'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -105,7 +104,7 @@ class SeniorHighSchool extends RestController
 		if ($result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'Senior High School Deleted.'
+				'message' => 'Successfully Deleted.'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -137,7 +136,7 @@ class SeniorHighSchool extends RestController
 		if ($result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'Senior High School Deleted.'
+				'message' => 'Successfully Deleted.'
 			], RestController::HTTP_OK);
 		} else {
 

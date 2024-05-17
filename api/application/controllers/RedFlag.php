@@ -48,7 +48,7 @@ class RedFlag extends RestController
 		if ($result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'New Red Flag Created.'
+				'message' => 'Successfully Inserted'
 			], RestController::HTTP_OK);
 		} else {
 
@@ -77,7 +77,7 @@ class RedFlag extends RestController
 
 			$this->response([
 				'status' => false,
-				'message' => 'Failed to delete course.'
+				'message' => 'Failed to delete red flag.'
 			], RestController::HTTP_BAD_REQUEST);
 
 		}

@@ -14,20 +14,17 @@ class Config extends RestController
 		// Construct the parent class
 		parent::__construct();
 		$this->load->model('ConfigModel');
-		$this->load->helper('crypto_helper');
 	}
 	public function index_get()
 	{
 		$config = new ConfigModel;
-		$CryptoHelper = new CryptoHelper;
-		$result =  $config->get_all();
+
+		$result = $config->get_all();
 		$this->response($result, RestController::HTTP_OK);
 	}
 	public function shs_appno_get()
 	{
 		$config = new ConfigModel;
-		$CryptoHelper = new CryptoHelper;
-		// $result = $CryptoHelper->cryptoJsAesEncrypt(json_encode($config->shs_appno()));
 		$result = $config->shs_appno();
 		$this->response($result, RestController::HTTP_OK);
 	}
@@ -35,8 +32,6 @@ class Config extends RestController
 	public function college_appno_get()
 	{
 		$config = new ConfigModel;
-		$CryptoHelper = new CryptoHelper;
-		// $result = $CryptoHelper->cryptoJsAesEncrypt(json_encode($config->college_appno()));
 		$result = $config->college_appno();
 		$this->response($result, RestController::HTTP_OK);
 	}
@@ -45,8 +40,6 @@ class Config extends RestController
 	public function tvet_appno_get()
 	{
 		$config = new ConfigModel;
-		$CryptoHelper = new CryptoHelper;
-		// $result = $CryptoHelper->cryptoJsAesEncrypt(json_encode($config->tvet_appno()));
 		$result = $config->tvet_appno();
 		$this->response($result, RestController::HTTP_OK);
 	}
@@ -56,8 +49,7 @@ class Config extends RestController
 	public function find_get($id)
 	{
 		$config = new ConfigModel;
-		$CryptoHelper = new CryptoHelper;
-		$result = $config->find($id) ;
+		$result = $config->find($id);
 		$this->response($result, RestController::HTTP_OK);
 
 	}
@@ -85,7 +77,7 @@ class Config extends RestController
 		if ($update_result > 0) {
 			$this->response([
 				'status' => true,
-				'message' => 'SUccessfully Updated.'
+				'message' => 'Successfully Updated.'
 			], RestController::HTTP_OK);
 		} else {
 

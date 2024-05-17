@@ -44,7 +44,7 @@ class Course extends RestController
 			$this->response([
 				'status' => false,
 				'message' => 'Failed to create course.'
-			], RestController::HTTP_OK);
+			], RestController::HTTP_BAD_REQUEST);
 
 		}
 
