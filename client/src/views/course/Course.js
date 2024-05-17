@@ -53,6 +53,7 @@ const Course = ({ cardTitle }) => {
       }),
     queryKey: ['course'],
     staleTime: Infinity,
+    refetchInterval: 1000,
   })
 
   const validationSchema = Yup.object().shape({
@@ -74,6 +75,7 @@ const Course = ({ cardTitle }) => {
   })
 
   const insertCourse = useMutation({
+    mutationKey: ['insertCourse'],
     mutationFn: async (course) => {
       return await api.post('course/insert', course)
     },
@@ -82,7 +84,7 @@ const Course = ({ cardTitle }) => {
         toast.success(response.data.message)
       }
       form.resetForm()
-      await queryClient.invalidateQueries(['course'])
+      await queryClient.invalidateQueries({ queryKey: ['course'] })
     },
     onError: (error) => {
       console.info(error.response.data)
@@ -100,7 +102,7 @@ const Course = ({ cardTitle }) => {
       }
       form.resetForm()
       setModalVisible(false)
-      await queryClient.invalidateQueries(['course'])
+      await queryClient.invalidateQueries({ queryKey: ['course'] })
     },
     onError: (error) => {
       console.info(error.response.data)
@@ -139,31 +141,13 @@ const Course = ({ cardTitle }) => {
             columns={column}
             data={!course.isLoading && course.data}
             state={{
-              isLoading:
-                course.isLoading ||
-                course.isFetching ||
-                insertCourse.isPending ||
-                updateCourse.isPending,
-              isSaving:
-                course.isLoading ||
-                course.isFetching ||
-                insertCourse.isPending ||
-                updateCourse.isPending,
+              isLoading: course.isLoading || insertCourse.isPending || updateCourse.isPending,
+              isSaving: course.isLoading || insertCourse.isPending || updateCourse.isPending,
               showLoadingOverlay:
-                course.isLoading ||
-                course.isFetching ||
-                insertCourse.isPending ||
-                updateCourse.isPending,
+                course.isLoading || insertCourse.isPending || updateCourse.isPending,
               showProgressBars:
-                course.isLoading ||
-                course.isFetching ||
-                insertCourse.isPending ||
-                updateCourse.isPending,
-              showSkeletons:
-                course.isLoading ||
-                course.isFetching ||
-                insertCourse.isPending ||
-                updateCourse.isPending,
+                course.isLoading || insertCourse.isPending || updateCourse.isPending,
+              showSkeletons: course.isLoading || insertCourse.isPending || updateCourse.isPending,
             }}
             muiCircularProgressProps={{
               color: 'secondary',
@@ -222,8 +206,7 @@ const Course = ({ cardTitle }) => {
                             await api
                               .delete('course/delete/' + id)
                               .then(async (response) => {
-                                await queryClient.invalidateQueries(['course'])
-
+                                await queryClient.invalidateQueries({ queryKey: ['course'] })
                                 toast.success(response.data.message)
                               })
                               .catch((error) => {

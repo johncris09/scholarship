@@ -53,6 +53,7 @@ const Course = ({ cardTitle }) => {
       }),
     queryKey: ['tvet_course'],
     staleTime: Infinity,
+    refetchInterval: 1000,
   })
 
   const validationSchema = Yup.object().shape({
@@ -157,31 +158,26 @@ const Course = ({ cardTitle }) => {
             state={{
               isLoading:
                 course.isLoading ||
-                course.isFetching ||
                 insertCourse.isPending ||
                 updateCourse.isPending ||
                 deleteCourse.isPending,
               isSaving:
                 course.isLoading ||
-                course.isFetching ||
                 insertCourse.isPending ||
                 updateCourse.isPending ||
                 deleteCourse.isPending,
               showLoadingOverlay:
                 course.isLoading ||
-                course.isFetching ||
                 insertCourse.isPending ||
                 updateCourse.isPending ||
                 deleteCourse.isPending,
               showProgressBars:
                 course.isLoading ||
-                course.isFetching ||
                 insertCourse.isPending ||
                 updateCourse.isPending ||
                 deleteCourse.isPending,
               showSkeletons:
                 course.isLoading ||
-                course.isFetching ||
                 insertCourse.isPending ||
                 updateCourse.isPending ||
                 deleteCourse.isPending,

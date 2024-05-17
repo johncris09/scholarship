@@ -53,6 +53,7 @@ const Strand = ({ cardTitle }) => {
       }),
     queryKey: ['strand'],
     staleTime: Infinity,
+    refetchInterval: 1000,
   })
 
   const validationSchema = Yup.object().shape({
@@ -139,31 +140,13 @@ const Strand = ({ cardTitle }) => {
             columns={column}
             data={!strand.isLoading && strand.data}
             state={{
-              isLoading:
-                strand.isLoading ||
-                strand.isFetching ||
-                insertCourse.isPending ||
-                updateCourse.isPending,
-              isSaving:
-                strand.isLoading ||
-                strand.isFetching ||
-                insertCourse.isPending ||
-                updateCourse.isPending,
+              isLoading: strand.isLoading || insertCourse.isPending || updateCourse.isPending,
+              isSaving: strand.isLoading || insertCourse.isPending || updateCourse.isPending,
               showLoadingOverlay:
-                strand.isLoading ||
-                strand.isFetching ||
-                insertCourse.isPending ||
-                updateCourse.isPending,
+                strand.isLoading || insertCourse.isPending || updateCourse.isPending,
               showProgressBars:
-                strand.isLoading ||
-                strand.isFetching ||
-                insertCourse.isPending ||
-                updateCourse.isPending,
-              showSkeletons:
-                strand.isLoading ||
-                strand.isFetching ||
-                insertCourse.isPending ||
-                updateCourse.isPending,
+                strand.isLoading || insertCourse.isPending || updateCourse.isPending,
+              showSkeletons: strand.isLoading || insertCourse.isPending || updateCourse.isPending,
             }}
             muiCircularProgressProps={{
               color: 'secondary',
