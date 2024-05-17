@@ -29,75 +29,11 @@ import {
   requiredField,
 } from 'src/components/SystemConfiguration'
 import * as Yup from 'yup'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 const Config = ({ cardTitle }) => {
-  const [data, setData] = useState([])
-  const [validated, setValidated] = useState(true)
-  const [fetchDataLoading, setFetchDataLoading] = useState(true)
-  const [operationLoading, setOperationLoading] = useState(false)
-  const [modalFormVisible, setModalFormVisible] = useState(false)
-  const [isEnableEdit, setIsEnableEdit] = useState(false)
-  const [editId, setEditId] = useState('')
-
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  const fetchData = () => {
-    api
-      .get('config')
-      .then((response) => {
-        setData(response.data)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchDataLoading(false)
-      })
-  }
-
-  const formValidationSchema = Yup.object().shape({
-    current_sy: Yup.string().required('School Year is required'),
-    current_semester: Yup.string().required('Semester Year is required'),
-  })
-  const form = useFormik({
-    initialValues: {
-      current_sy: '',
-      current_semester: '',
-    },
-    validationSchema: formValidationSchema,
-    onSubmit: async (values) => {
-      setOperationLoading(true)
-      if (isEnableEdit) {
-        // update
-        setFetchDataLoading(true)
-        await api
-          .put('config/update/' + editId, values)
-          .then((response) => {
-            toast.success(response.data.message)
-            fetchData()
-            setValidated(false)
-            setModalFormVisible(false)
-
-            window.location.reload()
-          })
-          .catch((error) => {
-            toast.error(handleError(error))
-          })
-          .finally(() => {
-            setOperationLoading(false)
-            setFetchDataLoading(false)
-          })
-      }
-    },
-  })
-
-  const handleInputChange = (e) => {
-    form.handleChange(e)
-    const { name, value } = e.target
-    form.setFieldValue(name, value)
-  }
+  const queryClient = useQueryClient()
+  const [modalVisible, setModalVisible] = useState(false)
 
   const column = [
     {
@@ -110,21 +46,71 @@ const Config = ({ cardTitle }) => {
     },
   ]
 
+  const config = useQuery({
+    queryFn: async () =>
+      await api.get('config').then((response) => {
+        return response.data
+      }),
+    queryKey: ['config'],
+    staleTime: Infinity,
+  })
+
+  const formValidationSchema = Yup.object().shape({
+    current_sy: Yup.string().required('School Year is required'),
+    current_semester: Yup.string().required('Semester Year is required'),
+  })
+  const form = useFormik({
+    initialValues: {
+      id: '',
+      current_sy: '',
+      current_semester: '',
+    },
+    validationSchema: formValidationSchema,
+    onSubmit: async (values) => {
+      if (values.id) {
+        await updateConfig.mutate(values)
+      }
+    },
+  })
+
+  const updateConfig = useMutation({
+    mutationFn: async (config) => {
+      return await api.put('config/update/' + config.id, config)
+    },
+    onSuccess: async (response) => {
+      if (response.data.status) {
+        toast.success(response.data.message)
+      }
+      form.resetForm()
+      setModalVisible(false)
+      await queryClient.invalidateQueries(['config'])
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+  const handleInputChange = (e) => {
+    form.handleChange(e)
+    const { name, value } = e.target
+    form.setFieldValue(name, value)
+  }
+
   return (
     <>
       <ToastContainer />
-      <CCard className="mb-4" style={{ position: 'relative' }}>
+      <CCard className="mb-4">
         <CCardHeader>{cardTitle}</CCardHeader>
         <CCardBody>
           <MaterialReactTable
             columns={column}
-            data={data}
+            data={!config.isLoading && config.data}
             state={{
-              isLoading: fetchDataLoading,
-              isSaving: fetchDataLoading,
-              showLoadingOverlay: fetchDataLoading,
-              showProgressBars: fetchDataLoading,
-              showSkeletons: fetchDataLoading,
+              isLoading: config.isLoading || config.isFetching || updateConfig.isPending,
+              isSaving: config.isLoading || config.isFetching || updateConfig.isPending,
+              showLoadingOverlay: config.isLoading || config.isFetching || updateConfig.isPending,
+              showProgressBars: config.isLoading || config.isFetching || updateConfig.isPending,
+              showSkeletons: config.isLoading || config.isFetching || updateConfig.isPending,
             }}
             muiCircularProgressProps={{
               color: 'secondary',
@@ -152,27 +138,26 @@ const Config = ({ cardTitle }) => {
                     color="warning"
                     onClick={async () => {
                       let id = row.original.id
-                      setIsEnableEdit(true)
-                      setEditId(id)
-                      setFetchDataLoading(true)
-                      setOperationLoading(true)
+                      console.info(id)
                       await api
                         .get('config/find/' + id)
                         .then((response) => {
                           const res = response.data
+                          console.info(res)
                           form.setValues({
+                            id: res.id,
                             current_sy: res.current_sy,
                             current_semester: res.current_semester,
                           })
-                          setModalFormVisible(true)
+                          setModalVisible(true)
                         })
                         .catch((error) => {
                           toast.error('Error fetching data')
                         })
-                        .finally(() => {
-                          setOperationLoading(false)
-                          setFetchDataLoading(false)
-                        })
+                      // .finally(() => {
+                      //   setOperationLoading(false)
+                      //   setFetchDataLoading(false)
+                      // })
                     }}
                   >
                     <EditSharp />
@@ -181,38 +166,29 @@ const Config = ({ cardTitle }) => {
               </Box>
             )}
           />
-
-          {fetchDataLoading && <DefaultLoading />}
         </CCardBody>
       </CCard>
 
       <CModal
         alignment="center"
-        visible={modalFormVisible}
-        onClose={() => setModalFormVisible(false)}
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
         backdrop="static"
         keyboard={false}
-        size="lg"
+        size="md"
       >
         <CModalHeader>
           <CModalTitle>Edit Current List View</CModalTitle>
         </CModalHeader>
         <CModalBody>
           <RequiredFieldNote />
-          <CForm
-            className="row g-3 needs-validation mt-4"
-            noValidate
-            validated={validated}
-            onSubmit={form.handleSubmit}
-            style={{ position: 'relative' }}
-          >
+          <CForm className="row g-3   mt-4" onSubmit={form.handleSubmit}>
             <CCol md={12}>
               <CFormSelect
                 label={requiredField('School Year')}
                 name="current_sy"
                 onChange={handleInputChange}
                 value={form.values.current_sy}
-                required
               >
                 <option value="">Select</option>
                 {SchoolYear.map((school_year, index) => (
@@ -230,7 +206,6 @@ const Config = ({ cardTitle }) => {
                 name="current_semester"
                 onChange={handleInputChange}
                 value={form.values.current_semester}
-                required
               >
                 <option value="">Select</option>
                 {Semester.map((semester, index) => (
@@ -247,11 +222,11 @@ const Config = ({ cardTitle }) => {
             <hr />
             <CCol xs={12}>
               <CButton color="primary" type="submit" className="float-end">
-                {isEnableEdit ? 'Update' : 'Submit form'}
+                Update
               </CButton>
             </CCol>
           </CForm>
-          {operationLoading && <DefaultLoading />}
+          {updateConfig.isPending && <DefaultLoading />}
         </CModalBody>
       </CModal>
     </>
