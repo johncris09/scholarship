@@ -768,7 +768,6 @@ const BasicInfo = ({ id }) => {
           </CCol>
         </CRow>
       </CForm>
-      {/* {operationLoading && <DefaultLoading />} */}
     </>
   )
 }

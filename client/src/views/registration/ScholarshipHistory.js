@@ -45,8 +45,10 @@ import { EditSharp } from '@mui/icons-material'
 import { EditorState, convertToRaw, convertFromRaw } from 'draft-js'
 import { Editor } from 'react-draft-wysiwyg'
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
+  const queryClient = useQueryClient()
   const selectStrandInputRef = useRef()
   const selectSeniorHighSchoolInputRef = useRef()
   const selectCourseInputRef = useRef()
@@ -56,117 +58,104 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
   const [endPoint, setEndPoint] = useState('shs_appno')
   const [applicationDetails, setApplicationDetails] = useState([])
   const [fetchApplicationDetailsLoading, setFetchApplicationDetailsLoading] = useState(true)
-  const [course, setCourse] = useState([])
-  const [fetchCourseLoading, setFetchCourseLoading] = useState(false)
-  const [tvetCourse, setTvetCourse] = useState([])
-  const [fetchTvetCourseLoading, setFetchTvetCourseLoading] = useState(false)
-  const [tvetSchool, setTvetSchool] = useState([])
-  const [fetchTvetSchoolLoading, setFetchTvetSchoolLoading] = useState(false)
-  const [collegeSchool, setCollegeSchool] = useState([])
-  const [fetchCollegeSchoolLoading, setFetchCollegeSchoolLoading] = useState(false)
-  const [strand, setStrand] = useState([])
-  const [fetchStrandLoading, setFetchStrandLoading] = useState(false)
-  const [seniorHighSchool, setSeniorHighSchool] = useState([])
-  const [fetchSeniorHighSchoolLoading, setFetchSeniorHighSchoolLoading] = useState(false)
   const [applicationDetailsModalVisible, setApplicationDetailsModalVisible] = useState(false)
-
   const [applicationDetailsEditModalVisible, setApplicationDetailsEditModalVisible] =
     useState(false)
   const [editorState, setEditorState] = useState(() => EditorState.createEmpty())
 
   useEffect(() => {
     fetchApplicationDetails()
-    fetchSeniorHighSchool()
-    fetchCollegeSchool()
-    fetchTvetSchool()
-    fetchStrand()
-    fetchCourse()
-    fetchTvetCourse()
   }, [scholarshipId])
 
-  const fetchSeniorHighSchool = () => {
-    setFetchSeniorHighSchoolLoading(true)
-    api
-      .get('senior_high_school')
-      .then((response) => {
+  const seniorHighSchool = useQuery({
+    queryFn: async () =>
+      await api.get('senior_high_school').then((response) => {
         const formattedData = response.data.map((item) => {
           const value = item.id
           const label = `${item.school}`
           return { value, label }
         })
+        return formattedData
+      }),
+    queryKey: ['seniorHighSchoolHistory'],
+    staleTime: Infinity,
+    refetchInterval: 1000,
+  })
 
-        setSeniorHighSchool(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchSeniorHighSchoolLoading(false)
-      })
-  }
-
-  const fetchCollegeSchool = () => {
-    setFetchCollegeSchoolLoading(true)
-    api
-      .get('college_school')
-      .then((response) => {
+  const collegeSchool = useQuery({
+    queryFn: async () =>
+      await api.get('college_school').then((response) => {
         const formattedData = response.data.map((item) => {
           const value = item.id
           const label = `${item.school}`
           return { value, label }
         })
+        return formattedData
+      }),
+    queryKey: ['collegeSchoolHistory'],
+    staleTime: Infinity,
+    refetchInterval: 1000,
+  })
 
-        setCollegeSchool(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchCollegeSchoolLoading(false)
-      })
-  }
-
-  const fetchTvetSchool = () => {
-    setFetchTvetSchoolLoading(true)
-    api
-      .get('tvet_school')
-      .then((response) => {
+  const tvetSchool = useQuery({
+    queryFn: async () =>
+      await api.get('tvet_school').then((response) => {
         const formattedData = response.data.map((item) => {
           const value = item.id
           const label = `${item.school}`
           return { value, label }
         })
+        return formattedData
+      }),
+    queryKey: ['tvetSchoolHistory'],
+    staleTime: Infinity,
+    refetchInterval: 1000,
+  })
 
-        setTvetSchool(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchTvetSchoolLoading(false)
-      })
-  }
-
-  const fetchStrand = () => {
-    setFetchStrandLoading(true)
-    api
-      .get('strand')
-      .then((response) => {
+  const strand = useQuery({
+    queryFn: async () =>
+      await api.get('strand').then((response) => {
         const formattedData = response.data.map((item) => {
           const value = item.id
           const label = `${item.strand}`
           return { value, label }
         })
+        return formattedData
+      }),
+    queryKey: ['strandHistory'],
+    staleTime: Infinity,
+    refetchInterval: 1000,
+  })
 
-        setStrand(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchStrandLoading(false)
-      })
-  }
+  const course = useQuery({
+    queryFn: async () =>
+      await api.get('course').then((response) => {
+        const formattedData = response.data.map((item) => {
+          const value = item.id
+          const label = `${item.course}`
+          return { value, label }
+        })
+        return formattedData
+      }),
+    queryKey: ['courseHistory'],
+    staleTime: Infinity,
+    refetchInterval: 1000,
+  })
+
+  const tvetCourse = useQuery({
+    queryFn: async () =>
+      await api.get('tvet_course').then((response) => {
+        const formattedData = response.data.map((item) => {
+          const value = item.id
+          const label = `${item.course}`
+          return { value, label }
+        })
+        return formattedData
+      }),
+    queryKey: ['tvetCourseHistory'],
+    staleTime: Infinity,
+    refetchInterval: 1000,
+  })
 
   const fetchApplicationDetails = () => {
     setFetchApplicationDetailsLoading(true)
@@ -181,48 +170,6 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
       })
       .finally(() => {
         setFetchApplicationDetailsLoading(false)
-      })
-  }
-
-  const fetchCourse = () => {
-    setFetchCourseLoading(true)
-    api
-      .get('course')
-      .then((response) => {
-        const formattedData = response.data.map((item) => {
-          const value = item.id
-          const label = `${item.course}`
-          return { value, label }
-        })
-
-        setCourse(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchCourseLoading(false)
-      })
-  }
-
-  const fetchTvetCourse = () => {
-    setFetchTvetCourseLoading(true)
-    api
-      .get('tvet_course')
-      .then((response) => {
-        const formattedData = response.data.map((item) => {
-          const value = item.id
-          const label = `${item.course}`
-          return { value, label }
-        })
-
-        setTvetCourse(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchTvetCourseLoading(false)
       })
   }
 
@@ -505,7 +452,10 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
         .catch((error) => {
           toast.error('Application already exist!')
         })
-        .finally(() => {
+        .finally(async () => {
+          await queryClient.invalidateQueries({ queryKey: ['seniorHighDataPending'] })
+          await queryClient.invalidateQueries({ queryKey: ['collegeDataPending'] })
+          await queryClient.invalidateQueries({ queryKey: ['tvetDataPending'] })
           setOperationLoading(false)
         })
     },
@@ -665,7 +615,7 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                     <CFormLabel>
                       {
                         <>
-                          {fetchSeniorHighSchoolLoading && <CSpinner size="sm" />}
+                          {fetchApplicationDetailsLoading && <CSpinner size="sm" />}
                           {requiredField(' Application Number')}
                         </>
                       }
@@ -753,18 +703,21 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                         <CFormLabel>
                           {
                             <>
-                              {fetchSeniorHighSchoolLoading && <CSpinner size="sm" />}
+                              {seniorHighSchool.isLoading && <CSpinner size="sm" />}
                               {requiredField(' School')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectSeniorHighSchoolInputRef}
-                          value={seniorHighSchool.find(
-                            (option) => option.value === applicationDetailsForm.values.school,
-                          )}
+                          value={
+                            !seniorHighSchool.isLoading &&
+                            seniorHighSchool.data?.find(
+                              (option) => option.value === applicationDetailsForm.values.school,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={seniorHighSchool}
+                          options={!seniorHighSchool.isLoading && seniorHighSchool.data}
                           name="school"
                           isSearchable
                           placeholder="Search..."
@@ -781,18 +734,21 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                         <CFormLabel>
                           {
                             <>
-                              {fetchStrandLoading && <CSpinner size="sm" />}
+                              {strand.isLoading && <CSpinner size="sm" />}
                               {requiredField(' Strand')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectStrandInputRef}
-                          value={strand.find(
-                            (option) => option.value === applicationDetailsForm.values.strand,
-                          )}
+                          value={
+                            !strand.isLoading &&
+                            strand.data?.find(
+                              (option) => option.value === applicationDetailsForm.values.strand,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={strand}
+                          options={!strand.isLoading && strand.data}
                           name="strand"
                           isSearchable
                           placeholder="Search..."
@@ -897,18 +853,21 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                         <CFormLabel>
                           {
                             <>
-                              {fetchCollegeSchoolLoading && <CSpinner size="sm" />}
+                              {collegeSchool.isLoading && <CSpinner size="sm" />}
                               {requiredField(' School')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectCollegeSchoolInputRef}
-                          value={collegeSchool.find(
-                            (option) => option.value === applicationDetailsForm.values.school,
-                          )}
+                          value={
+                            !collegeSchool.isLoading &&
+                            collegeSchool.data?.find(
+                              (option) => option.value === applicationDetailsForm.values.school,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={collegeSchool}
+                          options={!collegeSchool.isLoading && collegeSchool.data}
                           name="school"
                           isSearchable
                           placeholder="Search..."
@@ -925,18 +884,21 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                         <CFormLabel>
                           {
                             <>
-                              {fetchCourseLoading && <CSpinner size="sm" />}
+                              {course.isLoading && <CSpinner size="sm" />}
                               {requiredField(' Course')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectCourseInputRef}
-                          value={course.find(
-                            (option) => option.value === applicationDetailsForm.values.course,
-                          )}
+                          value={
+                            !course.isLoading &&
+                            course.data?.find(
+                              (option) => option.value === applicationDetailsForm.values.course,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={course}
+                          options={!course.isLoading && course.data}
                           name="course"
                           isSearchable
                           placeholder="Search..."
@@ -1056,18 +1018,21 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                         <CFormLabel>
                           {
                             <>
-                              {fetchTvetSchoolLoading && <CSpinner size="sm" />}
+                              {tvetSchool.isLoading && <CSpinner size="sm" />}
                               {requiredField(' School')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectTvetCourseInputRef}
-                          value={tvetSchool.find(
-                            (option) => option.value === applicationDetailsForm.values.school,
-                          )}
+                          value={
+                            !tvetSchool.isLoading &&
+                            tvetSchool.data?.find(
+                              (option) => option.value === applicationDetailsForm.values.school,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={tvetSchool}
+                          options={!tvetSchool.isLoading && tvetSchool.data}
                           name="school"
                           isSearchable
                           placeholder="Search..."
@@ -1084,18 +1049,21 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                         <CFormLabel>
                           {
                             <>
-                              {fetchTvetCourseLoading && <CSpinner size="sm" />}
+                              {tvetCourse.isLoading && <CSpinner size="sm" />}
                               {requiredField(' Course')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectTvetCourseInputRef}
-                          value={tvetCourse.find(
-                            (option) => option.value === applicationDetailsForm.values.tvetCourse,
-                          )}
+                          value={
+                            !tvetCourse.isLoading &&
+                            tvetCourse.data?.find(
+                              (option) => option.value === applicationDetailsForm.values.tvetCourse,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={tvetCourse}
+                          options={!tvetCourse.isLoading && tvetCourse.data}
                           name="tvetCourse"
                           isSearchable
                           placeholder="Search..."
@@ -1230,9 +1198,7 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
           <CModalBody>
             <>
               <CForm
-                id="form"
-                className="row g-3 needs-validation"
-                noValidate
+                className="row g-3  "
                 style={{ position: 'relative' }}
                 onSubmit={addNewApplicationDetailsForm.handleSubmit}
               >
@@ -1257,7 +1223,7 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                     <CFormLabel>
                       {
                         <>
-                          {fetchSeniorHighSchoolLoading && <CSpinner size="sm" />}
+                          {fetchApplicationDetailsLoading && <CSpinner size="sm" />}
                           {requiredField(' Application Number')}
                         </>
                       }
@@ -1328,18 +1294,22 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                         <CFormLabel>
                           {
                             <>
-                              {fetchSeniorHighSchoolLoading && <CSpinner size="sm" />}
+                              {seniorHighSchool.isLoading && <CSpinner size="sm" />}
                               {requiredField(' School')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectSeniorHighSchoolInputRef}
-                          value={seniorHighSchool.find(
-                            (option) => option.value === addNewApplicationDetailsForm.values.school,
-                          )}
+                          value={
+                            !seniorHighSchool.isLoading &&
+                            seniorHighSchool.data?.find(
+                              (option) =>
+                                option.value === addNewApplicationDetailsForm.values.school,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={seniorHighSchool}
+                          options={!seniorHighSchool.isLoading && seniorHighSchool.data}
                           name="school"
                           isSearchable
                           placeholder="Search..."
@@ -1356,19 +1326,22 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                         <CFormLabel>
                           {
                             <>
-                              {fetchStrandLoading && <CSpinner size="sm" />}
+                              {strand.isLoading && <CSpinner size="sm" />}
                               {requiredField(' Strand')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectStrandInputRef}
-                          value={strand.find(
-                            (option) =>
-                              option.value === addNewApplicationDetailsForm.values.address,
-                          )}
+                          value={
+                            !strand.isLoading &&
+                            strand.data?.find(
+                              (option) =>
+                                option.value === addNewApplicationDetailsForm.values.strand,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={strand}
+                          options={!strand.isLoading && strand.data}
                           name="strand"
                           isSearchable
                           placeholder="Search..."
@@ -1390,19 +1363,22 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                         <CFormLabel>
                           {
                             <>
-                              {fetchCollegeSchoolLoading && <CSpinner size="sm" />}
+                              {collegeSchool.isLoading && <CSpinner size="sm" />}
                               {requiredField(' School')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectCollegeSchoolInputRef}
-                          value={collegeSchool.find(
-                            (option) =>
-                              option.value === addNewApplicationDetailsForm.values.collegeSchool,
-                          )}
+                          value={
+                            !collegeSchool.isLoading &&
+                            collegeSchool.data?.find(
+                              (option) =>
+                                option.value === addNewApplicationDetailsForm.values.collegeSchool,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={collegeSchool}
+                          options={!collegeSchool.isLoading && collegeSchool.data}
                           name="school"
                           isSearchable
                           placeholder="Search..."
@@ -1419,18 +1395,22 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                         <CFormLabel>
                           {
                             <>
-                              {fetchCourseLoading && <CSpinner size="sm" />}
+                              {course.isLoading && <CSpinner size="sm" />}
                               {requiredField(' Course')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectCourseInputRef}
-                          value={course.find(
-                            (option) => option.value === addNewApplicationDetailsForm.values.course,
-                          )}
+                          value={
+                            !course.isLoading &&
+                            course.data?.find(
+                              (option) =>
+                                option.value === addNewApplicationDetailsForm.values.course,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={course}
+                          options={!course.isLoading && course.data}
                           name="course"
                           isSearchable
                           placeholder="Search..."
@@ -1467,19 +1447,22 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                         <CFormLabel>
                           {
                             <>
-                              {fetchTvetSchoolLoading && <CSpinner size="sm" />}
+                              {tvetSchool.isLoading && <CSpinner size="sm" />}
                               {requiredField(' School')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectTvetCourseInputRef}
-                          value={tvetSchool.find(
-                            (option) =>
-                              option.value === addNewApplicationDetailsForm.values.tvetSchool,
-                          )}
+                          value={
+                            !tvetSchool.isLoading &&
+                            tvetSchool.data?.find(
+                              (option) =>
+                                option.value === addNewApplicationDetailsForm.values.tvetSchool,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={tvetSchool}
+                          options={!tvetSchool.isLoading && tvetSchool.data}
                           name="school"
                           isSearchable
                           placeholder="Search..."
@@ -1496,19 +1479,22 @@ const ScholarshipHistory = ({ scholarshipId, hasNewRecordButton }) => {
                         <CFormLabel>
                           {
                             <>
-                              {fetchTvetCourseLoading && <CSpinner size="sm" />}
+                              {tvetCourse.isLoading && <CSpinner size="sm" />}
                               {requiredField(' Course')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectTvetCourseInputRef}
-                          value={tvetCourse.find(
-                            (option) =>
-                              option.value === addNewApplicationDetailsForm.values.tvetCourse,
-                          )}
+                          value={
+                            !tvetCourse.isLoading &&
+                            tvetCourse.data?.find(
+                              (option) =>
+                                option.value === addNewApplicationDetailsForm.values.tvetCourse,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={tvetCourse}
+                          options={!tvetCourse.isLoading && tvetCourse.data}
                           name="tvetCourse"
                           isSearchable
                           placeholder="Search..."

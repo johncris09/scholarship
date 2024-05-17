@@ -33,23 +33,7 @@ const RedFlag = ({ scholarshipId }) => {
   const queryClient = useQueryClient()
 
   const [modalVisible, setModalVisible] = useState(false)
-  useEffect(() => {
-    console.info(scholarshipId)
-    fetchData()
-  }, [scholarshipId])
-
-  const fetchData = async () => {
-    await api
-      .get('red_flag/applicant/' + scholarshipId)
-      .then((response) => {
-        console.info(response.data)
-        // setScholarshipID(response.data[0].id)
-      })
-      .catch((error) => {
-        console.info(error)
-        // toast.error(handleError(error))
-      })
-  }
+  useEffect(() => {}, [scholarshipId])
 
   const redFlag = useQuery({
     queryFn: async () =>
@@ -70,11 +54,11 @@ const RedFlag = ({ scholarshipId }) => {
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       let formattedValues = { ...values, scholarshipId }
-      await insert(formattedValues)
+      await insertRedFlag.mutate(formattedValues)
     },
   })
 
-  const { mutate: insert, isLoading: isLoadingInsert } = useMutation({
+  const insertRedFlag = useMutation({
     mutationFn: (item) => {
       return api.post('red_flag/insert', item)
     },
@@ -83,7 +67,7 @@ const RedFlag = ({ scholarshipId }) => {
         toast.success(response.data.message)
       }
       form.resetForm()
-      await queryClient.resetQueries(['redFlag'])
+      await queryClient.invalidateQueries({ queryKey: ['redFlag'] })
     },
     onError: (error) => {
       console.info(error.response.data)
@@ -109,8 +93,8 @@ const RedFlag = ({ scholarshipId }) => {
         await api
           .delete('red_flag/delete/' + id)
           .then((response) => {
-            queryClient.resetQueries(['redFlag'])
             toast.success(response.data.message)
+            queryClient.invalidateQueries({ queryKey: ['redFlag'] })
           })
           .catch((error) => {
             console.info(error.response.data)
@@ -147,7 +131,8 @@ const RedFlag = ({ scholarshipId }) => {
       </div>
 
       <div className="px-5">
-        {!redFlag.isLoading ? (
+        {!redFlag.isLoading || !insertRedFlag.isPending || !redFlag.isFetching ? (
+          !redFlag.isLoading &&
           redFlag.data.map((item, index) => (
             <CAlert key={index} color="danger">
               <div className="d-flex bd-highlight">
@@ -186,8 +171,6 @@ const RedFlag = ({ scholarshipId }) => {
       <CModal alignment="center" visible={modalVisible} onClose={() => setModalVisible(false)}>
         <CModalHeader> Add New Red Flag</CModalHeader>
         <CForm id="form" className="row  g-3" onSubmit={form.handleSubmit}>
-          {redFlag.isLoading && <DefaultLoading />}
-
           <CModalBody>
             <RequiredFieldNote />
 
@@ -198,7 +181,6 @@ const RedFlag = ({ scholarshipId }) => {
               name="note"
               onChange={handleInputChange}
               value={form.values.note}
-              required
             />
             {form.touched.note && form.errors.note && (
               <CFormText className="text-danger">{form.errors.note}</CFormText>
@@ -218,6 +200,7 @@ const RedFlag = ({ scholarshipId }) => {
             </CButton>
           </CModalFooter>
         </CForm>
+        {insertRedFlag.isPending && <DefaultLoading />}
       </CModal>
     </>
   )

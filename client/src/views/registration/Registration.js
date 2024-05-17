@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react'
-// import './../../assets/css/react-paginate.css'
-// import './../../assets/css/custom.css'
 import Cropper from 'react-cropper'
 import 'cropperjs/dist/cropper.css'
 import {
@@ -23,7 +21,6 @@ import {
   CSpinner,
 } from '@coreui/react'
 import { ToastContainer, toast } from 'react-toastify'
-// import 'react-form-wizard-component/dist/style.css'
 import {
   CivilStatus,
   DefaultLoading,
@@ -51,11 +48,13 @@ import {
 } from './ApplicationNumber'
 import BasicInfo from './BasicInfo'
 import ScholarshipHistory from './ScholarshipHistory'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 const isProduction = false
 
 const Registration = ({ cardTitle }) => {
+  const queryClient = useQueryClient()
   const avatarRef = useRef(null)
-  const imageRef = useRef(null)
   const cropperRef = useRef(null)
   const selectAddressIputRef = useRef()
   const selectSeniorHighSchoolInputRef = useRef()
@@ -63,247 +62,14 @@ const Registration = ({ cardTitle }) => {
   const selectStrandInputRef = useRef()
   const selectCourseInputRef = useRef()
   const selectTvetCourseInputRef = useRef()
-  const [fetchAddressLoading, setFetchAddressLoading] = useState(false)
-  const [operationLoading, setOperationLoading] = useState(false)
   const [verificationLoading, setVerificationLoading] = useState(false)
   const [searchResult, setSearchResult] = useState([])
   const searchInputRef = useRef(null)
-  const [seniorHighSchool, setSeniorHighSchool] = useState([])
-  const [fetchSeniorHighSchoolLoading, setFetchSeniorHighSchoolLoading] = useState(false)
-  const [collegeSchool, setCollegeSchool] = useState([])
-  const [fetchCollegeSchoolLoading, setFetchCollegeSchoolLoading] = useState(false)
-  const [tvetSchool, setTvetSchool] = useState([])
-  const [fetchTvetSchoolLoading, setFetchTvetSchoolLoading] = useState(false)
-  const [strand, setStrand] = useState([])
-  const [fetchStrandLoading, setFetchStrandLoading] = useState(false)
-  const [course, setCourse] = useState([])
-  const [fetchCourseLoading, setFetchCourseLoading] = useState(false)
-  const [tvetCourse, setTvetCourse] = useState([])
-  const [fetchTvetCourseLoading, setFetchTvetCourseLoading] = useState(false)
   const [endPoint, setEndPoint] = useState('shs_appno')
-  const [address, setAddress] = useState([])
-  const [config, setConfig] = useState([])
   const [scholarshipID, setScholarshipID] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [cropPhotoModalVisible, setCropPhotoModalVisible] = useState(false)
-
   const [cropData, setCropData] = useState('')
-
-  useEffect(() => {
-    fetchConfig()
-    fetchSeniorHighSchool()
-    fetchCollegeSchool()
-    fetchTvetSchool()
-    fetchStrand()
-    fetchCourse()
-    fetchTvetCourse()
-    fetchAddress()
-  }, [endPoint])
-
-  const fetchConfig = () => {
-    api
-      .get('config')
-      .then((response) => {
-        setConfig(response.data[0])
-      })
-      .catch((error) => {
-        console.info(error)
-      })
-  }
-  const fetchSeniorHighSchool = () => {
-    setFetchSeniorHighSchoolLoading(true)
-    api
-      .get('senior_high_school')
-      .then((response) => {
-        const formattedData = response.data.map((item) => {
-          const value = item.id
-          const label = `${item.school}`
-          return { value, label }
-        })
-
-        setSeniorHighSchool(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchSeniorHighSchoolLoading(false)
-      })
-  }
-
-  const fetchCollegeSchool = () => {
-    setFetchCollegeSchoolLoading(true)
-    api
-      .get('college_school')
-      .then((response) => {
-        const formattedData = response.data.map((item) => {
-          const value = item.id
-          const label = `${item.school}`
-          return { value, label }
-        })
-
-        setCollegeSchool(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchCollegeSchoolLoading(false)
-      })
-  }
-
-  const fetchTvetSchool = () => {
-    setFetchTvetSchoolLoading(true)
-    api
-      .get('tvet_school')
-      .then((response) => {
-        const formattedData = response.data.map((item) => {
-          const value = item.id
-          const label = `${item.school}`
-          return { value, label }
-        })
-
-        setTvetSchool(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchTvetSchoolLoading(false)
-      })
-  }
-
-  const fetchStrand = () => {
-    setFetchStrandLoading(true)
-    api
-      .get('strand')
-      .then((response) => {
-        const formattedData = response.data.map((item) => {
-          const value = item.id
-          const label = `${item.strand}`
-          return { value, label }
-        })
-
-        setStrand(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchStrandLoading(false)
-      })
-  }
-
-  const fetchCourse = () => {
-    setFetchCourseLoading(true)
-    api
-      .get('course')
-      .then((response) => {
-        const formattedData = response.data.map((item) => {
-          const value = item.id
-          const label = `${item.course}`
-          return { value, label }
-        })
-
-        setCourse(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchCourseLoading(false)
-      })
-  }
-
-  const fetchTvetCourse = () => {
-    setFetchTvetCourseLoading(true)
-    api
-      .get('tvet_course')
-      .then((response) => {
-        const formattedData = response.data.map((item) => {
-          const value = item.id
-          const label = `${item.course}`
-          return { value, label }
-        })
-
-        setTvetCourse(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchTvetCourseLoading(false)
-      })
-  }
-
-  const fetchAddress = () => {
-    api
-      .get('barangay')
-      .then((response) => {
-        const formattedData = response.data.map((item) => {
-          const value = item.id
-          const label = `${item.barangay}`
-          return { value, label }
-        })
-
-        setAddress(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchAddressLoading(false)
-      })
-  }
-
-  const verificationFormValidationSchema = Yup.object().shape({
-    verify_by: Yup.string().required('Verify by is required'),
-    search_value: Yup.string().required('Search Value is required'),
-  })
-  const verificationForm = useFormik({
-    initialValues: {
-      verify_by: 'lastname',
-      search_value: '',
-    },
-    validationSchema: verificationFormValidationSchema,
-    onSubmit: async (values) => {
-      setVerificationLoading(true)
-      await api
-        .get('verify', { params: values })
-        .then((response) => {
-          setSearchResult(response.data)
-          if (response.data.length === 1) {
-            setScholarshipID(response.data[0].id)
-          }
-          newApplicantForm.resetForm()
-        })
-        .catch((error) => {
-          toast.error(handleError(error))
-        })
-        .finally(() => {
-          setVerificationLoading(false)
-        })
-    },
-  })
-  const handleInputSearchChange = (e) => {
-    const { name, value } = e.target
-    if (name === 'verify_by') {
-      if (value === 'reference_number') {
-        searchInputRef.current.placeholder = 'Search Reference #'
-      } else if (value === 'name') {
-        searchInputRef.current.placeholder = 'Search Name (Last Name, First Name Middle Name)'
-      } else if (value === 'lastname') {
-        searchInputRef.current.placeholder = 'Search Last Name'
-      } else if (value === 'firstname') {
-        searchInputRef.current.placeholder = 'Search First Name'
-      }
-    }
-    verificationForm.setFieldValue(name, value)
-  }
-
-  const handleSelectChange = (selectedOption, ref) => {
-    newApplicantForm.setFieldValue(ref.name, selectedOption ? selectedOption.value : '')
-  }
 
   const applicantColumn = [
     {
@@ -416,6 +182,175 @@ const Registration = ({ cardTitle }) => {
     },
   ]
 
+  const config = useQuery({
+    queryFn: async () =>
+      await api.get('config').then((response) => {
+        return response.data?.[0]
+      }),
+    queryKey: ['configRegistration'],
+    staleTime: Infinity,
+  })
+
+  const seniorHighSchool = useQuery({
+    queryFn: async () =>
+      await api.get('senior_high_school').then((response) => {
+        const formattedData = response.data.map((item) => {
+          const value = item.id
+          const label = `${item.school}`
+          return { value, label }
+        })
+        return formattedData
+      }),
+    queryKey: ['seniorHighSchoolRegistration'],
+    staleTime: Infinity,
+  })
+
+  const collegeSchool = useQuery({
+    queryFn: async () =>
+      await api.get('college_school').then((response) => {
+        const formattedData = response.data.map((item) => {
+          const value = item.id
+          const label = `${item.school}`
+          return { value, label }
+        })
+        return formattedData
+      }),
+    queryKey: ['collegeSchoolRegistration'],
+    staleTime: Infinity,
+  })
+
+  const tvetSchool = useQuery({
+    queryFn: async () =>
+      await api.get('tvet_school').then((response) => {
+        const formattedData = response.data.map((item) => {
+          const value = item.id
+          const label = `${item.school}`
+          return { value, label }
+        })
+        return formattedData
+      }),
+    queryKey: ['tvetSchoolRegistration'],
+    staleTime: Infinity,
+  })
+
+  const strand = useQuery({
+    queryFn: async () =>
+      await api.get('strand').then((response) => {
+        const formattedData = response.data.map((item) => {
+          const value = item.id
+          const label = `${item.strand}`
+          return { value, label }
+        })
+        return formattedData
+      }),
+    queryKey: ['strandRegistration'],
+    staleTime: Infinity,
+  })
+
+  const course = useQuery({
+    queryFn: async () =>
+      await api.get('course').then((response) => {
+        const formattedData = response.data.map((item) => {
+          const value = item.id
+          const label = `${item.course}`
+          return { value, label }
+        })
+        return formattedData
+      }),
+    queryKey: ['courseRegistration'],
+    staleTime: Infinity,
+  })
+
+  const tvetCourse = useQuery({
+    queryFn: async () =>
+      await api.get('tvet_course').then((response) => {
+        const formattedData = response.data.map((item) => {
+          const value = item.id
+          const label = `${item.course}`
+          return { value, label }
+        })
+        return formattedData
+      }),
+    queryKey: ['tvetCourseRegistration'],
+    staleTime: Infinity,
+  })
+
+  const address = useQuery({
+    queryFn: async () =>
+      await api.get('barangay').then((response) => {
+        const formattedData = response.data.map((item) => {
+          const value = item.id
+          const label = `${item.barangay}`
+          return { value, label }
+        })
+        return formattedData
+      }),
+    queryKey: ['addressRegistration'],
+    staleTime: Infinity,
+  })
+
+  const appNumber = useQuery({
+    queryFn: async () =>
+      await api.get('system_sequence/' + endPoint).then((response) => {
+        return response.data
+      }),
+    queryKey: ['appNumber'],
+    staleTime: Infinity,
+    refetchInterval: 100000,
+  })
+
+  useEffect(() => {}, [endPoint])
+
+  const verificationFormValidationSchema = Yup.object().shape({
+    verify_by: Yup.string().required('Verify by is required'),
+    search_value: Yup.string().required('Search Value is required'),
+  })
+  const verificationForm = useFormik({
+    initialValues: {
+      verify_by: 'lastname',
+      search_value: '',
+    },
+    validationSchema: verificationFormValidationSchema,
+    onSubmit: async (values) => {
+      setVerificationLoading(true)
+      await api
+        .get('verify', { params: values })
+        .then((response) => {
+          setSearchResult(response.data)
+          if (response.data.length === 1) {
+            setScholarshipID(response.data[0].id)
+          }
+          newApplicantForm.resetForm()
+        })
+        .catch((error) => {
+          toast.error(handleError(error))
+        })
+        .finally(() => {
+          setVerificationLoading(false)
+        })
+    },
+  })
+
+  const handleInputSearchChange = (e) => {
+    const { name, value } = e.target
+    if (name === 'verify_by') {
+      if (value === 'reference_number') {
+        searchInputRef.current.placeholder = 'Search Reference #'
+      } else if (value === 'name') {
+        searchInputRef.current.placeholder = 'Search Name (Last Name, First Name Middle Name)'
+      } else if (value === 'lastname') {
+        searchInputRef.current.placeholder = 'Search Last Name'
+      } else if (value === 'firstname') {
+        searchInputRef.current.placeholder = 'Search First Name'
+      }
+    }
+    verificationForm.setFieldValue(name, value)
+  }
+
+  const handleSelectChange = (selectedOption, ref) => {
+    newApplicantForm.setFieldValue(ref.name, selectedOption ? selectedOption.value : '')
+  }
+
   const newApplicantFormValidationSchema = Yup.object().shape({
     lastname: Yup.string().required('Last Name is required'),
     firstname: Yup.string().required('First Name is required'),
@@ -461,6 +396,7 @@ const Registration = ({ cardTitle }) => {
     availment: Yup.string().required('Availment is required'),
   })
 
+  // Fresh Applicant
   // form used to add application details for applicant
   const newApplicantForm = useFormik({
     initialValues: {
@@ -494,25 +430,30 @@ const Registration = ({ cardTitle }) => {
     },
     validationSchema: newApplicantFormValidationSchema,
     onSubmit: async (values) => {
-      setOperationLoading(true)
-      await api
-        .post('applicant/insert_new_applicant', values)
-        .then((response) => {
-          toast.success(response.data.message)
-          if (values.scholarship_type === 'senior_high') {
-            selectStrandInputRef.current.clearValue()
-            selectSeniorHighSchoolInputRef.current.clearValue()
-          }
-          // reset form
-          newApplicantForm.resetForm()
-          setEndPoint('shs_appno')
-        })
-        .catch((error) => {
-          toast.error(handleError(error))
-        })
-        .finally(() => {
-          setOperationLoading(false)
-        })
+      await insertNewApplicant.mutate(values)
+    },
+  })
+
+  const insertNewApplicant = useMutation({
+    mutationFn: async (values) => {
+      return await api.post('applicant/insert_new_applicant', values)
+    },
+    onSuccess: async (response, values) => {
+      if (response.data.status) {
+        toast.success(response.data.message)
+      }
+      if (values.scholarship_type === 'senior_high') {
+        selectStrandInputRef.current.clearValue()
+        selectSeniorHighSchoolInputRef.current.clearValue()
+      }
+      // reset form
+      newApplicantForm.resetForm()
+      setEndPoint('shs_appno')
+      await queryClient.invalidateQueries({ queryKey: ['appNumber'] })
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
     },
   })
 
@@ -525,11 +466,12 @@ const Registration = ({ cardTitle }) => {
         ? ''
         : moment(newApplicantForm.values.birthdate).format('MMDDYY')
 
-    let current_semester = config.current_semester
-    return `${scholarshipType}${current_semester.replace(/\D+/g, '')}-${config.current_sy.replace(
-      /SY: 20|-20/g,
+    let _config = (!config.isLoading || !config.isFetching) && config.data
+
+    return `${scholarshipType}${_config.current_semester.replace(
+      /\D+/g,
       '',
-    )}-${firstname}${lastname}-${birthdate}`
+    )}-${_config.current_sy.replace(/SY: 20|-20/g, '')}-${firstname}${lastname}-${birthdate}`
   }
 
   const handleInputNewApplicantForm = (e) => {
@@ -560,6 +502,7 @@ const Registration = ({ cardTitle }) => {
       newApplicantForm.setFieldValue(name, value)
     }
 
+    // select input that will be converted to sentence case
     if (
       [
         'lastname',
@@ -622,12 +565,7 @@ const Registration = ({ cardTitle }) => {
         <CCard className="mb-4">
           <CCardHeader>Verify</CCardHeader>
           <CCardBody>
-            <CForm
-              id="form"
-              className="row g-3 needs-validation"
-              noValidate
-              onSubmit={verificationForm.handleSubmit}
-            >
+            <CForm className="row g-3  " onSubmit={verificationForm.handleSubmit}>
               <h4>Verify</h4>
               <CRow className="my-3">
                 <CCol md={4}>
@@ -637,7 +575,6 @@ const Registration = ({ cardTitle }) => {
                     name="verify_by"
                     onChange={handleInputSearchChange}
                     value={verificationForm.values.verify_by}
-                    required
                   >
                     <option value="">Select</option>
                     <option value="reference_number" defaultValue={true}>
@@ -702,8 +639,7 @@ const Registration = ({ cardTitle }) => {
                 <CCardBody>
                   <CForm
                     id="new-app-form"
-                    className="row g-3 needs-validation"
-                    noValidate
+                    className="row g-3  "
                     onSubmit={newApplicantForm.handleSubmit}
                     style={{ position: 'relative' }}
                   >
@@ -771,7 +707,6 @@ const Registration = ({ cardTitle }) => {
                               guides={true}
                             />
                           </CModalBody>
-                          {/* {profilePhotoLoading && <DefaultLoading />} */}
                           <CModalFooter>
                             <button
                               type="button"
@@ -800,7 +735,6 @@ const Registration = ({ cardTitle }) => {
                               name="scholarship_type"
                               onChange={handleInputNewApplicantForm}
                               value={newApplicantForm.values.scholarship_type}
-                              required
                             >
                               <option value="senior_high">Senior High</option>
                               <option value="college">College</option>
@@ -812,15 +746,21 @@ const Registration = ({ cardTitle }) => {
                           <CCol md={6}>
                             <CFormLabel>Reference Number</CFormLabel>
                             <h5 className="text-danger text-decoration-underline">
-                              {generateReferenceNumber()}
+                              {(!config.isLoading || !config.isFetching) &&
+                                generateReferenceNumber()}
                             </h5>
                           </CCol>
                           <CCol md={3}>
                             <CFormLabel>Application Number</CFormLabel>
                             <h5 className="text-danger text-decoration-underline">
-                              <ApplicationYearNumber endPointType={endPoint} />-
-                              <ApplicationSemNumber endPointType={endPoint} />-
-                              <ApplicationIDNumber endPointType={endPoint} />
+                              {!appNumber.isLoading ||
+                                !appNumber.isFetching ||
+                                (!appNumber.isRefetching &&
+                                  appNumber.data.seq_year +
+                                    '-' +
+                                    appNumber.data.seq_sem +
+                                    '-' +
+                                    appNumber.data.seq_appno)}
                             </h5>
                           </CCol>
                           <CCol md={3}>
@@ -843,7 +783,6 @@ const Registration = ({ cardTitle }) => {
                               name="lastname"
                               onChange={handleInputNewApplicantForm}
                               value={newApplicantForm.values.lastname}
-                              required
                             />
                             {newApplicantForm.touched.lastname &&
                               newApplicantForm.errors.lastname && (
@@ -860,7 +799,6 @@ const Registration = ({ cardTitle }) => {
                               name="firstname"
                               onChange={handleInputNewApplicantForm}
                               value={newApplicantForm.values.firstname}
-                              required
                             />
                             {newApplicantForm.touched.firstname &&
                               newApplicantForm.errors.firstname && (
@@ -876,7 +814,6 @@ const Registration = ({ cardTitle }) => {
                               name="middlename"
                               onChange={handleInputNewApplicantForm}
                               value={newApplicantForm.values.middlename}
-                              required
                             />
                           </CCol>
                           <CCol md={3}>
@@ -886,7 +823,6 @@ const Registration = ({ cardTitle }) => {
                               name="suffix"
                               onChange={handleInputNewApplicantForm}
                               value={newApplicantForm.values.suffix}
-                              required
                             />
                           </CCol>
                         </CRow>
@@ -896,18 +832,23 @@ const Registration = ({ cardTitle }) => {
                             <CFormLabel>
                               {
                                 <>
-                                  {fetchAddressLoading && <CSpinner size="sm" />}
+                                  {(address.isLoading || address.isFetching) && (
+                                    <CSpinner size="sm" />
+                                  )}
                                   {requiredField(' Address')}
                                 </>
                               }
                             </CFormLabel>
                             <Select
                               ref={selectAddressIputRef}
-                              value={address.find(
-                                (option) => option.value === newApplicantForm.values.address,
-                              )}
+                              value={
+                                (!address.isLoading || !address.isFetching) &&
+                                address.data?.find(
+                                  (option) => option.value === newApplicantForm.values.address,
+                                )
+                              }
                               onChange={handleSelectChange}
-                              options={address}
+                              options={(!address.isLoading || !address.isFetching) && address.data}
                               name="address"
                               isSearchable
                               placeholder="Search..."
@@ -955,7 +896,6 @@ const Registration = ({ cardTitle }) => {
                               name="civil_status"
                               onChange={handleInputNewApplicantForm}
                               value={newApplicantForm.values.civil_status}
-                              required
                             >
                               <option value="">Select</option>
                               {CivilStatus.map((civil_status, index) => (
@@ -977,7 +917,6 @@ const Registration = ({ cardTitle }) => {
                               name="sex"
                               onChange={handleInputNewApplicantForm}
                               value={newApplicantForm.values.sex}
-                              required
                             >
                               <option value="">Select</option>
                               {Sex.map((sex, index) => (
@@ -1069,18 +1008,25 @@ const Registration = ({ cardTitle }) => {
                                 <CFormLabel>
                                   {
                                     <>
-                                      {fetchSeniorHighSchoolLoading && <CSpinner size="sm" />}
+                                      {(seniorHighSchool.isLoading ||
+                                        seniorHighSchool.isFetching) && <CSpinner size="sm" />}
                                       {requiredField(' School')}
                                     </>
                                   }
                                 </CFormLabel>
                                 <Select
                                   ref={selectSeniorHighSchoolInputRef}
-                                  value={seniorHighSchool.find(
-                                    (option) => option.value === newApplicantForm.values.school,
-                                  )}
+                                  value={
+                                    (!seniorHighSchool.isLoading || !seniorHighSchool.isFetching) &&
+                                    seniorHighSchool.data?.find(
+                                      (option) => option.value === newApplicantForm.values.school,
+                                    )
+                                  }
                                   onChange={handleSelectChange}
-                                  options={seniorHighSchool}
+                                  options={
+                                    (!seniorHighSchool.isLoading || !seniorHighSchool.isFetching) &&
+                                    seniorHighSchool.data
+                                  }
                                   name="school"
                                   isSearchable
                                   placeholder="Search..."
@@ -1097,18 +1043,23 @@ const Registration = ({ cardTitle }) => {
                                 <CFormLabel>
                                   {
                                     <>
-                                      {fetchStrandLoading && <CSpinner size="sm" />}
+                                      {(strand.isLoading || strand.isFetching) && (
+                                        <CSpinner size="sm" />
+                                      )}
                                       {requiredField(' Strand')}
                                     </>
                                   }
                                 </CFormLabel>
                                 <Select
                                   ref={selectStrandInputRef}
-                                  value={strand.find(
-                                    (option) => option.value === newApplicantForm.values.strand,
-                                  )}
+                                  value={
+                                    (!strand.isLoading || !strand.isFetching) &&
+                                    strand.data?.find(
+                                      (option) => option.value === newApplicantForm.values.strand,
+                                    )
+                                  }
                                   onChange={handleSelectChange}
-                                  options={strand}
+                                  options={(!strand.isLoading || !strand.isFetching) && strand.data}
                                   name="strand"
                                   isSearchable
                                   placeholder="Search..."
@@ -1130,19 +1081,27 @@ const Registration = ({ cardTitle }) => {
                                 <CFormLabel>
                                   {
                                     <>
-                                      {fetchCollegeSchoolLoading && <CSpinner size="sm" />}
+                                      {(collegeSchool.isLoading || collegeSchool.isFetching) && (
+                                        <CSpinner size="sm" />
+                                      )}
                                       {requiredField(' School')}
                                     </>
                                   }
                                 </CFormLabel>
                                 <Select
                                   ref={selectCollegeSchoolInputRef}
-                                  value={collegeSchool.find(
-                                    (option) =>
-                                      option.value === newApplicantForm.values.collegeSchool,
-                                  )}
+                                  value={
+                                    (!collegeSchool.isLoading || !collegeSchool.isFetching) &&
+                                    collegeSchool.data?.find(
+                                      (option) =>
+                                        option.value === newApplicantForm.values.collegeSchool,
+                                    )
+                                  }
                                   onChange={handleSelectChange}
-                                  options={collegeSchool}
+                                  options={
+                                    (!collegeSchool.isLoading || !collegeSchool.isFetching) &&
+                                    collegeSchool.data
+                                  }
                                   name="school"
                                   isSearchable
                                   placeholder="Search..."
@@ -1159,18 +1118,23 @@ const Registration = ({ cardTitle }) => {
                                 <CFormLabel>
                                   {
                                     <>
-                                      {fetchCourseLoading && <CSpinner size="sm" />}
+                                      {(course.isLoading || course.isFetching) && (
+                                        <CSpinner size="sm" />
+                                      )}
                                       {requiredField(' Course')}
                                     </>
                                   }
                                 </CFormLabel>
                                 <Select
                                   ref={selectCourseInputRef}
-                                  value={course.find(
-                                    (option) => option.value === newApplicantForm.values.course,
-                                  )}
+                                  value={
+                                    (!course.isLoading || !course.isFetching) &&
+                                    course.data?.find(
+                                      (option) => option.value === newApplicantForm.values.course,
+                                    )
+                                  }
                                   onChange={handleSelectChange}
-                                  options={course}
+                                  options={(!course.isLoading || !course.isFetching) && course.data}
                                   name="course"
                                   isSearchable
                                   placeholder="Search..."
@@ -1190,7 +1154,6 @@ const Registration = ({ cardTitle }) => {
                                   name="unit"
                                   onChange={handleInputNewApplicantForm}
                                   value={newApplicantForm.values.unit}
-                                  required
                                 />
                                 {newApplicantForm.touched.unit && newApplicantForm.errors.unit && (
                                   <CFormText className="text-danger">
@@ -1206,18 +1169,28 @@ const Registration = ({ cardTitle }) => {
                                 <CFormLabel>
                                   {
                                     <>
-                                      {fetchTvetSchoolLoading && <CSpinner size="sm" />}
+                                      {(tvetSchool.isLoading || tvetSchool.isFetching) && (
+                                        <CSpinner size="sm" />
+                                      )}
+
                                       {requiredField(' School')}
                                     </>
                                   }
                                 </CFormLabel>
                                 <Select
                                   ref={selectTvetCourseInputRef}
-                                  value={tvetSchool.find(
-                                    (option) => option.value === newApplicantForm.values.tvetSchool,
-                                  )}
+                                  value={
+                                    (!tvetSchool.isLoading || !tvetSchool.isFetching) &&
+                                    tvetSchool.data?.find(
+                                      (option) =>
+                                        option.value === newApplicantForm.values.tvetSchool,
+                                    )
+                                  }
                                   onChange={handleSelectChange}
-                                  options={tvetSchool}
+                                  options={
+                                    (!tvetSchool.isLoading || !tvetSchool.isFetching) &&
+                                    tvetSchool.data
+                                  }
                                   name="school"
                                   isSearchable
                                   placeholder="Search..."
@@ -1234,18 +1207,28 @@ const Registration = ({ cardTitle }) => {
                                 <CFormLabel>
                                   {
                                     <>
-                                      {fetchTvetCourseLoading && <CSpinner size="sm" />}
+                                      {(tvetCourse.isLoading || tvetCourse.isFetching) && (
+                                        <CSpinner size="sm" />
+                                      )}
+
                                       {requiredField(' Course')}
                                     </>
                                   }
                                 </CFormLabel>
                                 <Select
                                   ref={selectTvetCourseInputRef}
-                                  value={tvetCourse.find(
-                                    (option) => option.value === newApplicantForm.values.tvetCourse,
-                                  )}
+                                  value={
+                                    (!tvetCourse.isLoading || !tvetCourse.isFetching) &&
+                                    tvetCourse.data?.find(
+                                      (option) =>
+                                        option.value === newApplicantForm.values.tvetCourse,
+                                    )
+                                  }
                                   onChange={handleSelectChange}
-                                  options={tvetCourse}
+                                  options={
+                                    (!tvetCourse.isLoading || !tvetCourse.isFetching) &&
+                                    tvetCourse.data
+                                  }
                                   name="tvetCourse"
                                   isSearchable
                                   placeholder="Search..."
@@ -1265,7 +1248,6 @@ const Registration = ({ cardTitle }) => {
                                   name="hourNumber"
                                   onChange={handleInputNewApplicantForm}
                                   value={newApplicantForm.values.hourNumber}
-                                  required
                                 />
                                 {newApplicantForm.touched.hourNumber &&
                                   newApplicantForm.errors.hourNumber && (
@@ -1281,7 +1263,6 @@ const Registration = ({ cardTitle }) => {
                                   name="availment"
                                   onChange={handleInputNewApplicantForm}
                                   value={newApplicantForm.values.availment}
-                                  required
                                 />
                                 {newApplicantForm.touched.availment &&
                                   newApplicantForm.errors.availment && (
@@ -1303,7 +1284,6 @@ const Registration = ({ cardTitle }) => {
                                   name="grade_level"
                                   onChange={handleInputNewApplicantForm}
                                   value={newApplicantForm.values.grade_level}
-                                  required
                                 >
                                   <option value="">Select</option>
                                   {GradeLevel.map((grade_level, index) => (
@@ -1327,7 +1307,6 @@ const Registration = ({ cardTitle }) => {
                                   name="availment"
                                   onChange={handleInputNewApplicantForm}
                                   value={newApplicantForm.values.availment}
-                                  required
                                 />
                                 {newApplicantForm.touched.availment &&
                                   newApplicantForm.errors.availment && (
@@ -1347,7 +1326,6 @@ const Registration = ({ cardTitle }) => {
                                   name="year_level"
                                   onChange={handleInputNewApplicantForm}
                                   value={newApplicantForm.values.year_level}
-                                  required
                                 >
                                   <option value="">Select</option>
                                   {YearLevel.map((year_level, index) => (
@@ -1370,7 +1348,6 @@ const Registration = ({ cardTitle }) => {
                                   name="availment"
                                   onChange={handleInputNewApplicantForm}
                                   value={newApplicantForm.values.availment}
-                                  required
                                 />
                                 {newApplicantForm.touched.availment &&
                                   newApplicantForm.errors.availment && (
@@ -1392,8 +1369,8 @@ const Registration = ({ cardTitle }) => {
                       </CCol>
                     </CRow>
                   </CForm>
-                  {operationLoading && <DefaultLoading />}
                 </CCardBody>
+                {insertNewApplicant.isPending && <DefaultLoading />}
               </CCard>
             </>
           )}

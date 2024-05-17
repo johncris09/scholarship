@@ -39,7 +39,7 @@ import * as Yup from 'yup'
 import CountUp from 'react-countup'
 import { Skeleton } from '@mui/material'
 import 'intro.js/introjs.css'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import OnlineUser from './OnlineUser'
 
 const Dashboard = ({ cardTitle }) => {
@@ -47,6 +47,7 @@ const Dashboard = ({ cardTitle }) => {
   const [activeKey, setActiveKey] = useState(1)
   const [activeGenderKey, setActiveGenderKey] = useState(1)
   const [user, setUser] = useState([])
+  const [refetchInterval, setRefetchInterval] = useState(true)
   useEffect(() => {
     setUser(jwtDecode(localStorage.getItem('scholarshipToken')))
   }, [])
@@ -66,7 +67,8 @@ const Dashboard = ({ cardTitle }) => {
         }
       }),
     queryKey: ['totalApplicants'],
-    refetchIntervalInBackground: true,
+    refetchInterval: refetchInterval ? 1000 : false,
+    staleTime: Infinity,
   })
   const totalApplicantsStatus = useQuery({
     queryFn: async () =>
@@ -79,7 +81,8 @@ const Dashboard = ({ cardTitle }) => {
         return response
       }),
     queryKey: ['totalApplicantsStatus'],
-    refetchIntervalInBackground: true,
+    refetchInterval: refetchInterval ? 1000 : false,
+    staleTime: Infinity,
   })
 
   const fourPsBeneficiary = useQuery({
@@ -98,6 +101,7 @@ const Dashboard = ({ cardTitle }) => {
         }
       }),
     queryKey: ['fourPsBeneficiary'],
+    refetchInterval: refetchInterval ? 1000 : false,
     refetchIntervalInBackground: true,
   })
 
@@ -117,7 +121,8 @@ const Dashboard = ({ cardTitle }) => {
         }
       }),
     queryKey: ['applicationGender'],
-    refetchIntervalInBackground: true,
+    refetchInterval: refetchInterval ? 1000 : false,
+    staleTime: Infinity,
   })
 
   const applicationStatusBarangay = useQuery({
@@ -136,105 +141,134 @@ const Dashboard = ({ cardTitle }) => {
         }
       }),
     queryKey: ['applicationStatusBarangay'],
-    refetchIntervalInBackground: true,
+    refetchInterval: refetchInterval ? 1000 : false,
+    staleTime: Infinity,
   })
 
   const handleRemoveFilter = async () => {
     filterForm.resetForm()
-    resetQueries()
+    await queryClient.invalidateQueries()
   }
-
-  const resetQueries = async () => {
-    // clear queries
-    await queryClient.resetQueries({ queryKey: ['totalApplicants'], exact: true })
-    await queryClient.resetQueries({ queryKey: ['totalApplicantsStatus'], exact: true })
-    await queryClient.resetQueries({ queryKey: ['fourPsBeneficiary'], exact: true })
-    await queryClient.resetQueries({ queryKey: ['applicationGender'], exact: true })
-    await queryClient.resetQueries({ queryKey: ['applicationStatusBarangay'], exact: true })
-  }
-  const handleViewAllData = async () => {
-    try {
-      filterForm.resetForm()
-
-      resetQueries()
-      // All Total Applicants
-      const allTotalApplicants = await Promise.all([
+  const allTotalApplicants = useMutation({
+    mutationFn: async (values) => {
+      return await Promise.all([
         api.get('senior_high/all_total'),
         api.get('college/all_total'),
         api.get('tvet/all_total'),
-      ]).then((responses) => {
-        const [responseSeniorHigh, responseCollege, responseTvet] = responses.map(
-          (response) => response.data,
-        )
-        return {
-          senior_high: responseSeniorHigh,
-          college: responseCollege,
-          tvet: responseTvet,
-        }
-      })
-      await queryClient.setQueryData(['totalApplicants'], allTotalApplicants)
+      ])
+    },
+    onSuccess: async (responses) => {
+      const [responseSeniorHigh, responseCollege, responseTvet] = responses.map(
+        (response) => response.data,
+      )
 
-      // All Total Applicants Status
-      const allTotalApplicantsStatus = await Promise.all([
+      await queryClient.setQueryData(['totalApplicants'], {
+        senior_high: responseSeniorHigh,
+        college: responseCollege,
+        tvet: responseTvet,
+      })
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+
+  const allTotalApplicantsStatus = useMutation({
+    mutationFn: async (values) => {
+      return await Promise.all([
         api.get('senior_high/all_total_status'),
         api.get('college/all_total_status'),
         api.get('tvet/all_total_status'),
-      ]).then((responses) => {
-        const newData = responses.map((response) => response.data)
-        return newData
-      })
+      ])
+    },
+    onSuccess: async (responses) => {
+      const newData = responses.map((response) => response.data)
 
-      await queryClient.setQueryData(['totalApplicantsStatus'], allTotalApplicantsStatus)
-
-      // All Fourps Beneficiary
-      const allFourPsBeneficiary = await Promise.all([
+      await queryClient.setQueryData(['totalApplicantsStatus'], newData)
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+  const allFourPsBeneficiary = useMutation({
+    mutationFn: async (values) => {
+      return await Promise.all([
         api.get('senior_high/all_fourps_beneficiary'),
         api.get('college/all_fourps_beneficiary'),
         api.get('tvet/all_fourps_beneficiary'),
-      ]).then((responses) => {
-        const response = responses.map((response) => response.data)
+      ])
+    },
+    onSuccess: async (responses) => {
+      const response = responses.map((response) => response.data)
 
-        return {
-          senior_high: response[0],
-          college: response[1],
-          tvet: response[2],
-        }
+      await queryClient.setQueryData(['fourPsBeneficiary'], {
+        senior_high: response[0],
+        college: response[1],
+        tvet: response[2],
       })
-
-      await queryClient.setQueryData(['fourPsBeneficiary'], allFourPsBeneficiary)
-
-      // All Application Gender
-      const allApplicationGender = await Promise.all([
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+  const allApplicationGender = useMutation({
+    mutationFn: async (values) => {
+      return await Promise.all([
         api.get('senior_high/all_gender'),
         api.get('college/all_gender'),
         api.get('tvet/all_gender'),
-      ]).then((responses) => {
-        const response = responses.map((response) => response.data)
-        return {
-          senior_high: response[0],
-          college: response[1],
-          tvet: response[2],
-        }
-      })
-      await queryClient.setQueryData(['applicationGender'], allApplicationGender)
+      ])
+    },
+    onSuccess: async (responses) => {
+      const response = responses.map((response) => response.data)
 
-      // All Application Status Barangay
-      const allApplicationStatusBarangay = await Promise.all([
+      await queryClient.setQueryData(['applicationGender'], {
+        senior_high: response[0],
+        college: response[1],
+        tvet: response[2],
+      })
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+  const allApplicationStatusBarangay = useMutation({
+    mutationFn: async (values) => {
+      return await Promise.all([
         api.get('senior_high/all_status_by_barangay'),
         api.get('college/all_status_by_barangay'),
         api.get('tvet/all_status_by_barangay'),
-      ]).then((responses) => {
-        const [responseSeniorHigh, responseCollege, responseTvet] = responses.map(
-          (response) => response.data,
-        )
-        return {
-          senior_high: responseSeniorHigh,
-          college: responseCollege,
-          tvet: responseTvet,
-        }
-      })
+      ])
+    },
+    onSuccess: async (responses) => {
+      const [responseSeniorHigh, responseCollege, responseTvet] = responses.map(
+        (response) => response.data,
+      )
 
-      await queryClient.setQueryData(['applicationStatusBarangay'], allApplicationStatusBarangay)
+      await queryClient.setQueryData(['applicationStatusBarangay'], {
+        senior_high: responseSeniorHigh,
+        college: responseCollege,
+        tvet: responseTvet,
+      })
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+  const handleViewAllData = async () => {
+    try {
+      filterForm.resetForm()
+      setRefetchInterval(false)
+      await allTotalApplicants.mutate()
+      await allTotalApplicantsStatus.mutate()
+      await allFourPsBeneficiary.mutate()
+      await allApplicationGender.mutate()
+      await allApplicationStatusBarangay.mutate()
     } catch (err) {
       console.error(err.response.data)
     }
@@ -249,6 +283,115 @@ const Dashboard = ({ cardTitle }) => {
     school_year: Yup.string().required('School Year is required'),
   })
 
+  const filterTotalApplicants = useMutation({
+    mutationFn: async (values) => {
+      return await Promise.all([
+        api.get('senior_high/filter_total', { params: values }),
+        api.get('college/filter_total', { params: values }),
+        api.get('tvet/filter_total', { params: values }),
+      ])
+    },
+    onSuccess: async (responses) => {
+      const [responseSeniorHigh, responseCollege, responseTvet] = responses.map(
+        (response) => response.data,
+      )
+
+      await queryClient.setQueryData(['totalApplicants'], {
+        senior_high: responseSeniorHigh,
+        college: responseCollege,
+        tvet: responseTvet,
+      })
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+  const filterTotalApplicantsStatus = useMutation({
+    mutationFn: async (values) => {
+      return await Promise.all([
+        api.get('senior_high/filter_total_status', { params: values }),
+        api.get('college/filter_total_status', { params: values }),
+        api.get('tvet/filter_total_status', { params: values }),
+      ])
+    },
+    onSuccess: async (responses) => {
+      const newData = responses.map((response) => response.data)
+      await queryClient.setQueryData(['totalApplicantsStatus'], newData)
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+  const filterFourPsBeneficiary = useMutation({
+    mutationFn: async (values) => {
+      return await Promise.all([
+        api.get('senior_high/filter_total_status', { params: values }),
+        api.get('college/filter_total_status', { params: values }),
+        api.get('tvet/filter_total_status', { params: values }),
+      ])
+    },
+    onSuccess: async (responses) => {
+      const [responseSeniorHigh, responseCollege, responseTvet] = responses.map(
+        (response) => response.data,
+      )
+      await queryClient.setQueryData(['fourPsBeneficiary'], {
+        senior_high: responseSeniorHigh,
+        college: responseCollege,
+        tvet: responseTvet,
+      })
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+  const filterApplicationGender = useMutation({
+    mutationFn: async (values) => {
+      return await Promise.all([
+        api.get('senior_high/get_data_by_gender', { params: values }),
+        api.get('college/get_data_by_gender', { params: values }),
+        api.get('tvet/get_data_by_gender', { params: values }),
+      ])
+    },
+    onSuccess: async (responses) => {
+      const response = responses.map((response) => response.data)
+      await queryClient.setQueryData(['applicationGender'], {
+        senior_high: response[0],
+        college: response[1],
+        tvet: response[2],
+      })
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+
+  const filterApplicationStatusBarangay = useMutation({
+    mutationFn: async (values) => {
+      return await Promise.all([
+        api.get('senior_high/filter_status_by_barangay', { params: values }),
+        api.get('college/filter_status_by_barangay', { params: values }),
+        api.get('tvet/filter_status_by_barangay', { params: values }),
+      ])
+    },
+    onSuccess: async (responses) => {
+      const [responseSeniorHigh, responseCollege, responseTvet] = responses.map(
+        (response) => response.data,
+      )
+      await queryClient.setQueryData(['applicationStatusBarangay'], {
+        senior_high: responseSeniorHigh,
+        college: responseCollege,
+        tvet: responseTvet,
+      })
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
   const filterForm = useFormik({
     initialValues: {
       semester: '',
@@ -256,95 +399,11 @@ const Dashboard = ({ cardTitle }) => {
     },
     validationSchema: filterFormValidationSchema,
     onSubmit: async (values) => {
-      try {
-        resetQueries()
-
-        // Filter Total Applicants
-        const filterTotalApplicants = await Promise.all([
-          api.get('senior_high/filter_total', { params: values }),
-          api.get('college/filter_total', { params: values }),
-          api.get('tvet/filter_total', { params: values }),
-        ]).then((responses) => {
-          const [responseSeniorHigh, responseCollege, responseTvet] = responses.map(
-            (response) => response.data,
-          )
-          return {
-            senior_high: responseSeniorHigh,
-            college: responseCollege,
-            tvet: responseTvet,
-          }
-        })
-
-        await queryClient.setQueryData(['totalApplicants'], filterTotalApplicants)
-
-        // Filter Total Applicants Status
-        const filterTotalApplicantsStatus = await Promise.all([
-          api.get('senior_high/filter_total_status', { params: values }),
-          api.get('college/filter_total_status', { params: values }),
-          api.get('tvet/filter_total_status', { params: values }),
-        ]).then((responses) => {
-          const newData = responses.map((response) => response.data)
-          return newData
-        })
-
-        await queryClient.setQueryData(['totalApplicantsStatus'], filterTotalApplicantsStatus)
-
-        // Filter FourPs Beneficiary
-        const filterFourPsBeneficiary = await Promise.all([
-          api.get('senior_high/get_fourps_beneficiary', { params: values }),
-          api.get('college/get_fourps_beneficiary', { params: values }),
-          api.get('tvet/get_fourps_beneficiary', { params: values }),
-        ]).then((responses) => {
-          const [responseSeniorHigh, responseCollege, responseTvet] = responses.map(
-            (response) => response.data,
-          )
-          return {
-            senior_high: responseSeniorHigh,
-            college: responseCollege,
-            tvet: responseTvet,
-          }
-        })
-
-        await queryClient.setQueryData(['fourPsBeneficiary'], filterFourPsBeneficiary)
-
-        // Filter Application Gender
-        const filterApplicationGender = await Promise.all([
-          api.get('senior_high/get_data_by_gender', { params: values }),
-          api.get('college/get_data_by_gender', { params: values }),
-          api.get('tvet/get_data_by_gender', { params: values }),
-        ]).then((responses) => {
-          const response = responses.map((response) => response.data)
-          return {
-            senior_high: response[0],
-            college: response[1],
-            tvet: response[2],
-          }
-        })
-
-        await queryClient.setQueryData(['applicationGender'], filterApplicationGender)
-        // Filter Application Gender
-        const filterApplicationStatusBarangay = await Promise.all([
-          api.get('senior_high/filter_status_by_barangay', { params: values }),
-          api.get('college/filter_status_by_barangay', { params: values }),
-          api.get('tvet/filter_status_by_barangay', { params: values }),
-        ]).then((responses) => {
-          const [responseSeniorHigh, responseCollege, responseTvet] = responses.map(
-            (response) => response.data,
-          )
-          return {
-            senior_high: responseSeniorHigh,
-            college: responseCollege,
-            tvet: responseTvet,
-          }
-        })
-
-        await queryClient.setQueryData(
-          ['applicationStatusBarangay'],
-          filterApplicationStatusBarangay,
-        )
-      } catch (err) {
-        console.error(err.response.data)
-      }
+      await filterTotalApplicants.mutate(values)
+      await filterTotalApplicantsStatus.mutate(values)
+      await filterFourPsBeneficiary.mutate(values)
+      await filterApplicationGender.mutate(values)
+      await filterApplicationStatusBarangay.mutate(values)
     },
   })
 
@@ -440,7 +499,9 @@ const Dashboard = ({ cardTitle }) => {
         </CCol>
       </CRow>
       <CRow>
-        {totalApplicants.isLoading
+        {totalApplicants.isLoading ||
+        allTotalApplicants.isPending ||
+        filterTotalApplicants.isPending
           ? [...Array(3)].map((_, index) => (
               <CCol key={index}>
                 <div className="card mb-3" style={{ borderRadius: '10px' }}>
@@ -500,7 +561,9 @@ const Dashboard = ({ cardTitle }) => {
       <CRow>
         <CCol id="totalStatusData">
           <CTable responsive>
-            {totalApplicantsStatus.isLoading ? (
+            {totalApplicantsStatus.isLoading ||
+            allTotalApplicantsStatus.isPending ||
+            filterTotalApplicantsStatus.isPending ? (
               <>
                 <CTableHead>
                   <CTableRow>
@@ -573,7 +636,9 @@ const Dashboard = ({ cardTitle }) => {
         </CCol>
       </CRow>
       <CRow>
-        {fourPsBeneficiary.isLoading ? (
+        {fourPsBeneficiary.isLoading ||
+        allFourPsBeneficiary.isPending ||
+        filterFourPsBeneficiary.isPending ? (
           <>
             <h5>
               <Skeleton variant="rounded" width={170} />
@@ -642,7 +707,9 @@ const Dashboard = ({ cardTitle }) => {
           <CCard id="chart">
             <CCardBody>
               <h5>
-                {applicationGender.isLoading ? (
+                {applicationGender.isLoading ||
+                allApplicationGender.isPending ||
+                filterApplicationGender.isPending ? (
                   <Skeleton variant="rounded" width={170} />
                 ) : (
                   'Gender Statistics'
@@ -650,7 +717,9 @@ const Dashboard = ({ cardTitle }) => {
               </h5>
               <CNav variant="pills" layout="justified">
                 <CNavItem role="presentation">
-                  {applicationGender.isLoading ? (
+                  {applicationGender.isLoading ||
+                  allApplicationGender.isPending ||
+                  filterApplicationGender.isPending ? (
                     <CNavItem className="nav-item px-3" role="presentation">
                       <Skeleton variant="rounded" height={40} />
                     </CNavItem>
@@ -672,7 +741,9 @@ const Dashboard = ({ cardTitle }) => {
                 </CNavItem>
 
                 <CNavItem role="presentation">
-                  {applicationGender.isLoading ? (
+                  {applicationGender.isLoading ||
+                  allApplicationGender.isPending ||
+                  filterApplicationGender.isPending ? (
                     <CNavItem className="nav-item px-3" role="presentation">
                       <Skeleton variant="rounded" height={40} />
                     </CNavItem>
@@ -693,7 +764,9 @@ const Dashboard = ({ cardTitle }) => {
                   )}
                 </CNavItem>
                 <CNavItem role="presentation">
-                  {applicationGender.isLoading ? (
+                  {applicationGender.isLoading ||
+                  allApplicationGender.isPending ||
+                  filterApplicationGender.isPending ? (
                     <CNavItem className="nav-item px-3" role="presentation">
                       <Skeleton variant="rounded" height={40} />
                     </CNavItem>
@@ -721,7 +794,9 @@ const Dashboard = ({ cardTitle }) => {
                   visible={activeGenderKey === 1}
                   style={{ position: 'relative' }}
                 >
-                  {applicationGender.isLoading ? (
+                  {applicationGender.isLoading ||
+                  allApplicationGender.isPending ||
+                  filterApplicationGender.isPending ? (
                     <>
                       <div className="d-grid gap-2 d-md-flex justify-content-center mt-2">
                         <Skeleton variant="rounded" width={90} height={15} />
@@ -757,7 +832,9 @@ const Dashboard = ({ cardTitle }) => {
                   visible={activeGenderKey === 2}
                   style={{ position: 'relative' }}
                 >
-                  {applicationGender.isLoading ? (
+                  {applicationGender.isLoading ||
+                  allApplicationGender.isPending ||
+                  filterApplicationGender.isPending ? (
                     <>
                       <div className="d-grid gap-2 d-md-flex justify-content-center mt-2">
                         <Skeleton variant="rounded" width={90} height={15} />
@@ -793,7 +870,9 @@ const Dashboard = ({ cardTitle }) => {
                   visible={activeGenderKey === 3}
                   style={{ position: 'relative' }}
                 >
-                  {applicationGender.isLoading ? (
+                  {applicationGender.isLoading ||
+                  allApplicationGender.isPending ||
+                  filterApplicationGender.isPending ? (
                     <>
                       <div className="d-grid gap-2 d-md-flex justify-content-center mt-2">
                         <Skeleton variant="rounded" width={90} height={15} />
@@ -835,7 +914,9 @@ const Dashboard = ({ cardTitle }) => {
             <CCardBody>
               <CNav variant="pills" layout="justified">
                 <CNavItem role="presentation">
-                  {applicationStatusBarangay.isLoading ? (
+                  {applicationStatusBarangay.isLoading ||
+                  allApplicationStatusBarangay.isPending ||
+                  filterApplicationStatusBarangay.isPending ? (
                     <CNavItem className="nav-item px-3" role="presentation">
                       <Skeleton variant="rounded" height={40} />
                     </CNavItem>
@@ -856,7 +937,9 @@ const Dashboard = ({ cardTitle }) => {
                   )}
                 </CNavItem>
                 <CNavItem role="presentation">
-                  {applicationStatusBarangay.isLoading ? (
+                  {applicationStatusBarangay.isLoading ||
+                  allApplicationStatusBarangay.isPending ||
+                  filterApplicationStatusBarangay.isPending ? (
                     <CNavItem className="nav-item px-3" role="presentation">
                       <Skeleton variant="rounded" height={40} />
                     </CNavItem>
@@ -877,7 +960,9 @@ const Dashboard = ({ cardTitle }) => {
                   )}
                 </CNavItem>
                 <CNavItem role="presentation">
-                  {applicationStatusBarangay.isLoading ? (
+                  {applicationStatusBarangay.isLoading ||
+                  allApplicationStatusBarangay.isPending ||
+                  filterApplicationStatusBarangay.isPending ? (
                     <CNavItem className="nav-item px-3" role="presentation">
                       <Skeleton variant="rounded" height={40} />
                     </CNavItem>
@@ -905,7 +990,9 @@ const Dashboard = ({ cardTitle }) => {
                   visible={activeKey === 1}
                   style={{ position: 'relative' }}
                 >
-                  {applicationStatusBarangay.isLoading ? (
+                  {applicationStatusBarangay.isLoading ||
+                  allApplicationStatusBarangay.isPending ||
+                  filterApplicationStatusBarangay.isPending ? (
                     <>
                       <div className="d-grid gap-2 d-md-flex mt-3 mb-3 justify-content-md-center">
                         <Skeleton variant="rounded" height={10} width={400} />
@@ -916,7 +1003,7 @@ const Dashboard = ({ cardTitle }) => {
                         <Skeleton variant="rounded" height={20} width={110} />
                       </div>
 
-                      {[...Array(20)].map((_, index) => (
+                      {[...Array(47)].map((_, index) => (
                         <CRow key={index} className="mt-3">
                           <CCol md="1">
                             <Skeleton
@@ -963,7 +1050,9 @@ const Dashboard = ({ cardTitle }) => {
                   visible={activeKey === 2}
                   style={{ position: 'relative' }}
                 >
-                  {applicationStatusBarangay.isLoading ? (
+                  {applicationStatusBarangay.isLoading ||
+                  allApplicationStatusBarangay.isPending ||
+                  filterApplicationStatusBarangay.isPending ? (
                     <>
                       <div className="d-grid gap-2 d-md-flex mt-3 mb-3 justify-content-md-center">
                         <Skeleton variant="rounded" height={10} width={400} />
@@ -974,7 +1063,7 @@ const Dashboard = ({ cardTitle }) => {
                         <Skeleton variant="rounded" height={20} width={110} />
                       </div>
 
-                      {[...Array(20)].map((_, index) => (
+                      {[...Array(47)].map((_, index) => (
                         <CRow key={index} className="mt-3">
                           <CCol md="1">
                             <Skeleton
@@ -1021,7 +1110,7 @@ const Dashboard = ({ cardTitle }) => {
                   visible={activeKey === 3}
                   style={{ position: 'relative' }}
                 >
-                  {applicationStatusBarangay.isLoading ? (
+                  {applicationStatusBarangay.isLoading || allApplicationStatusBarangay.isPending ? (
                     <>
                       <div className="d-grid gap-2 d-md-flex mt-3 mb-3 justify-content-md-center">
                         <Skeleton variant="rounded" height={10} width={400} />
@@ -1032,7 +1121,7 @@ const Dashboard = ({ cardTitle }) => {
                         <Skeleton variant="rounded" height={20} width={110} />
                       </div>
 
-                      {[...Array(20)].map((_, index) => (
+                      {[...Array(47)].map((_, index) => (
                         <CRow key={index} className="mt-3">
                           <CCol md="1">
                             <Skeleton

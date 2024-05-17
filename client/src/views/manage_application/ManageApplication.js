@@ -58,6 +58,8 @@ import { Editor } from 'react-draft-wysiwyg'
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css'
 import { EditorState, convertToRaw, convertFromRaw } from 'draft-js'
 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 const ManageApplication = ({
   app_status,
   scholarship_type,
@@ -65,111 +67,106 @@ const ManageApplication = ({
   hasBulkDisapproved,
   hasDeleteSelectedRows,
 }) => {
+  const queryClient = useQueryClient()
   const selectSchoolInputRef = useRef()
   const selectCourseInputRef = useRef()
   const selectStrandInputRef = useRef()
-  const [data, setData] = useState([])
-  const [validated, setValidated] = useState(false)
-  const [bulkApprovedValidated, setBulkApprovedValidated] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [loadingOperation, setLoadingOperation] = useState(false)
-  const [course, setCourse] = useState([])
-  const [school, setSchool] = useState([])
   const [applicationDetailsModalVisible, setApplicationDetailsModalVisible] = useState(false)
-  const [fetchSchoolLoading, setFetchSchoolLoading] = useState(false)
-  const [fetchCourseLoading, setFetchCourseLoading] = useState(false)
   const [selectedRows, setSelectedRows] = useState([])
   const [modalBulkApproved, setModalBulkApprovedVisible] = useState(false)
   const [modalBulkDisapproved, setModalBulkDisapproved] = useState(false)
   const [table, setTable] = useState([])
   const [editorState, setEditorState] = useState(() => EditorState.createEmpty())
+  const [refetchInterval, setRefetchInterval] = useState(true)
 
-  useEffect(() => {
-    fetchData()
-    fetchSchool()
-    fetchCourse()
-  }, [app_status, scholarship_type, hasBulkApproved, hasBulkDisapproved, hasDeleteSelectedRows])
+  useEffect(() => {}, [
+    app_status,
+    scholarship_type,
+    hasBulkApproved,
+    hasBulkDisapproved,
+    hasDeleteSelectedRows,
+  ])
+  const toCamelCaseWithUnderscores = (str) => {
+    return str
+      .split('_')
+      .map((word, index) => (index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1)))
+      .join('')
+  }
 
-  const fetchSchool = async () => {
-    setFetchSchoolLoading(true)
+  const school = useQuery({
+    queryFn: async () => {
+      let endpoint = ''
 
-    let endpoint
+      if (scholarship_type === 'senior_high') {
+        endpoint = 'senior_high_school'
+      } else if (scholarship_type === 'college') {
+        endpoint = 'college_school'
+      } else if (scholarship_type === 'tvet') {
+        endpoint = 'tvet_school'
+      }
 
-    if (scholarship_type === 'senior_high') {
-      endpoint = 'senior_high_school'
-    } else if (scholarship_type === 'college') {
-      endpoint = 'college_school'
-    } else if (scholarship_type === 'tvet') {
-      endpoint = 'tvet_school'
-    }
-
-    await api
-      .get(endpoint)
-      .then((response) => {
+      const data = await api.get(endpoint).then((response) => {
         const formattedData = response.data.map((item) => {
           const value = item.id
           const label = `${item.school}`
           return { value, label }
         })
-
-        setSchool(formattedData)
+        return formattedData
       })
-      .catch((error) => {
-        console.error('Error fetching data:', error)
-      })
-      .finally(() => {
-        setFetchSchoolLoading(false)
-      })
-  }
+      return data
+    },
+    queryKey: [
+      toCamelCaseWithUnderscores(scholarship_type) + 'School' + '' + toSentenceCase(app_status),
+    ],
+    refetchInterval: 1000,
+  })
 
-  const fetchCourse = async () => {
-    setFetchCourseLoading(true)
+  const course = useQuery({
+    queryFn: async () => {
+      let endpoint = ''
 
-    let endpoint
-
-    if (scholarship_type === 'senior_high') {
-      endpoint = 'strand'
-    } else if (scholarship_type === 'college') {
-      endpoint = 'course'
-    } else if (scholarship_type === 'tvet') {
-      endpoint = 'tvet_course'
-    }
-
-    await api
-      .get(endpoint)
-      .then((response) => {
+      if (scholarship_type === 'senior_high') {
+        endpoint = 'strand'
+      } else if (scholarship_type === 'college') {
+        endpoint = 'course'
+      } else if (scholarship_type === 'tvet') {
+        endpoint = 'tvet_course'
+      }
+      const data = await api.get(endpoint).then((response) => {
         const formattedData = response.data.map((item) => {
           const value = item.id
           const label = scholarship_type === 'senior_high' ? `${item.strand}` : `${item.course}`
           return { value, label }
         })
-        setCourse(formattedData)
+        return formattedData
       })
-      .catch((error) => {
-        console.error('Error fetching data:', error)
-      })
-      .finally(() => {
-        setFetchCourseLoading(false)
-      })
-  }
-  const fetchData = async () => {
-    await api
-      .get(scholarship_type + '/get_by_status', {
-        params: {
-          status: app_status,
-        },
-      })
-      .then((response) => {
-        setData(response.data)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setLoading(false)
-        setLoadingOperation(false)
-      })
-  }
+      return data
+    },
+    queryKey: [
+      toCamelCaseWithUnderscores(scholarship_type) + 'Course' + '' + toSentenceCase(app_status),
+    ],
+    refetchInterval: 1000,
+  })
+
+  const data = useQuery({
+    queryFn: async () => {
+      const data = await api
+        .get(scholarship_type + '/get_by_status', {
+          params: {
+            status: app_status,
+          },
+        })
+        .then((response) => {
+          return response.data
+        })
+      return data
+    },
+    refetchInterval: refetchInterval ? 1000 : false,
+    queryKey: [
+      toCamelCaseWithUnderscores(scholarship_type) + 'Data' + '' + toSentenceCase(app_status),
+    ],
+  })
+
   const handleInputChange = (e) => {
     const { name, value } = e.target
     filterForm.setFieldValue(name, value)
@@ -214,11 +211,6 @@ const ManageApplication = ({
     }),
     availment: Yup.string().required('Availment is required'),
     app_status: Yup.string().required('Application Status is required'),
-    // reason: Yup.string().when('app_status', {
-    //   is: (value) => value === 'Disapproved' || value === 'Void' || value === 'Archived',
-    //   then: (schema) => schema.required('Reason is required'),
-    //   otherwise: (schema) => schema,
-    // }),
   })
   const applicationDetailsForm = useFormik({
     initialValues: {
@@ -251,45 +243,53 @@ const ManageApplication = ({
       const contentStateString = JSON.stringify(contentState)
       const updatedValues = { ...values, reason: JSON.parse(contentStateString) }
 
-      setLoadingOperation(true)
-      await api
-        .put(scholarship_type + '/update/' + values.id, updatedValues)
-        .then((response) => {
-          toast.success(response.data.message)
-          fetchData()
-          setApplicationDetailsModalVisible(false)
-        })
-        .catch((error) => {
-          console.info(error)
-          // toast.error(handleError(error))
-        })
-        .finally(() => {
-          setLoadingOperation(false)
-        })
+      await updateApplicationDetails.mutate(updatedValues)
     },
   })
 
-  const handleViewAllData = async () => {
-    setLoading(true)
-    filterForm.resetForm()
-    await api
-      .get(scholarship_type + '/get_all_by_status', {
+  const updateApplicationDetails = useMutation({
+    mutationKey: ['updateApplicationDetails'],
+    mutationFn: async (values) => {
+      return await api.put(scholarship_type + '/update/' + values.id, values)
+    },
+    onSuccess: async (response) => {
+      if (response.data.status) {
+        toast.success(response.data.message)
+      }
+      setApplicationDetailsModalVisible(false)
+      await queryClient.invalidateQueries({
+        queryKey: [
+          toCamelCaseWithUnderscores(scholarship_type) + 'Data' + '' + toSentenceCase(app_status),
+        ],
+      })
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+
+  const getAllByStatus = useMutation({
+    mutationKey: ['getAllByStatus'],
+    mutationFn: async () => {
+      setRefetchInterval(false)
+      return await api.get(scholarship_type + '/get_all_by_status', {
         params: {
           status: app_status,
         },
       })
-      .then((response) => {
-        setData(response.data)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setLoading(false)
-        setLoadingOperation(false)
-      })
-  }
-
+    },
+    onSuccess: async (response) => {
+      await queryClient.setQueryData(
+        [toCamelCaseWithUnderscores(scholarship_type) + 'Data' + '' + toSentenceCase(app_status)],
+        response.data,
+      )
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
   const filterFormValidationSchema = Yup.object().shape({
     semester: Yup.string().required('Semester is required'),
     school_year: Yup.string().required('School Year is required'),
@@ -302,33 +302,41 @@ const ManageApplication = ({
     },
     validationSchema: filterFormValidationSchema,
     onSubmit: async (values) => {
-      setLoadingOperation(true)
-      setLoading(true)
-      await api
-        .get(scholarship_type + '/filter_by_status', {
-          params: {
-            ...values,
-            status: app_status,
-          },
-        })
-        .then((response) => {
-          setData(response.data)
-        })
-        .catch((error) => {
-          toast.error(handleError(error))
-        })
-        .finally(() => {
-          setLoadingOperation(false)
-          setLoading(false)
-        })
+      setRefetchInterval(false)
+      await filterData.mutate(values)
     },
   })
 
-  const handleRemoveFilter = () => {
-    setLoading(true)
-    setLoadingOperation(true)
+  const filterData = useMutation({
+    mutationKey: ['filterData'],
+    mutationFn: async (values) => {
+      return await api.get(scholarship_type + '/filter_by_status', {
+        params: {
+          ...values,
+          status: app_status,
+        },
+      })
+    },
+    onSuccess: async (response) => {
+      await queryClient.setQueryData(
+        [toCamelCaseWithUnderscores(scholarship_type) + 'Data' + '' + toSentenceCase(app_status)],
+        response.data,
+      )
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+
+  const handleRemoveFilter = async () => {
     filterForm.resetForm()
-    fetchData()
+    setRefetchInterval(true)
+    await queryClient.invalidateQueries({
+      queryKey: [
+        toCamelCaseWithUnderscores(scholarship_type) + 'Data' + '' + toSentenceCase(app_status),
+      ],
+    })
   }
 
   const csvOptions = (column) => {
@@ -410,7 +418,7 @@ const ManageApplication = ({
     csvExporter.generateCsv(exportedData)
   }
 
-  const handleDeleteRows = (table) => {
+  const handleDeleteRows = async (table) => {
     const rows = table.getSelectedRowModel().rows
 
     const selectedRows = rows
@@ -421,28 +429,38 @@ const ManageApplication = ({
         }
       })
 
-    validationPrompt(() => {
-      setLoading(true)
-      api
-        .post(scholarship_type + '/bulk_status_update', {
-          data: selectedRows,
-          status: 'Archived',
-        })
-
-        .then((response) => {
-          toast.success(response.data.message)
-          fetchData()
-          table.resetRowSelection()
-        })
-        .catch((error) => {
-          toast.error(handleError(error))
-        })
-        .finally(() => {
-          setLoading(false)
-        })
+    setTable(table)
+    validationPrompt(async () => {
+      await bulkArchivedApplicant.mutate(selectedRows)
     })
   }
 
+  const bulkArchivedApplicant = useMutation({
+    mutationKey: ['bulkArchivedApplicant'],
+    mutationFn: async (data) => {
+      return await api.post(scholarship_type + '/bulk_status_update', {
+        data: data,
+        status: 'Archived',
+      })
+    },
+    onSuccess: async (response) => {
+      if (response.data.status) {
+        toast.success(response.data.message)
+      }
+
+      table.resetRowSelection()
+
+      await queryClient.invalidateQueries({
+        queryKey: [
+          toCamelCaseWithUnderscores(scholarship_type) + 'Data' + '' + toSentenceCase(app_status),
+        ],
+      })
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
   const approvedFormValidationSchema = Yup.object().shape({
     status: Yup.string().required('Status  is required'),
   })
@@ -452,32 +470,42 @@ const ManageApplication = ({
     },
     validationSchema: approvedFormValidationSchema,
     onSubmit: async (values) => {
-      validationPrompt(() => {
-        setLoadingOperation(true)
-        api
-          .post(scholarship_type + '/bulk_status_update', {
-            data: selectedRows,
-            status: values.status,
-          })
-          .then((response) => {
-            toast.success(response.data.message)
-            fetchData()
-            approvedForm.resetForm()
-            setBulkApprovedValidated(false)
-            setModalBulkApprovedVisible(false)
-            table.resetRowSelection()
-            // clear select rows
-            setSelectedRows([])
-          })
-          .catch((error) => {
-            toast.error(handleError(error))
-          })
-          .finally(() => {
-            setLoadingOperation(false)
-          })
+      validationPrompt(async () => {
+        await bulkApprovedApplicant.mutate({ selectedRows, values })
       })
     },
   })
+
+  const bulkApprovedApplicant = useMutation({
+    mutationKey: ['bulkApprovedApplicant'],
+    mutationFn: async (data) => {
+      return await api.post(scholarship_type + '/bulk_status_update', {
+        data: data.selectedRows,
+        status: data.values.status,
+      })
+    },
+    onSuccess: async (response) => {
+      if (response.data.status) {
+        toast.success(response.data.message)
+      }
+
+      approvedForm.resetForm()
+      setModalBulkApprovedVisible(false)
+      table.resetRowSelection()
+      setSelectedRows([])
+
+      await queryClient.invalidateQueries({
+        queryKey: [
+          toCamelCaseWithUnderscores(scholarship_type) + 'Data' + '' + toSentenceCase(app_status),
+        ],
+      })
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+
   const handleBulkApprovedRows = (table) => {
     const rows = table.getSelectedRowModel().rows
 
@@ -509,47 +537,7 @@ const ManageApplication = ({
       })
     disapprovedForm.setFieldValue('data', selectedRows)
     setModalBulkDisapproved(true)
-    // Swal.fire({
-    //   title: 'Selected row(s) will be disapproved.',
-    //   text: 'Reason for disapproval (optional)',
-    //   input: 'textarea',
-    //   icon: 'info',
-    //   showCancelButton: true,
-    //   confirmButtonText: 'Ok',
-    //   confirmButtonColor: '#3085d6',
-    //   cancelButtonColor: '#d33',
-    // }).then(async (result) => {
-    //   if (result.isConfirmed) {
-    //     validationPrompt(() => {
-    //       setLoading(true)
-    //       api
-    //         .post(scholarship_type + '/bulk_status_update', {
-    //           data: selectedRows,
-    //           status: 'Disapproved',
-    //           reason: result.value,
-    //         })
-
-    //         .then((response) => {
-    //           toast.success(response.data.message)
-    //           fetchData()
-    //           table.resetRowSelection()
-    //         })
-    //         .catch((error) => {
-    //           toast.error(handleError(error))
-    //         })
-    //         .finally(() => {
-    //           setLoading(false)
-    //         })
-    //     })
-    //   }
-    // })
-  }
-
-  const onEditorStateChange = (editorState) => {
-    setEditorState(editorState) // Update the local state with the new EditorState
-
-    applicationDetailsForm.setFieldValue('reason', editorState)
-    disapprovedForm.setFieldValue('reason', editorState)
+    setTable(table)
   }
 
   const disapprovedForm = useFormik({
@@ -559,34 +547,51 @@ const ManageApplication = ({
       reason: '',
     },
     onSubmit: async (values) => {
-      const contentState = convertToRaw(values.reason.getCurrentContent())
-      const contentStateString = JSON.stringify(contentState)
-      const updatedValues = { ...values, reason: JSON.parse(contentStateString) }
-
-      validationPrompt(() => {
-        setLoadingOperation(true)
-        api
-          .post(scholarship_type + '/bulk_status_update', updatedValues)
-          .then((response) => {
-            console.info(response.data)
-            toast.success(response.data.message)
-            setModalBulkDisapproved(false)
-            fetchData()
-            disapprovedForm.resetForm()
-            // approvedForm.resetForm()
-            // clear select rows
-            setSelectedRows([])
-          })
-          .catch((error) => {
-            toast.error(handleError(error))
-          })
-          .finally(() => {
-            setLoadingOperation(false)
-          })
-      })
+      try {
+        const contentState = convertToRaw(values.reason.getCurrentContent())
+        const contentStateString = JSON.stringify(contentState)
+        const updatedValues = { ...values, reason: JSON.parse(contentStateString) }
+        // console.info(updatedValues)
+        validationPrompt(async () => {
+          await bulkDisapprovedApplicant.mutate(updatedValues)
+        })
+      } catch (error) {
+        toast.error('Note is required')
+      }
     },
   })
 
+  const bulkDisapprovedApplicant = useMutation({
+    mutationKey: ['bulkDisapprovedApplicant'],
+    mutationFn: async (values) => {
+      return await api.post(scholarship_type + '/bulk_status_update', values)
+    },
+    onSuccess: async (response) => {
+      if (response.data.status) {
+        toast.success(response.data.message)
+      }
+      setModalBulkDisapproved(false)
+      disapprovedForm.resetForm()
+
+      table.resetRowSelection()
+      await queryClient.invalidateQueries({
+        queryKey: [
+          toCamelCaseWithUnderscores(scholarship_type) + 'Data' + '' + toSentenceCase(app_status),
+        ],
+      })
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+
+  const onEditorStateChange = (editorState) => {
+    setEditorState(editorState) // Update the local state with the new EditorState
+
+    applicationDetailsForm.setFieldValue('reason', editorState)
+    disapprovedForm.setFieldValue('reason', editorState)
+  }
   return (
     <>
       <ToastContainer />
@@ -597,9 +602,7 @@ const ManageApplication = ({
           </h5>
           <CForm
             id="filterForm"
-            className="row g-3 needs-validation mb-4"
-            noValidate
-            validated={validated}
+            className="row g-3 needs-  mb-4"
             onSubmit={filterForm.handleSubmit}
           >
             <RequiredFieldNote />
@@ -611,7 +614,6 @@ const ManageApplication = ({
                   name="semester"
                   onChange={handleInputChange}
                   value={filterForm.values.semester}
-                  required
                 >
                   <option value="">Select</option>
                   {Semester.map((semester, index) => (
@@ -631,7 +633,6 @@ const ManageApplication = ({
                   name="school_year"
                   onChange={handleInputChange}
                   value={filterForm.values.school_year}
-                  required
                 >
                   <option value="">Select</option>
                   {SchoolYear.map((school_year, index) => (
@@ -651,7 +652,12 @@ const ManageApplication = ({
                 <CButton color="danger" size="sm" variant="outline" onClick={handleRemoveFilter}>
                   <FontAwesomeIcon icon={faCancel} /> Remove Filter
                 </CButton>
-                <CButton size="sm" variant="outline" color="primary" onClick={handleViewAllData}>
+                <CButton
+                  size="sm"
+                  variant="outline"
+                  color="primary"
+                  onClick={() => getAllByStatus.mutate()}
+                >
                   <FontAwesomeIcon icon={faEye} /> View All Data
                 </CButton>
                 <CButton color="primary" size="sm" type="submit">
@@ -660,7 +666,6 @@ const ManageApplication = ({
               </div>
             </CRow>
           </CForm>
-          {/* {loadingOperation && <DefaultLoading />} */}
           <hr />
         </CCol>
       </CRow>
@@ -676,15 +681,45 @@ const ManageApplication = ({
                 ? tvetDefaultColumn
                 : []
             }
-            data={data}
+            data={!data.isLoading && data.data}
             enableRowVirtualization
             enableColumnVirtualization
             state={{
-              isLoading: loading,
-              isSaving: loading,
-              showLoadingOverlay: loading,
-              showProgressBars: loading,
-              showSkeletons: loading,
+              isLoading:
+                data.isLoading ||
+                filterData.isPending ||
+                getAllByStatus.isPending ||
+                updateApplicationDetails.isPending ||
+                bulkApprovedApplicant.isPending ||
+                bulkArchivedApplicant.isPending,
+              isSaving:
+                data.isLoading ||
+                filterData.isPending ||
+                getAllByStatus.isPending ||
+                updateApplicationDetails.isPending ||
+                bulkApprovedApplicant.isPending ||
+                bulkArchivedApplicant.isPending,
+              showLoadingOverlay:
+                data.isLoading ||
+                filterData.isPending ||
+                getAllByStatus.isPending ||
+                updateApplicationDetails.isPending ||
+                bulkApprovedApplicant.isPending ||
+                bulkArchivedApplicant.isPending,
+              showProgressBars:
+                data.isLoading ||
+                filterData.isPending ||
+                getAllByStatus.isPending ||
+                updateApplicationDetails.isPending ||
+                bulkApprovedApplicant.isPending ||
+                bulkArchivedApplicant.isPending,
+              showSkeletons:
+                data.isLoading ||
+                filterData.isPending ||
+                getAllByStatus.isPending ||
+                updateApplicationDetails.isPending ||
+                bulkApprovedApplicant.isPending ||
+                bulkArchivedApplicant.isPending,
             }}
             muiCircularProgressProps={{
               color: 'secondary',
@@ -836,7 +871,6 @@ const ManageApplication = ({
             )}
           />
         </CCol>
-        {/* {loading && <DefaultLoading />} */}
       </CRow>
       <>
         <CModal
@@ -859,12 +893,7 @@ const ManageApplication = ({
           </CModalHeader>
           <CModalBody>
             <>
-              <CForm
-                id="form"
-                className="row g-3 needs-validation"
-                noValidate
-                onSubmit={applicationDetailsForm.handleSubmit}
-              >
+              <CForm className="row g-3  " onSubmit={applicationDetailsForm.handleSubmit}>
                 <CRow className="justify-content-end mt-3">
                   <CCol>
                     <div className="text-end">
@@ -957,18 +986,21 @@ const ManageApplication = ({
                         <CFormLabel>
                           {
                             <>
-                              {fetchSchoolLoading && <CSpinner size="sm" />}
+                              {school.isLoading && <CSpinner size="sm" />}
                               {requiredField(' School')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectSchoolInputRef}
-                          value={school.find(
-                            (option) => option.value === applicationDetailsForm.values.school,
-                          )}
+                          value={
+                            !school.isLoading &&
+                            school.data?.find(
+                              (option) => option.value === applicationDetailsForm.values.school,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={school}
+                          options={!school.isLoading && school.data}
                           name="school"
                           isSearchable
                           placeholder="Search..."
@@ -985,18 +1017,21 @@ const ManageApplication = ({
                         <CFormLabel>
                           {
                             <>
-                              {fetchCourseLoading && <CSpinner size="sm" />}
+                              {course.isLoading && <CSpinner size="sm" />}
                               {requiredField(' Strand')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectStrandInputRef}
-                          value={course.find(
-                            (option) => option.value === applicationDetailsForm.values.strand,
-                          )}
+                          value={
+                            !course.isLoading &&
+                            course.data?.find(
+                              (option) => option.value === applicationDetailsForm.values.strand,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={course}
+                          options={!course.isLoading && course.data}
                           name="strand"
                           isSearchable
                           placeholder="Search..."
@@ -1108,18 +1143,21 @@ const ManageApplication = ({
                         <CFormLabel>
                           {
                             <>
-                              {fetchSchoolLoading && <CSpinner size="sm" />}
+                              {school.isLoading && <CSpinner size="sm" />}
                               {requiredField(' School')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectSchoolInputRef}
-                          value={school.find(
-                            (option) => option.value === applicationDetailsForm.values.school,
-                          )}
+                          value={
+                            !school.isLoading &&
+                            school.data?.find(
+                              (option) => option.value === applicationDetailsForm.values.school,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={school}
+                          options={!school.isLoading && school.data}
                           name="school"
                           isSearchable
                           placeholder="Search..."
@@ -1136,18 +1174,21 @@ const ManageApplication = ({
                         <CFormLabel>
                           {
                             <>
-                              {fetchCourseLoading && <CSpinner size="sm" />}
+                              {course.isLoading && <CSpinner size="sm" />}
                               {requiredField(' Course')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectCourseInputRef}
-                          value={course.find(
-                            (option) => option.value === applicationDetailsForm.values.course,
-                          )}
+                          value={
+                            !course.isLoading &&
+                            course.data?.find(
+                              (option) => option.value === applicationDetailsForm.values.course,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={course}
+                          options={!course.isLoading && course.data}
                           name="course"
                           isSearchable
                           placeholder="Search..."
@@ -1274,18 +1315,21 @@ const ManageApplication = ({
                         <CFormLabel>
                           {
                             <>
-                              {fetchSchoolLoading && <CSpinner size="sm" />}
+                              {school.isLoading && <CSpinner size="sm" />}
                               {requiredField(' School')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectCourseInputRef}
-                          value={school.find(
-                            (option) => option.value === applicationDetailsForm.values.school,
-                          )}
+                          value={
+                            !school.isLoading &&
+                            school.data?.find(
+                              (option) => option.value === applicationDetailsForm.values.school,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={school}
+                          options={!school.isLoading && school.data}
                           name="school"
                           isSearchable
                           placeholder="Search..."
@@ -1302,18 +1346,21 @@ const ManageApplication = ({
                         <CFormLabel>
                           {
                             <>
-                              {fetchCourseLoading && <CSpinner size="sm" />}
+                              {course.isLoading && <CSpinner size="sm" />}
                               {requiredField(' Course')}
                             </>
                           }
                         </CFormLabel>
                         <Select
                           ref={selectCourseInputRef}
-                          value={course.find(
-                            (option) => option.value === applicationDetailsForm.values.course,
-                          )}
+                          value={
+                            !course.isLoading &&
+                            course.data?.find(
+                              (option) => option.value === applicationDetailsForm.values.course,
+                            )
+                          }
                           onChange={handleSelectChange}
-                          options={course}
+                          options={!course.isLoading && course.data}
                           name="course"
                           isSearchable
                           placeholder="Search..."
@@ -1430,9 +1477,9 @@ const ManageApplication = ({
                   </div>
                 </CRow>
               </CForm>
-              {loadingOperation && <DefaultLoading />}
             </>
           </CModalBody>
+          {updateApplicationDetails.isPending && <DefaultLoading />}
         </CModal>
       </>
       <>
@@ -1445,13 +1492,7 @@ const ManageApplication = ({
           <CModalHeader onClose={() => setModalBulkApprovedVisible(false)}>
             <CModalTitle> Bulk Approved </CModalTitle>
           </CModalHeader>
-          <CForm
-            id="form"
-            className="row g-3 needs-validation"
-            noValidate
-            validated={bulkApprovedValidated}
-            onSubmit={approvedForm.handleSubmit}
-          >
+          <CForm className="row g-3 " onSubmit={approvedForm.handleSubmit}>
             <CModalBody>
               <RequiredFieldNote />
 
@@ -1463,7 +1504,6 @@ const ManageApplication = ({
                     name="status"
                     onChange={handleInputChange}
                     value={approvedForm.values.status}
-                    required
                   >
                     <option value="">Select</option>
                     {ApprovedType.map((status, index) => (
@@ -1479,8 +1519,6 @@ const ManageApplication = ({
               </CRow>
             </CModalBody>
 
-            {loadingOperation && <DefaultLoading />}
-
             <CModalFooter>
               <CButton
                 color="secondary"
@@ -1494,6 +1532,8 @@ const ManageApplication = ({
               </CButton>
             </CModalFooter>
           </CForm>
+
+          {bulkApprovedApplicant.isPending && <DefaultLoading />}
         </CModal>
       </>
       <>
@@ -1528,8 +1568,6 @@ const ManageApplication = ({
               </CRow>
             </CModalBody>
 
-            {loadingOperation && <DefaultLoading />}
-
             <CModalFooter>
               <CButton
                 color="secondary"
@@ -1543,6 +1581,7 @@ const ManageApplication = ({
               </CButton>
             </CModalFooter>
           </CForm>
+          {bulkDisapprovedApplicant.isPending && <DefaultLoading />}
         </CModal>
       </>
     </>

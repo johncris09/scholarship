@@ -36,23 +36,13 @@ import {
   validationPrompt,
 } from 'src/components/SystemConfiguration'
 import * as Yup from 'yup'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 const SeniorHighSchool = ({ cardTitle }) => {
+  const queryClient = useQueryClient()
   const selectAddressIputRef = useRef()
-  const [data, setData] = useState([])
-  const [address, setAddress] = useState([])
-  const [validated, setValidated] = useState(true)
-  const [fetchDataLoading, setDataLoading] = useState(true)
-  const [fetchAddressLoading, setFetchAddressLoading] = useState(true)
-  const [operationLoading, setOperationLoading] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
   const [isEnableEdit, setIsEnableEdit] = useState(false)
-  const [editId, setEditId] = useState('')
-
-  useEffect(() => {
-    fetchSeniorHighSchool()
-    fetchAddress()
-  }, [])
 
   const column = [
     {
@@ -69,94 +59,92 @@ const SeniorHighSchool = ({ cardTitle }) => {
     },
   ]
 
-  const fetchSeniorHighSchool = () => {
-    api
-      .get('tvet_school')
-      .then((response) => {
-        setData(response.data)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setDataLoading(false)
-      })
-  }
+  const tvetSchool = useQuery({
+    queryFn: async () =>
+      await api.get('tvet_school').then((response) => {
+        return response.data
+      }),
+    queryKey: ['tvetSchool'],
+    staleTime: Infinity,
+    refetchInterval: 1000,
+  })
 
-  const fetchAddress = () => {
-    api
-      .get('barangay')
-      .then((response) => {
+  const address = useQuery({
+    queryFn: async () =>
+      await api.get('barangay').then((response) => {
         const formattedData = response.data.map((item) => {
           const value = item.id
           const label = `${item.barangay}`
           return { value, label }
         })
-
-        setAddress(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchAddressLoading(false)
-      })
-  }
-
-  const handleSelectAddress = (selectedOption) => {
-    formik.setFieldValue('address', selectedOption ? selectedOption.value : '')
-  }
+        console.info(formattedData)
+        return formattedData
+      }),
+    queryKey: ['address'],
+    staleTime: Infinity,
+  })
 
   const validationSchema = Yup.object().shape({
     school_name: Yup.string().required('School Name is required'),
   })
-  const formik = useFormik({
+  const form = useFormik({
     initialValues: {
+      id: '',
       abbreviation: '',
       school_name: '',
       address: '',
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-      setOperationLoading(true)
+      if (values.id) {
+        await updateTvetSchool.mutate(values)
+      } else {
+        await insertTvetSchool.mutate(values)
+      }
+    },
+  })
 
-      !isEnableEdit
-        ? // add new data
-          await api
-            .post('tvet_school/insert', values)
-            .then((response) => {
-              toast.success(response.data.message)
-              fetchSeniorHighSchool()
-              formik.resetForm()
-              setValidated(false)
-            })
-            .catch((error) => {
-              toast.error(handleError(error))
-            })
-            .finally(() => {
-              setOperationLoading(false)
-            })
-        : // update data
-          await api
-            .put('tvet_school/update/' + editId, values)
-            .then((response) => {
-              toast.success(response.data.message)
-              fetchSeniorHighSchool()
-              setValidated(false)
-              setModalVisible(false)
-            })
-            .catch((error) => {
-              toast.error(handleError(error))
-            })
-            .finally(() => {
-              setOperationLoading(false)
-            })
+  const insertTvetSchool = useMutation({
+    mutationFn: async (school) => {
+      return await api.post('tvet_school/insert', school)
+    },
+    onSuccess: async (response) => {
+      if (response.data.status) {
+        toast.success(response.data.message)
+      }
+      form.resetForm()
+      await queryClient.invalidateQueries(['tvetSchool'])
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+
+  const updateTvetSchool = useMutation({
+    mutationFn: async (school) => {
+      return await api.put('tvet_school/update/' + school.id, school)
+    },
+    onSuccess: async (response) => {
+      if (response.data.status) {
+        toast.success(response.data.message)
+      }
+      form.resetForm()
+      setModalVisible(false)
+      await queryClient.invalidateQueries(['tvetSchool'])
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
     },
   })
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    formik.setFieldValue(name, value)
+    form.setFieldValue(name, value)
+  }
+  const handleSelectAddress = (selectedOption) => {
+    form.setFieldValue('address', selectedOption ? selectedOption.value : '')
   }
 
   return (
@@ -170,9 +158,9 @@ const SeniorHighSchool = ({ cardTitle }) => {
               size="sm"
               color="primary"
               onClick={() => {
-                formik.resetForm()
+                form.resetForm()
                 setIsEnableEdit(false)
-                setValidated(false)
+
                 setModalVisible(!modalVisible)
               }}
             >
@@ -183,13 +171,18 @@ const SeniorHighSchool = ({ cardTitle }) => {
         <CCardBody>
           <MaterialReactTable
             columns={column}
-            data={data}
+            data={!tvetSchool.isLoading && tvetSchool.data}
             state={{
-              isLoading: fetchDataLoading,
-              isSaving: fetchDataLoading,
-              showLoadingOverlay: fetchDataLoading,
-              showProgressBars: fetchDataLoading,
-              showSkeletons: fetchDataLoading,
+              isLoading:
+                tvetSchool.isLoading || insertTvetSchool.isPending || updateTvetSchool.isPending,
+              isSaving:
+                tvetSchool.isLoading || insertTvetSchool.isPending || updateTvetSchool.isPending,
+              showLoadingOverlay:
+                tvetSchool.isLoading || insertTvetSchool.isPending || updateTvetSchool.isPending,
+              showProgressBars:
+                tvetSchool.isLoading || insertTvetSchool.isPending || updateTvetSchool.isPending,
+              showSkeletons:
+                tvetSchool.isLoading || insertTvetSchool.isPending || updateTvetSchool.isPending,
             }}
             muiCircularProgressProps={{
               color: 'secondary',
@@ -216,15 +209,13 @@ const SeniorHighSchool = ({ cardTitle }) => {
                   <IconButton
                     color="warning"
                     onClick={() => {
-                      let id = row.original.id
-                      setEditId(id)
-                      formik.setValues({
+                      form.setValues({
+                        id: row.original.id,
                         abbreviation: row.original.abbreviation,
                         school_name: row.original.school,
                         address: row.original.address_id,
                       })
                       setIsEnableEdit(true)
-
                       setModalVisible(true)
                     }}
                   >
@@ -245,23 +236,19 @@ const SeniorHighSchool = ({ cardTitle }) => {
                         confirmButtonText: 'Yes, delete it!',
                       }).then(async (result) => {
                         if (result.isConfirmed) {
-                          validationPrompt(() => {
+                          validationPrompt(async () => {
                             let id = row.original.id
 
-                            setDataLoading(true)
-
-                            api
+                            await api
                               .delete('tvet_school/delete/' + id)
-                              .then((response) => {
-                                fetchSeniorHighSchool()
+                              .then(async (response) => {
+                                await queryClient.invalidateQueries(['tvetSchool'])
 
                                 toast.success(response.data.message)
                               })
                               .catch((error) => {
-                                toast.error(handleError(error))
-                              })
-                              .finally(() => {
-                                setDataLoading(false)
+                                console.info(error.response.data)
+                                // toast.error(handleError(error))
                               })
                           })
                         }
@@ -274,8 +261,6 @@ const SeniorHighSchool = ({ cardTitle }) => {
               </Box>
             )}
           />
-
-          {fetchDataLoading && <DefaultLoading />}
         </CCardBody>
       </CCard>
 
@@ -288,13 +273,7 @@ const SeniorHighSchool = ({ cardTitle }) => {
         <CModalHeader onClose={() => setModalVisible(false)}>
           <CModalTitle>{isEnableEdit ? `Edit ${cardTitle}` : `Add New ${cardTitle}`}</CModalTitle>
         </CModalHeader>
-        <CForm
-          id="form"
-          className="row g-3 needs-validation"
-          noValidate
-          validated={validated}
-          onSubmit={formik.handleSubmit}
-        >
+        <CForm className="row g-3  " onSubmit={form.handleSubmit}>
           <CModalBody>
             <RequiredFieldNote />
 
@@ -305,7 +284,7 @@ const SeniorHighSchool = ({ cardTitle }) => {
                   label="Abbreviation"
                   name="abbreviation"
                   onChange={handleInputChange}
-                  value={formik.values.abbreviation}
+                  value={form.values.abbreviation}
                 />
               </CCol>
               <CCol md={12}>
@@ -315,27 +294,30 @@ const SeniorHighSchool = ({ cardTitle }) => {
                   label={requiredField('School Name')}
                   name="school_name"
                   onChange={handleInputChange}
-                  value={formik.values.school_name}
+                  value={form.values.school_name}
                   required
                 />
               </CCol>
-              {formik.touched.school_name && formik.errors.school_name && (
-                <CFormText className="text-danger">{formik.errors.school_name}</CFormText>
+              {form.touched.school_name && form.errors.school_name && (
+                <CFormText className="text-danger">{form.errors.school_name}</CFormText>
               )}
               <CCol className="my-1" md={12}>
                 <CFormLabel>
                   {
                     <>
-                      {fetchAddressLoading && <CSpinner size="sm" />}
+                      {(address.isLoading || address.isFetching) && <CSpinner size="sm" />}
                       {' Address'}
                     </>
                   }
                 </CFormLabel>
                 <Select
                   ref={selectAddressIputRef}
-                  value={address.find((option) => option.value === formik.values.address)}
+                  value={
+                    (!address.isLoading || !address.isFetching) &&
+                    address.data?.find((option) => option.value === form.values.address)
+                  }
                   onChange={handleSelectAddress}
-                  options={address}
+                  options={(!address.isLoading || !address.isFetching) && address.data}
                   name="address"
                   isSearchable
                   placeholder="Search..."
@@ -344,8 +326,6 @@ const SeniorHighSchool = ({ cardTitle }) => {
               </CCol>
             </CRow>
           </CModalBody>
-
-          {operationLoading && <DefaultLoading />}
 
           <CModalFooter>
             <CButton color="secondary" onClick={() => setModalVisible(false)}>
@@ -356,6 +336,7 @@ const SeniorHighSchool = ({ cardTitle }) => {
             </CButton>
           </CModalFooter>
         </CForm>
+        {(insertTvetSchool.isPending || updateTvetSchool.isPending) && <DefaultLoading />}
       </CModal>
     </>
   )

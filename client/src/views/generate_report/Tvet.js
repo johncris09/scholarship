@@ -39,136 +39,22 @@ import {
   handleError,
   toSentenceCase,
 } from 'src/components/SystemConfiguration'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 const Tvet = () => {
+  const queryClient = useQueryClient()
   const selectSchoolInputRef = useRef()
   const selectAddressIputRef = useRef()
   const selectCourseInputRef = useRef()
   const [data, setData] = useState([])
-  const [school, setSchool] = useState([])
   const [loading, setLoading] = useState(false)
   const [loadingOperation, setLoadingOperation] = useState(false)
-  const [fetchSchoolLoading, setFetchSchoolLoading] = useState(true)
-  const [fetchCourseLoading, setFetchCourseLoading] = useState(true)
   const [title, setTitle] = useState('')
   const [printPreviewModalVisible, setPrintPreviewModalVisible] = useState(false)
   const [user, setUser] = useState([])
-  const [course, setCourse] = useState([])
-  const [address, setAddress] = useState([])
-  const [fetchAddressLoading, setFetchAddressLoading] = useState([])
   const [rowsPerPage, setRowsPerPage] = useState(20) // DEFAULT ROWS PER PAGE
   const [totalChunks, setTotalChunks] = useState(2)
   const [chunks, setChunks] = useState([])
-
-  useEffect(() => {
-    fetchSchool()
-    fetchCourse()
-    fetchAddress()
-    setUser(jwtDecode(localStorage.getItem('scholarshipToken')))
-  }, [])
-
-  const fetchSchool = () => {
-    api
-      .get('tvet_school')
-      .then((response) => {
-        const formattedData = response.data.map((item) => {
-          const value = item.id
-          const label = `${item.school}`
-          return { value, label }
-        })
-        setSchool(formattedData)
-      })
-      .catch((error) => {
-        console.error('Error fetching data:', error)
-      })
-      .finally(() => {
-        setFetchSchoolLoading(false)
-      })
-  }
-
-  const fetchCourse = () => {
-    setFetchCourseLoading(true)
-    api
-      .get('tvet_course')
-      .then((response) => {
-        const formattedData = response.data.map((item) => {
-          const value = item.id
-          const label = `${item.course}`
-          return { value, label }
-        })
-
-        setCourse(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchCourseLoading(false)
-      })
-  }
-
-  const fetchAddress = () => {
-    api
-      .get('barangay')
-      .then((response) => {
-        const formattedData = response.data.map((item) => {
-          const value = item.id
-          const label = `${item.barangay}`
-          return { value, label }
-        })
-
-        setAddress(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchAddressLoading(false)
-      })
-  }
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    form.setFieldValue(name, value)
-  }
-
-  const handleSelectChange = (selectedOption, ref) => {
-    form.setFieldValue(ref.name, selectedOption ? selectedOption.value : '')
-  }
-
-  const form = useFormik({
-    initialValues: {
-      school: '',
-      semester: '',
-      school_year: '',
-      status: '',
-      availment: '',
-      sex: '',
-      year_level: '',
-      address: '',
-      course: '',
-    },
-    onSubmit: async (values) => {
-      setLoadingOperation(true)
-      setLoading(true)
-      await api
-        .get('tvet/generate_report/', { params: values })
-        .then((response) => {
-          let text = values.semester === '' ? '' : `${values.semester} Semester `
-          text += `List of ${values.status} TVET Scholarship Applicants `
-          text += values.school_year === '' ? '' : `for ${values.school_year} `
-          setTitle(text)
-          setData(response.data)
-        })
-        .catch((error) => {
-          toast.error(handleError(error))
-        })
-        .finally(() => {
-          setLoadingOperation(false)
-          setLoading(false)
-        })
-    },
-  })
 
   const column = [
     {
@@ -201,6 +87,101 @@ const Tvet = () => {
       header: 'Availment',
     },
   ]
+
+  const tvetSchool = useQuery({
+    queryFn: async () =>
+      await api.get('tvet_school').then((response) => {
+        const formattedData = response.data.map((item) => {
+          const value = item.id
+          const label = `${item.school}`
+          return { value, label }
+        })
+        return formattedData
+      }),
+    queryKey: ['tvetSchoolReport'],
+    staleTime: Infinity,
+    refetchInterval: 1000,
+  })
+
+  const course = useQuery({
+    queryFn: async () =>
+      await api.get('tvet_course').then((response) => {
+        const formattedData = response.data.map((item) => {
+          const value = item.id
+          const label = `${item.course}`
+          return { value, label }
+        })
+        return formattedData
+      }),
+    queryKey: ['tvetCourseReport'],
+    staleTime: Infinity,
+    refetchInterval: 1000,
+  })
+
+  const address = useQuery({
+    queryFn: async () =>
+      await api.get('barangay').then((response) => {
+        const formattedData = response.data.map((item) => {
+          const value = item.id
+          const label = `${item.barangay}`
+          return { value, label }
+        })
+        return formattedData
+      }),
+    queryKey: ['addressTvetReport'],
+    staleTime: Infinity,
+  })
+
+  useEffect(() => {
+    setUser(jwtDecode(localStorage.getItem('scholarshipToken')))
+  }, [])
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    form.setFieldValue(name, value)
+  }
+
+  const handleSelectChange = (selectedOption, ref) => {
+    form.setFieldValue(ref.name, selectedOption ? selectedOption.value : '')
+  }
+
+  const form = useFormik({
+    initialValues: {
+      school: '',
+      semester: '',
+      school_year: '',
+      status: '',
+      availment: '',
+      sex: '',
+      year_level: '',
+      address: '',
+      course: '',
+    },
+    onSubmit: async (values) => {
+      setLoadingOperation(true)
+      setLoading(true)
+      await api
+        .get('tvet/generate_report/', { params: values })
+        .then((response) => {
+          if (response.data.length > 0) {
+            let text = values.semester === '' ? '' : `${values.semester} Semester `
+            text += `List of ${values.status} TVET Scholarship Applicants `
+            text += values.school_year === '' ? '' : `for ${values.school_year} `
+            setTitle(text)
+            setData(response.data)
+          } else {
+            toast.info('No Record Found')
+          }
+        })
+        .catch((error) => {
+          toast.error(handleError(error))
+        })
+        .finally(() => {
+          setLoadingOperation(false)
+          setLoading(false)
+        })
+    },
+  })
 
   const csvOptions = {
     fieldSeparator: ',',
@@ -427,16 +408,19 @@ const Tvet = () => {
                 <CFormLabel>
                   {
                     <>
-                      {fetchSchoolLoading && <CSpinner size="sm" />}
+                      {tvetSchool.isLoading && <CSpinner size="sm" />}
                       {' School'}
                     </>
                   }
                 </CFormLabel>
                 <Select
                   ref={selectSchoolInputRef}
-                  value={school.find((option) => option.value === form.values.school)}
+                  value={
+                    !tvetSchool.isLoading &&
+                    tvetSchool.data?.find((option) => option.value === form.values.school)
+                  }
                   onChange={handleSelectChange}
-                  options={school}
+                  options={!tvetSchool.isLoading && tvetSchool.data}
                   name="school"
                   isSearchable
                   placeholder="Search..."
@@ -545,16 +529,19 @@ const Tvet = () => {
                 <CFormLabel>
                   {
                     <>
-                      {fetchAddressLoading && <CSpinner size="sm" />}
+                      {address.isLoading && <CSpinner size="sm" />}
                       {' Address'}
                     </>
                   }
                 </CFormLabel>
                 <Select
                   ref={selectAddressIputRef}
-                  value={address.find((option) => option.value === form.values.address)}
+                  value={
+                    !address.isLoading &&
+                    address.data?.find((option) => option.value === form.values.address)
+                  }
                   onChange={handleSelectChange}
-                  options={address}
+                  options={!address.isLoading && address.data}
                   name="address"
                   isSearchable
                   placeholder="Search..."
@@ -567,16 +554,19 @@ const Tvet = () => {
                 <CFormLabel>
                   {
                     <>
-                      {fetchCourseLoading && <CSpinner size="sm" />}
+                      {course.isLoading && <CSpinner size="sm" />}
                       {' Course'}
                     </>
                   }
                 </CFormLabel>
                 <Select
                   ref={selectCourseInputRef}
-                  value={course.find((option) => option.value === form.values.course)}
+                  value={
+                    !course.isLoading &&
+                    course.data?.find((option) => option.value === form.values.course)
+                  }
                   onChange={handleSelectChange}
-                  options={course}
+                  options={!course.isLoading && course.data}
                   name="course"
                   isSearchable
                   placeholder="Search..."
@@ -672,7 +662,6 @@ const Tvet = () => {
                 </>
               )}
             />
-            {loading && <DefaultLoading />}
           </CCol>
         </CRow>
       )}
@@ -858,7 +847,14 @@ const Tvet = () => {
                 />
                 <View style={styles.footer}>
                   <Text>
-                    Printed by: {`${user.firstname}  ${user.middlename}. ${user.lastname}`}
+                    Printed by:{' '}
+                    {`${user.firstname} ${
+                      user.middlename
+                        ? user.middlename.length === 1
+                          ? user.middlename + '.'
+                          : user.middlename.substring(0, 1) + '.'
+                        : ''
+                    } ${user.lastname}`}
                   </Text>
 
                   <Text>Printed on: {new Date().toLocaleString()}</Text>

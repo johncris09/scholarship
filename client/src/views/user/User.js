@@ -44,217 +44,13 @@ import {
   validationPrompt,
 } from 'src/components/SystemConfiguration'
 import * as Yup from 'yup'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 const isProduction = false
 
 const User = ({ cardTitle }) => {
-  const avatarRef = useRef(null)
-  const [data, setData] = useState([])
-  const cropperRef = useRef(null)
-  const selectSeniorHighSchoolInputRef = useRef()
-  const selectRoleTypeInputRef = useRef()
-  const [validated, setValidated] = useState(true)
-  const [passwordValidated, setPasswordValidated] = useState(false)
-  const [fetchDataLoading, setFetchDataLoading] = useState(true)
-  const [operationLoading, setOperationLoading] = useState(false)
-  const [modalFormVisible, setModalFormVisible] = useState(false)
-  const [modalChangePasswordFormVisible, setModalChangePasswordFormVisible] = useState(false)
-  const [seniorHighSchool, setSeniorHighSchool] = useState([])
-  const [isEnableEdit, setIsEnableEdit] = useState(false)
-  const [togglePassword, setTogglePassword] = useState(true)
-  const [fetchSeniorHighSchoolLoading, setFetchSeniorHighSchoolLoading] = useState(false)
-  const [cropPhotoModalVisible, setCropPhotoModalVisible] = useState(false)
-
-  const [cropData, setCropData] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
-  useEffect(() => {
-    fetchData()
-    fetchSeniorHighSchool()
-  }, [])
-
-  const fetchData = () => {
-    api
-      .get('user')
-      .then((response) => {
-        setData(response.data)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchDataLoading(false)
-      })
-  }
-
-  const fetchSeniorHighSchool = () => {
-    setFetchSeniorHighSchoolLoading(true)
-    api
-      .get('senior_high_school')
-      .then((response) => {
-        const formattedData = response.data.map((item) => {
-          const value = item.id
-          const label = `${item.school}`
-          return { value, label }
-        })
-
-        setSeniorHighSchool(formattedData)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchSeniorHighSchoolLoading(false)
-      })
-  }
-
-  const validationSchema = Yup.object().shape({
-    first_name: Yup.string().required('First Name is required'),
-    last_name: Yup.string().required('Last Name is required'),
-    username: Yup.string().required('Username is required'),
-    role_type: Yup.string().when('school_user', {
-      is: false,
-      then: (schema) => schema.required('Role Type is required'),
-      otherwise: (schema) => schema,
-    }),
-    password: Yup.string().when('hidePassword', {
-      is: false,
-      then: (schema) =>
-        schema
-          .required('Password is required')
-          .min(7, 'Too Short!')
-          .max(12, 'Too Long!')
-          .matches(
-            /^(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
-            'Password must have at least 1 uppercase letter, 1 symbol, and be at least 8 characters',
-          ),
-      otherwise: (schema) => schema,
-    }),
-    school: Yup.string().when('school_user', {
-      is: true,
-      then: (schema) => schema.required('School is required'),
-      otherwise: (schema) => schema,
-    }),
-  })
-  const form = useFormik({
-    initialValues: {
-      id: '',
-      first_name: '',
-      last_name: '',
-      middle_name: '',
-      username: '',
-      password: '',
-      hidePassword: false,
-      role_type: '',
-      school_user: false,
-      school: '',
-      photo: '',
-    },
-    validationSchema: validationSchema,
-    onSubmit: async (values) => {
-      if (values.hidePassword) {
-        setOperationLoading(true)
-        setFetchDataLoading(true)
-        await api
-          .put('user/update/' + values.id, values)
-          .then((response) => {
-            toast.success(response.data.message)
-            fetchData()
-            setValidated(false)
-            setModalFormVisible(false)
-          })
-          .catch((error) => {
-            toast.error(handleError(error))
-          })
-          .finally(() => {
-            setOperationLoading(false)
-            setFetchDataLoading(false)
-          })
-      } else {
-        await api
-          .post('user/insert', values)
-          .then((response) => {
-            toast.success(response.data.message)
-            form.resetForm()
-            setValidated(false)
-            fetchData()
-          })
-          .catch((error) => {
-            toast.error('Duplicate Entry!')
-          })
-          .finally(() => {
-            setOperationLoading(false)
-          })
-      }
-    },
-  })
-
-  const updatePasswordFormValidationSchema = Yup.object().shape({
-    password: Yup.string()
-      .required('Password is required')
-      .min(7, 'Too Short!')
-      .max(12, 'Too Long!')
-      .matches(
-        /^(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
-        'Password must have at least 1 uppercase letter, 1 symbol, and be at least 8 characters',
-      ),
-  })
-  const updatePasswordForm = useFormik({
-    initialValues: {
-      id: '',
-      password: '',
-    },
-    validationSchema: updatePasswordFormValidationSchema,
-    onSubmit: async (values) => {
-      setOperationLoading(true)
-      setFetchDataLoading(true)
-      // update password
-      await api
-        .put('user/change_password/' + values.id, values)
-        .then((response) => {
-          toast.success(response.data.message)
-          fetchData()
-          setPasswordValidated(false)
-          setModalChangePasswordFormVisible(false)
-        })
-        .catch((error) => {
-          toast.error(handleError(error))
-        })
-        .finally(() => {
-          setOperationLoading(false)
-          setFetchDataLoading(false)
-        })
-    },
-  })
-
-  const handleInputChange = (e) => {
-    form.handleChange(e)
-    const { name, value, type, checked } = e.target
-
-    if (type === 'text' && name !== 'username' && name !== 'password') {
-      form.setFieldValue(name, toSentenceCase(value))
-    } else {
-      form.setFieldValue(name, value)
-    }
-
-    if (type === 'checkbox') {
-      form.setFieldValue(name, checked)
-      // reset school and role type
-      if (!checked) {
-        form.setFieldValue('school', '')
-        form.setFieldValue('role_type', '')
-      } else {
-        form.setFieldValue('role_type', 'User')
-      }
-    }
-  }
-
-  const handleSelectChange = (selectedOption, ref) => {
-    form.setFieldValue(ref.name, selectedOption ? selectedOption.value : '')
-  }
-
-  const handlePasswordInputChange = (e) => {
-    const { name, value } = e.target
-    updatePasswordForm.setFieldValue(name, value)
-  }
+  const queryClient = useQueryClient()
+  const [modalVisible, setModalVisible] = useState(false)
 
   const column = [
     {
@@ -275,7 +71,7 @@ const User = ({ cardTitle }) => {
             }}
           >
             <img
-              alt="avatar"
+              alt="Profile Photo"
               height={25}
               src={
                 isProduction
@@ -327,6 +123,224 @@ const User = ({ cardTitle }) => {
     },
   ]
 
+  const user = useQuery({
+    queryFn: async () =>
+      await api.get('user').then((response) => {
+        return response.data
+      }),
+    queryKey: ['user'],
+    staleTime: Infinity,
+    refetchInterval: 1000,
+  })
+
+  const seniorHighSchoolUser = useQuery({
+    queryFn: async () =>
+      await api.get('senior_high_school').then((response) => {
+        const formattedData = response.data.map((item) => {
+          const value = item.id
+          const label = `${item.school}`
+          return { value, label }
+        })
+        return formattedData
+      }),
+    queryKey: ['senior_high_school_user'],
+    staleTime: Infinity,
+    refetchInterval: 1000,
+  })
+
+  const avatarRef = useRef(null)
+  const [data, setData] = useState([])
+  const cropperRef = useRef(null)
+  const selectSeniorHighSchoolInputRef = useRef()
+  const selectRoleTypeInputRef = useRef()
+  const [validated, setValidated] = useState(true)
+  const [passwordValidated, setPasswordValidated] = useState(false)
+  const [fetchDataLoading, setFetchDataLoading] = useState(true)
+  const [operationLoading, setOperationLoading] = useState(false)
+  const [modalFormVisible, setModalFormVisible] = useState(false)
+  const [modalChangePasswordFormVisible, setModalChangePasswordFormVisible] = useState(false)
+  const [seniorHighSchool, setSeniorHighSchool] = useState([])
+  const [isEnableEdit, setIsEnableEdit] = useState(false)
+  const [togglePassword, setTogglePassword] = useState(true)
+  const [fetchSeniorHighSchoolLoading, setFetchSeniorHighSchoolLoading] = useState(false)
+  const [cropPhotoModalVisible, setCropPhotoModalVisible] = useState(false)
+
+  const [cropData, setCropData] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
+
+  const validationSchema = Yup.object().shape({
+    first_name: Yup.string().required('First Name is required'),
+    last_name: Yup.string().required('Last Name is required'),
+    username: Yup.string().required('Username is required'),
+    role_type: Yup.string().when('school_user', {
+      is: false,
+      then: (schema) => schema.required('Role Type is required'),
+      otherwise: (schema) => schema,
+    }),
+    password: Yup.string().when('hidePassword', {
+      is: false,
+      then: (schema) =>
+        schema
+          .required('Password is required')
+          .min(7, 'Too Short!')
+          .max(12, 'Too Long!')
+          .matches(
+            /^(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
+            'Password must have at least 1 uppercase letter, 1 symbol, and be at least 8 characters',
+          ),
+      otherwise: (schema) => schema,
+    }),
+    school: Yup.string().when('school_user', {
+      is: true,
+      then: (schema) => schema.required('School is required'),
+      otherwise: (schema) => schema,
+    }),
+  })
+  const form = useFormik({
+    initialValues: {
+      id: '',
+      first_name: '',
+      last_name: '',
+      middle_name: '',
+      username: '',
+      password: '',
+      hidePassword: false,
+      role_type: '',
+      school_user: false,
+      school: '',
+      photo: '',
+    },
+    validationSchema: validationSchema,
+    onSubmit: async (values) => {
+      if (values.hidePassword) {
+        await updateUser.mutate(values)
+      } else {
+        await insertUser.mutate(values)
+      }
+    },
+  })
+
+  const insertUser = useMutation({
+    mutationFn: async (user) => {
+      return await api.post('user/insert', user)
+    },
+    onSuccess: async (response) => {
+      if (response.data.status) {
+        toast.success(response.data.message)
+      }
+      form.resetForm()
+      await queryClient.invalidateQueries(['user'])
+    },
+    onError: (error) => {
+      toast.error('Duplicate Entry!')
+    },
+  })
+  const updateUser = useMutation({
+    mutationFn: async (user) => {
+      return await api.put('user/update/' + user.id, user)
+    },
+    onSuccess: async (response) => {
+      if (response.data.status) {
+        toast.success(response.data.message)
+      }
+      form.resetForm()
+      setModalVisible(false)
+      await queryClient.invalidateQueries(['user'])
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+
+  const updatePasswordFormValidationSchema = Yup.object().shape({
+    password: Yup.string()
+      .required('Password is required')
+      .min(7, 'Too Short!')
+      .max(12, 'Too Long!')
+      .matches(
+        /^(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
+        'Password must have at least 1 uppercase letter, 1 symbol, and be at least 8 characters',
+      ),
+  })
+  const updatePasswordForm = useFormik({
+    initialValues: {
+      id: '',
+      password: '',
+    },
+    validationSchema: updatePasswordFormValidationSchema,
+    onSubmit: async (values) => {
+      await updatePassword.mutate(values)
+      // setOperationLoading(true)
+      // setFetchDataLoading(true)
+      // // update password
+      // await api
+      //   .put('user/change_password/' + values.id, values)
+      //   .then((response) => {
+      //     toast.success(response.data.message)
+      //     fetchData()
+      //     setPasswordValidated(false)
+      //     setModalChangePasswordFormVisible(false)
+      //   })
+      //   .catch((error) => {
+      //     toast.error(handleError(error))
+      //   })
+      //   .finally(() => {
+      //     setOperationLoading(false)
+      //     setFetchDataLoading(false)
+      //   })
+    },
+  })
+
+  const updatePassword = useMutation({
+    mutationFn: async (user) => {
+      return await api.put('user/change_password/' + user.id, user)
+    },
+    onSuccess: async (response) => {
+      if (response.data.status) {
+        toast.success(response.data.message)
+      }
+      form.resetForm()
+      setModalVisible(false)
+      await queryClient.invalidateQueries(['user'])
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+
+  const handleInputChange = (e) => {
+    form.handleChange(e)
+    const { name, value, type, checked } = e.target
+
+    if (type === 'text' && name !== 'username' && name !== 'password') {
+      form.setFieldValue(name, toSentenceCase(value))
+    } else {
+      form.setFieldValue(name, value)
+    }
+
+    if (type === 'checkbox') {
+      form.setFieldValue(name, checked)
+      // reset school and role type
+      if (!checked) {
+        form.setFieldValue('school', '')
+        form.setFieldValue('role_type', '')
+      } else {
+        form.setFieldValue('role_type', 'User')
+      }
+    }
+  }
+
+  const handleSelectChange = (selectedOption, ref) => {
+    form.setFieldValue(ref.name, selectedOption ? selectedOption.value : '')
+  }
+
+  const handlePasswordInputChange = (e) => {
+    const { name, value } = e.target
+    updatePasswordForm.setFieldValue(name, value)
+  }
+
   const handleImageChange = (e) => {
     e.preventDefault()
 
@@ -375,7 +389,7 @@ const User = ({ cardTitle }) => {
                 form.resetForm()
                 setIsEnableEdit(false)
                 setValidated(false)
-                setModalFormVisible(!modalFormVisible)
+                setModalVisible(!modalFormVisible)
               }}
             >
               <FontAwesomeIcon icon={faPlus} /> Add {cardTitle}
@@ -385,13 +399,33 @@ const User = ({ cardTitle }) => {
         <CCardBody>
           <MaterialReactTable
             columns={column}
-            data={data}
+            data={!user.isLoading && user.data}
             state={{
-              isLoading: fetchDataLoading,
-              isSaving: fetchDataLoading,
-              showLoadingOverlay: fetchDataLoading,
-              showProgressBars: fetchDataLoading,
-              showSkeletons: fetchDataLoading,
+              isLoading:
+                user.isLoading ||
+                insertUser.isPending ||
+                updateUser.isPending ||
+                updatePassword.isPending,
+              isSaving:
+                user.isLoading ||
+                insertUser.isPending ||
+                updateUser.isPending ||
+                updatePassword.isPending,
+              showLoadingOverlay:
+                user.isLoading ||
+                insertUser.isPending ||
+                updateUser.isPending ||
+                updatePassword.isPending,
+              showProgressBars:
+                user.isLoading ||
+                insertUser.isPending ||
+                updateUser.isPending ||
+                updatePassword.isPending,
+              showSkeletons:
+                user.isLoading ||
+                insertUser.isPending ||
+                updateUser.isPending ||
+                updatePassword.isPending,
             }}
             muiCircularProgressProps={{
               color: 'secondary',
@@ -436,7 +470,7 @@ const User = ({ cardTitle }) => {
                             : `${process.env.REACT_APP_BASEURL_DEVELOPMENT}assets/image/user/${row.original.photo}`
                           : '',
                       })
-                      setModalFormVisible(true)
+                      setModalVisible(true)
                     }}
                   >
                     <EditSharp />
@@ -456,20 +490,19 @@ const User = ({ cardTitle }) => {
                         confirmButtonText: 'Yes, delete it!',
                       }).then(async (result) => {
                         if (result.isConfirmed) {
-                          validationPrompt(() => {
-                            let id = row.original.ID
-                            setFetchDataLoading(true)
-                            api
+                          validationPrompt(async () => {
+                            let id = row.original.id
+
+                            await api
                               .delete('user/delete/' + id)
-                              .then((response) => {
-                                fetchData()
+                              .then(async (response) => {
+                                await queryClient.invalidateQueries(['user'])
+
                                 toast.success(response.data.message)
                               })
                               .catch((error) => {
-                                toast.error(handleError(error))
-                              })
-                              .finally(() => {
-                                setFetchDataLoading(false)
+                                console.info(error.response.data)
+                                // toast.error(handleError(error))
                               })
                           })
                         }
@@ -496,15 +529,13 @@ const User = ({ cardTitle }) => {
               </Box>
             )}
           />
-
-          {fetchDataLoading && <DefaultLoading />}
         </CCardBody>
       </CCard>
 
       <CModal
         alignment="center"
-        visible={modalFormVisible}
-        onClose={() => setModalFormVisible(false)}
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
         backdrop="static"
         keyboard={false}
         size="lg"
@@ -516,13 +547,7 @@ const User = ({ cardTitle }) => {
         </CModalHeader>
         <CModalBody>
           <RequiredFieldNote />
-          <CForm
-            className="row g-3 needs-validation mt-4"
-            noValidate
-            validated={validated}
-            onSubmit={form.handleSubmit}
-            style={{ position: 'relative' }}
-          >
+          <CForm className="row g-3   mt-4" onSubmit={form.handleSubmit}>
             <CRow>
               <CCol md={2} className="mt-3 text-center  ">
                 <p className="text-center">Profile Photo</p>
@@ -612,7 +637,6 @@ const User = ({ cardTitle }) => {
                       name="first_name"
                       onChange={handleInputChange}
                       value={form.values.first_name}
-                      required
                       placeholder="First Name"
                     />
                     {form.touched.first_name && form.errors.first_name && (
@@ -636,7 +660,6 @@ const User = ({ cardTitle }) => {
                       name="last_name"
                       onChange={handleInputChange}
                       value={form.values.last_name}
-                      required
                       placeholder="Last Name"
                     />
                     {form.touched.last_name && form.errors.last_name && (
@@ -652,7 +675,6 @@ const User = ({ cardTitle }) => {
                       name="username"
                       onChange={handleInputChange}
                       value={form.values.username}
-                      required
                       placeholder="Username"
                     />
                     {form.touched.username && form.errors.username && (
@@ -669,7 +691,6 @@ const User = ({ cardTitle }) => {
                             name="password"
                             onChange={handleInputChange}
                             value={form.values.password}
-                            required
                             placeholder="Password"
                           />
                           <CButton
@@ -701,7 +722,6 @@ const User = ({ cardTitle }) => {
                         isSearchable
                         placeholder="Search..."
                         isClearable
-                        required
                       />
                       {form.touched.role_type && form.errors.role_type && (
                         <CFormText className="text-danger">{form.errors.role_type}</CFormText>
@@ -727,23 +747,25 @@ const User = ({ cardTitle }) => {
                       <CFormLabel>
                         {
                           <>
-                            {fetchSeniorHighSchoolLoading && <CSpinner size="sm" />}
+                            {seniorHighSchoolUser.isLoading && <CSpinner size="sm" />}
                             {requiredField(' School')}
                           </>
                         }
                       </CFormLabel>
                       <Select
                         ref={selectSeniorHighSchoolInputRef}
-                        value={seniorHighSchool.find(
-                          (option) => option.value === form.values.school,
-                        )}
+                        value={
+                          !seniorHighSchoolUser.isLoading &&
+                          seniorHighSchoolUser.data?.find(
+                            (option) => option.value === form.values.address,
+                          )
+                        }
                         onChange={handleSelectChange}
-                        options={seniorHighSchool}
+                        options={!seniorHighSchoolUser.isLoading && seniorHighSchoolUser.data}
                         name="school"
                         isSearchable
                         placeholder="Search..."
                         isClearable
-                        required
                       />
                       {form.touched.school && form.errors.school && (
                         <CFormText className="text-danger">{form.errors.school}</CFormText>
@@ -763,7 +785,7 @@ const User = ({ cardTitle }) => {
               </CCol>
             </CRow>
           </CForm>
-          {operationLoading && <DefaultLoading />}
+          {(insertUser.isPending || updateUser.isPending) && <DefaultLoading />}
         </CModalBody>
       </CModal>
 
@@ -773,20 +795,14 @@ const User = ({ cardTitle }) => {
         onClose={() => setModalChangePasswordFormVisible(false)}
         backdrop="static"
         keyboard={false}
-        size="lg"
+        size="md"
       >
         <CModalHeader>
           <CModalTitle>Change Password</CModalTitle>
         </CModalHeader>
         <CModalBody>
           <RequiredFieldNote />
-          <CForm
-            className="row g-3 needs-validation mt-4"
-            noValidate
-            validated={passwordValidated}
-            onSubmit={updatePasswordForm.handleSubmit}
-            style={{ position: 'relative' }}
-          >
+          <CForm className="row g-3   mt-4" onSubmit={updatePasswordForm.handleSubmit}>
             <CCol md={12}>
               <CFormLabel>{requiredField('Password')}</CFormLabel>
               <CInputGroup className="mb-3">
@@ -795,7 +811,6 @@ const User = ({ cardTitle }) => {
                   name="password"
                   onChange={handlePasswordInputChange}
                   value={updatePasswordForm.values.password}
-                  required
                   placeholder="Password"
                 />
                 <CButton
@@ -821,7 +836,7 @@ const User = ({ cardTitle }) => {
               </CButton>
             </CCol>
           </CForm>
-          {operationLoading && <DefaultLoading />}
+          {updatePassword.isPending && <DefaultLoading />}
         </CModalBody>
       </CModal>
     </>

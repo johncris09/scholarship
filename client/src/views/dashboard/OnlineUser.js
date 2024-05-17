@@ -25,6 +25,7 @@ const OnlineUser = () => {
       }),
     queryKey: ['onlineUser'],
     refetchIntervalInBackground: true,
+    refetchInterval: 1000,
   })
 
   return (

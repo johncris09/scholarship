@@ -6,28 +6,12 @@ import MaterialReactTable from 'material-react-table'
 import { api, handleError, toSentenceCase } from 'src/components/SystemConfiguration'
 import CIcon from '@coreui/icons-react'
 import { cilInfo } from '@coreui/icons'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 const Sibling = ({ cardTitle }) => {
+  const queryClient = useQueryClient()
   const [siblingData, setSiblingData] = useState([])
   const [fetchSiblingLoading, setFetchSiblingLoading] = useState(true)
-
-  useEffect(() => {
-    fetchSibling()
-  }, [])
-
-  const fetchSibling = () => {
-    api
-      .get('sibling')
-      .then((response) => {
-        setSiblingData(response.data)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setFetchSiblingLoading(false)
-      })
-  }
 
   const column = [
     {
@@ -74,6 +58,15 @@ const Sibling = ({ cardTitle }) => {
       },
     },
   ]
+  const sibling = useQuery({
+    queryFn: async () =>
+      await api.get('sibling').then((response) => {
+        return response.data
+      }),
+    queryKey: ['sibling'],
+    staleTime: Infinity,
+    refetchInterval: 1000,
+  })
   return (
     <>
       <CCard className="mb-4">
@@ -96,15 +89,15 @@ const Sibling = ({ cardTitle }) => {
 
               <MaterialReactTable
                 columns={column}
-                data={siblingData}
+                data={!sibling.isLoading && sibling.data}
                 enableRowVirtualization
                 enableColumnVirtualization
                 state={{
-                  isLoading: fetchSiblingLoading,
-                  isSaving: fetchSiblingLoading,
-                  showLoadingOverlay: fetchSiblingLoading,
-                  showProgressBars: fetchSiblingLoading,
-                  showSkeletons: fetchSiblingLoading,
+                  isLoading: sibling.isLoading,
+                  isSaving: sibling.isLoading,
+                  showLoadingOverlay: sibling.isLoading,
+                  showProgressBars: sibling.isLoading,
+                  showSkeletons: sibling.isLoading,
                 }}
                 muiCircularProgressProps={{
                   color: 'secondary',
@@ -125,7 +118,6 @@ const Sibling = ({ cardTitle }) => {
                 initialState={{ density: 'compact' }}
               />
             </CCol>
-            {/* {fetchSiblingLoading && <DefaultLoading />} */}
           </CRow>
         </CCardBody>
       </CCard>

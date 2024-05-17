@@ -33,19 +33,12 @@ import {
   validationPrompt,
 } from 'src/components/SystemConfiguration'
 import * as Yup from 'yup'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 const CollegeSchool = ({ cardTitle }) => {
-  const [data, setData] = useState([])
-  const [validated, setValidated] = useState(true)
-  const [fetchDataLoading, setDataLoading] = useState(true)
-  const [operationLoading, setOperationLoading] = useState(false)
+  const queryClient = useQueryClient()
   const [modalVisible, setModalVisible] = useState(false)
   const [isEnableEdit, setIsEnableEdit] = useState(false)
-  const [editId, setEditId] = useState('')
-
-  useEffect(() => {
-    fetchCollegeSchool()
-  }, [])
 
   const column = [
     {
@@ -62,70 +55,73 @@ const CollegeSchool = ({ cardTitle }) => {
     },
   ]
 
-  const fetchCollegeSchool = () => {
-    api
-      .get('college_school')
-      .then((response) => {
-        setData(response.data)
-      })
-      .catch((error) => {
-        toast.error(handleError(error))
-      })
-      .finally(() => {
-        setDataLoading(false)
-      })
-  }
+  const collegeSchool = useQuery({
+    queryFn: async () =>
+      await api.get('college_school').then((response) => {
+        return response.data
+      }),
+    queryKey: ['collegeSchool'],
+    staleTime: Infinity,
+    refetchInterval: 1000,
+  })
 
   const validationSchema = Yup.object().shape({
     school_name: Yup.string().required('School Name is required'),
   })
-  const formik = useFormik({
+  const form = useFormik({
     initialValues: {
+      id: '',
       abbreviation: '',
       school_name: '',
       address: '',
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-      setOperationLoading(true)
-
-      !isEnableEdit
-        ? // add new data
-          await api
-            .post('college_school/insert', values)
-            .then((response) => {
-              toast.success(response.data.message)
-              fetchCollegeSchool()
-              formik.resetForm()
-              setValidated(false)
-            })
-            .catch((error) => {
-              toast.error(handleError(error))
-            })
-            .finally(() => {
-              setOperationLoading(false)
-            })
-        : // update data
-          await api
-            .put('college_school/update/' + editId, values)
-            .then((response) => {
-              toast.success(response.data.message)
-              fetchCollegeSchool()
-              setValidated(false)
-              setModalVisible(false)
-            })
-            .catch((error) => {
-              toast.error(handleError(error))
-            })
-            .finally(() => {
-              setOperationLoading(false)
-            })
+      if (values.id) {
+        await updateCollegeSchool.mutate(values)
+      } else {
+        await insertCollegeSchool.mutate(values)
+      }
     },
   })
 
+  const insertCollegeSchool = useMutation({
+    mutationFn: async (school) => {
+      return await api.post('college_school/insert', school)
+    },
+    onSuccess: async (response) => {
+      if (response.data.status) {
+        toast.success(response.data.message)
+      }
+      form.resetForm()
+      await queryClient.invalidateQueries(['collegeSchool'])
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
+
+  const updateCollegeSchool = useMutation({
+    mutationFn: async (school) => {
+      return await api.put('college_school/update/' + school.id, school)
+    },
+    onSuccess: async (response) => {
+      if (response.data.status) {
+        toast.success(response.data.message)
+      }
+      form.resetForm()
+      setModalVisible(false)
+      await queryClient.invalidateQueries(['collegeSchool'])
+    },
+    onError: (error) => {
+      console.info(error.response.data)
+      // toast.error(error.response.data.message)
+    },
+  })
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    formik.setFieldValue(name, value)
+    form.setFieldValue(name, value)
   }
 
   return (
@@ -139,9 +135,8 @@ const CollegeSchool = ({ cardTitle }) => {
               size="sm"
               color="primary"
               onClick={() => {
-                formik.resetForm()
+                form.resetForm()
                 setIsEnableEdit(false)
-                setValidated(false)
                 setModalVisible(!modalVisible)
               }}
             >
@@ -152,13 +147,28 @@ const CollegeSchool = ({ cardTitle }) => {
         <CCardBody>
           <MaterialReactTable
             columns={column}
-            data={data}
+            data={!collegeSchool.isLoading && collegeSchool.data}
             state={{
-              isLoading: fetchDataLoading,
-              isSaving: fetchDataLoading,
-              showLoadingOverlay: fetchDataLoading,
-              showProgressBars: fetchDataLoading,
-              showSkeletons: fetchDataLoading,
+              isLoading:
+                collegeSchool.isLoading ||
+                insertCollegeSchool.isPending ||
+                updateCollegeSchool.isPending,
+              isSaving:
+                collegeSchool.isLoading ||
+                insertCollegeSchool.isPending ||
+                updateCollegeSchool.isPending,
+              showLoadingOverlay:
+                collegeSchool.isLoading ||
+                insertCollegeSchool.isPending ||
+                updateCollegeSchool.isPending,
+              showProgressBars:
+                collegeSchool.isLoading ||
+                insertCollegeSchool.isPending ||
+                updateCollegeSchool.isPending,
+              showSkeletons:
+                collegeSchool.isLoading ||
+                insertCollegeSchool.isPending ||
+                updateCollegeSchool.isPending,
             }}
             muiCircularProgressProps={{
               color: 'secondary',
@@ -185,15 +195,13 @@ const CollegeSchool = ({ cardTitle }) => {
                   <IconButton
                     color="warning"
                     onClick={() => {
-                      let id = row.original.id
-                      setEditId(id)
-                      formik.setValues({
+                      form.setValues({
+                        id: row.original.id,
                         abbreviation: row.original.abbreviation,
                         school_name: row.original.school,
                         address: row.original.address,
                       })
                       setIsEnableEdit(true)
-
                       setModalVisible(true)
                     }}
                   >
@@ -214,23 +222,19 @@ const CollegeSchool = ({ cardTitle }) => {
                         confirmButtonText: 'Yes, delete it!',
                       }).then(async (result) => {
                         if (result.isConfirmed) {
-                          validationPrompt(() => {
+                          validationPrompt(async () => {
                             let id = row.original.id
 
-                            setDataLoading(true)
-
-                            api
+                            await api
                               .delete('college_school/delete/' + id)
-                              .then((response) => {
-                                fetchCollegeSchool()
+                              .then(async (response) => {
+                                await queryClient.invalidateQueries(['collegeSchool'])
 
                                 toast.success(response.data.message)
                               })
                               .catch((error) => {
-                                toast.error(handleError(error))
-                              })
-                              .finally(() => {
-                                setDataLoading(false)
+                                console.info(error.response.data)
+                                // toast.error(handleError(error))
                               })
                           })
                         }
@@ -243,8 +247,6 @@ const CollegeSchool = ({ cardTitle }) => {
               </Box>
             )}
           />
-
-          {fetchDataLoading && <DefaultLoading />}
         </CCardBody>
       </CCard>
 
@@ -257,13 +259,7 @@ const CollegeSchool = ({ cardTitle }) => {
         <CModalHeader onClose={() => setModalVisible(false)}>
           <CModalTitle>{isEnableEdit ? `Edit ${cardTitle}` : `Add New ${cardTitle}`}</CModalTitle>
         </CModalHeader>
-        <CForm
-          id="form"
-          className="row g-3 needs-validation"
-          noValidate
-          validated={validated}
-          onSubmit={formik.handleSubmit}
-        >
+        <CForm className="row g-3  " onSubmit={form.handleSubmit}>
           <CModalBody>
             <RequiredFieldNote />
 
@@ -274,7 +270,7 @@ const CollegeSchool = ({ cardTitle }) => {
                   label="Abbreviation"
                   name="abbreviation"
                   onChange={handleInputChange}
-                  value={formik.values.abbreviation}
+                  value={form.values.abbreviation}
                 />
               </CCol>
 
@@ -285,11 +281,11 @@ const CollegeSchool = ({ cardTitle }) => {
                   label={requiredField('School Name')}
                   name="school_name"
                   onChange={handleInputChange}
-                  value={formik.values.school_name}
+                  value={form.values.school_name}
                 />
               </CCol>
-              {formik.touched.school_name && formik.errors.school_name && (
-                <CFormText className="text-danger">{formik.errors.school_name}</CFormText>
+              {form.touched.school_name && form.errors.school_name && (
+                <CFormText className="text-danger">{form.errors.school_name}</CFormText>
               )}
 
               <CCol md={12}>
@@ -298,13 +294,11 @@ const CollegeSchool = ({ cardTitle }) => {
                   label="Address"
                   name="address"
                   onChange={handleInputChange}
-                  value={formik.values.address}
+                  value={form.values.address}
                 />
               </CCol>
             </CRow>
           </CModalBody>
-
-          {operationLoading && <DefaultLoading />}
 
           <CModalFooter>
             <CButton size="sm" color="secondary" onClick={() => setModalVisible(false)}>
@@ -315,6 +309,7 @@ const CollegeSchool = ({ cardTitle }) => {
             </CButton>
           </CModalFooter>
         </CForm>
+        {(insertCollegeSchool.isPending || updateCollegeSchool.isPending) && <DefaultLoading />}
       </CModal>
     </>
   )
