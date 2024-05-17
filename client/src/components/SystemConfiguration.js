@@ -1,11 +1,11 @@
 import React from 'react'
 import { ExportToCsv } from 'export-to-csv'
-import axios from 'axios'
 import CryptoJS from 'crypto-js'
 import { MagnifyingGlass, Oval, RotatingLines } from 'react-loader-spinner'
 import Swal from 'sweetalert2'
 import { EditorState, convertToRaw, convertFromRaw } from 'draft-js'
 import { Box } from '@mui/material'
+import axios from 'axios'
 
 const isProduction = false
 
@@ -138,7 +138,7 @@ const seniorHighDefaultColumn = [
           }}
         >
           <img
-            alt="avatar"
+            alt="Profile Photo"
             height={25}
             src={
               isProduction
@@ -223,7 +223,7 @@ const seniorHighDefaultColumn = [
   },
   {
     accessorKey: 'reason',
-    header: 'Reason',
+    header: 'Note(s)',
     includeInExport: false,
     accessorFn: (row) => {
       const contentStateString = row.reason
@@ -239,6 +239,12 @@ const seniorHighDefaultColumn = [
         return plainText
       }
     },
+  },
+  {
+    accessorKey: 'fourps_beneficiary',
+    header: "4'ps Beneficiary",
+    accessorFn: (row) => (parseInt(row.fourps_beneficiary) === 1 ? 'Yes' : 'No'),
+    includeInExport: true,
   },
 ]
 
@@ -267,7 +273,7 @@ const collegeDefaultColumn = [
           }}
         >
           <img
-            alt="avatar"
+            alt="Profile Photo"
             height={25}
             src={
               isProduction
@@ -356,7 +362,7 @@ const collegeDefaultColumn = [
   },
   {
     accessorKey: 'reason',
-    header: 'Reason',
+    header: 'Note(s)',
     accessorFn: (row) => {
       const contentStateString = row.reason
 
@@ -372,6 +378,12 @@ const collegeDefaultColumn = [
       }
     },
     includeInExport: false,
+  },
+  {
+    accessorKey: 'fourps_beneficiary',
+    header: "4'ps Beneficiary",
+    accessorFn: (row) => (parseInt(row.fourps_beneficiary) === 1 ? 'Yes' : 'No'),
+    includeInExport: true,
   },
 ]
 
@@ -400,7 +412,7 @@ const tvetDefaultColumn = [
           }}
         >
           <img
-            alt="avatar"
+            alt="Profile Photo"
             height={25}
             src={
               isProduction
@@ -485,7 +497,7 @@ const tvetDefaultColumn = [
   },
   {
     accessorKey: 'reason',
-    header: 'Reason',
+    header: 'Note(s)',
     accessorFn: (row) => {
       const contentStateString = row.reason
 
@@ -501,6 +513,12 @@ const tvetDefaultColumn = [
       }
     },
     includeInExport: false,
+  },
+  {
+    accessorKey: 'fourps_beneficiary',
+    header: "4'ps Beneficiary",
+    accessorFn: (row) => (parseInt(row.fourps_beneficiary) === 1 ? 'Yes' : 'No'),
+    includeInExport: true,
   },
 ]
 const commiteeChairperson = 'MARK ANTHONY D. ARTIGAS'
