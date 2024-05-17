@@ -127,17 +127,17 @@ const _nav = (userInfo) => {
         items: [
           {
             component: CNavItem,
-            name: 'Senior High',
+            name: 'Senior High School',
             to: '/school/senior_high',
           },
           {
             component: CNavItem,
-            name: 'College',
+            name: 'College School',
             to: '/school/college',
           },
           {
             component: CNavItem,
-            name: 'TVET',
+            name: 'TVET School',
             to: '/school/tvet',
           },
         ],

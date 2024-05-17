@@ -143,19 +143,19 @@ const routes = [
   {
     path: '/school/senior_high',
     user: ['4BSVYawhFI8j779vM8q1'],
-    name: 'Senior High',
+    name: 'Senior High School',
     element: SeniorHighSchool,
   },
   {
     path: '/school/college',
     user: ['4BSVYawhFI8j779vM8q1'],
-    name: 'College',
+    name: 'College School',
     element: CollegeSchool,
   },
   {
     path: '/school/tvet',
     user: ['4BSVYawhFI8j779vM8q1'],
-    name: 'TVET',
+    name: 'TVET School',
     element: TvetSchool,
   },
 
