@@ -49,18 +49,9 @@ const Applicant = ({ cardTitle }) => {
       header: 'Address',
     },
     {
-      accessorKey: 'birthdate',
-      header: 'Birthdate',
-    },
-    {
       accessorKey: 'id',
       header: 'Age',
       accessorFn: (row) => calculateAge(row.birthdate),
-    },
-    {
-      accessorKey: 'civil_status',
-      header: 'Civil Status',
-      accessorFn: (row) => toSentenceCase(row.civil_status),
     },
     {
       accessorKey: 'sex',
@@ -72,24 +63,12 @@ const Applicant = ({ cardTitle }) => {
       header: 'Contact Number',
     },
     {
-      accessorKey: 'email_address',
-      header: 'Email Address',
-    },
-    {
       accessorKey: 'strand',
       header: 'Strand',
     },
     {
       accessorKey: 'grade_level',
       header: 'Grade Level',
-    },
-    {
-      accessorKey: 'semester',
-      header: 'Semester',
-    },
-    {
-      accessorKey: 'school_year',
-      header: 'School Year',
     },
     {
       accessorKey: 'app_status',
@@ -161,14 +140,16 @@ const Applicant = ({ cardTitle }) => {
             animation: 'pulse',
             height: 28,
           }}
+          enableColumnActions={false}
+          enableDensityToggle={false}
+          enableFullScreenToggle={false}
           columnFilterDisplayMode="popover"
           paginationDisplayMode="pages"
           positionToolbarAlertBanner="bottom"
-          enableGrouping
-          enableStickyHeader
-          enableStickyFooter
+          // enableGrouping
           initialState={{
             density: 'compact',
+            pagination: { pageSize: 20 },
           }}
           renderTopToolbarCustomActions={({ table }) => (
             <>
@@ -189,11 +170,20 @@ const Applicant = ({ cardTitle }) => {
                   <FontAwesomeIcon icon={faFileExcel} /> Export to Excel
                 </CButton>
               </Box>
+              <Box
+                className="d-none d-lg-flex"
+                sx={{
+                  display: 'flex',
+                  gap: '.2rem',
+                  p: '0.5rem',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <h5>List of {toSentenceCase(status)} Applicants</h5>
+              </Box>
             </>
           )}
         />
-
-        {fetchDataLoading && <DefaultLoading />}
       </CCard>
     </>
   )

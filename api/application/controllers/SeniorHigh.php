@@ -22,8 +22,7 @@ class SeniorHigh extends RestController
 
 	public function get_by_status_get()
 	{
-		$seniorhigh = new SeniorHighModel;
-		$CryptoHelper = new CryptoHelper;
+		$seniorhigh = new SeniorHighModel; 
 		$data = array(
 			'app_status' => $this->input->get('status'),
 		);
@@ -35,8 +34,7 @@ class SeniorHigh extends RestController
 	public function get_all_by_status_get()
 	{
 
-		$seniorhigh = new SeniorHighModel;
-		$CryptoHelper = new CryptoHelper;
+		$seniorhigh = new SeniorHighModel; 
 		$data = array(
 			'app_status' => $this->input->get('status'),
 		);
@@ -47,8 +45,7 @@ class SeniorHigh extends RestController
 
 	public function filter_by_status_get()
 	{
-		$seniorhigh = new SeniorHighModel;
-		$CryptoHelper = new CryptoHelper;
+		$seniorhigh = new SeniorHighModel; 
 		$data = array(
 			'app_status' => $this->input->get('status'),
 			'school_year' => $this->input->get('school_year'),
@@ -63,8 +60,7 @@ class SeniorHigh extends RestController
 
 	public function total_status_get()
 	{
-		$seniorhigh = new SeniorHighModel;
-		$CryptoHelper = new CryptoHelper;
+		$seniorhigh = new SeniorHighModel; 
 
 		$requestData = $this->input->get();
 
@@ -201,7 +197,7 @@ class SeniorHigh extends RestController
 	public function total_get()
 	{
 		$seniorhigh = new SeniorHighModel;
-		$CryptoHelper = new CryptoHelper;
+	 
 		$requestData = $this->input->get();
 
 
@@ -217,8 +213,7 @@ class SeniorHigh extends RestController
 
 	public function get_status_by_barangay_get()
 	{
-		$seniorhigh = new SeniorHighModel;
-		$CryptoHelper = new CryptoHelper;
+		$seniorhigh = new SeniorHighModel; 
 
 		$requestData = $this->input->get();
 
@@ -259,8 +254,7 @@ class SeniorHigh extends RestController
 
 	public function filter_total_status_get()
 	{
-		$seniorhigh = new SeniorHighModel;
-		$CryptoHelper = new CryptoHelper;
+		$seniorhigh = new SeniorHighModel; 
 		$requestData = $this->input->get();
 		$data = array(
 			'semester' => !empty($requestData['semester']) ? $requestData['semester'] : '',
@@ -279,8 +273,7 @@ class SeniorHigh extends RestController
 
 	public function filter_total_get()
 	{
-		$seniorhigh = new SeniorHighModel;
-		$CryptoHelper = new CryptoHelper;
+		$seniorhigh = new SeniorHighModel; 
 		$requestData = $this->input->get();
 		$data = array(
 			'semester' => !empty($requestData['semester']) ? $requestData['semester'] : '',
@@ -294,8 +287,7 @@ class SeniorHigh extends RestController
 
 	public function filter_status_by_barangay_get()
 	{
-		$seniorhigh = new SeniorHighModel;
-		$CryptoHelper = new CryptoHelper;
+		$seniorhigh = new SeniorHighModel; 
 
 		$requestData = $this->input->get();
 
@@ -333,8 +325,7 @@ class SeniorHigh extends RestController
 
 	public function all_total_status_get()
 	{
-		$seniorhigh = new SeniorHighModel;
-		$CryptoHelper = new CryptoHelper;
+		$seniorhigh = new SeniorHighModel; 
 		$result = array(
 			'type' => "Senior High",
 			'pending' => (int) $seniorhigh->all_total_pending()->total_pending,
@@ -443,14 +434,21 @@ class SeniorHigh extends RestController
 
 
 		$filter_data = [];
-
+		if (isset($requestData['school']) && !empty($requestData['school'])) {
+			$filter_data['school'] = $requestData['school'];
+		}
 		if (isset($requestData['semester']) && !empty($requestData['semester'])) {
 			$filter_data['semester'] = $requestData['semester'];
 		}
 		if (isset($requestData['school_year']) && !empty($requestData['school_year'])) {
 			$filter_data['school_year'] = $requestData['school_year'];
 		}
+
+
+		
 		$result = $seniorhigh->get_data_by_gender($filter_data);
+		 
+
 		$data = [];
 
 

@@ -674,8 +674,7 @@ class SeniorHighModel extends CI_Model
 
         $query_sem = $this->db->query('SELECT current_semester FROM  config where id = 1')->result()[0];
         $query_sy = $this->db->query('SELECT current_sy FROM  config where id = 1')->result()[0];
-
-
+ 
         $this->db
             ->select('
             scholarship.sex as label,
@@ -684,7 +683,16 @@ class SeniorHighModel extends CI_Model
             ->join('scholarship', ' senior_high.scholarship_id = scholarship.id');
 
         if (!empty($data)) {
-            $this->db->where($data);
+			if(isset($data['school'])){
+
+				$this->db->where('senior_high.school',$data['school']);
+				$this->db->where('senior_high.semester', $query_sem->current_semester);
+				$this->db->where('senior_high.school_year', $query_sy->current_sy);
+
+			}else{
+
+				$this->db->where($data);
+			}
         } else {
             $this->db->where('senior_high.semester', $query_sem->current_semester);
             $this->db->where('senior_high.school_year', $query_sy->current_sy);
@@ -694,7 +702,7 @@ class SeniorHighModel extends CI_Model
         $this->db->group_by('sex');
 
         $query = $this->db->get();
-
+		 
         return $query->result();
 
     }

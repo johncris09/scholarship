@@ -13,6 +13,7 @@ import {
   CTableRow,
   CWidgetStatsF,
 } from '@coreui/react'
+import { Skeleton } from '@mui/material'
 import CIcon from '@coreui/icons-react'
 import { cilChartLine } from '@coreui/icons'
 import { ToastContainer, toast } from 'react-toastify'
@@ -22,8 +23,10 @@ import 'animate.css'
 import { api, DefaultLoading, WidgetLoading, handleError } from 'src/components/SystemConfiguration'
 import CountUp from 'react-countup'
 import { Link } from 'react-router-dom'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 const Dashboard = ({ cardTitle }) => {
+  const queryClient = useQueryClient()
   const [loadingTotal, setLoadingTotal] = useState(true)
   const [loading, setLoading] = useState(false)
   const [loadingChart, setLoadingChart] = useState(false)
@@ -32,6 +35,7 @@ const Dashboard = ({ cardTitle }) => {
   const [loadingOperation, setLoadingOperation] = useState(true)
   const [statusAddressChartData, setStatusAddressChartData] = useState([])
   const [user, setUser] = useState([])
+  const token = jwtDecode(localStorage.getItem('scholarshipToken'))
 
   useEffect(() => {
     fetchTotalStatus()
@@ -42,8 +46,6 @@ const Dashboard = ({ cardTitle }) => {
 
   // Chart Data by Address
   const fetchStatusAddress = async () => {
-    const token = jwtDecode(localStorage.getItem('scholarshipToken'))
-
     fetchTotalStatus()
     setLoadingChart(true)
 
@@ -90,8 +92,6 @@ const Dashboard = ({ cardTitle }) => {
 
   // Widget Total
   const fetchTotal = async () => {
-    const token = jwtDecode(localStorage.getItem('scholarshipToken'))
-
     setLoadingTotal(true)
 
     await api
@@ -110,36 +110,23 @@ const Dashboard = ({ cardTitle }) => {
       })
   }
 
-  const column = [
-    {
-      accessorKey: 'type',
-      header: 'Scholarship Type',
-    },
-    {
-      accessorKey: 'approved',
-      header: 'Approved',
-    },
-    {
-      accessorKey: 'pending',
-      header: 'Pending',
-    },
-    {
-      accessorKey: 'disapproved',
-      header: 'Dispproved',
-    },
-    {
-      accessorKey: 'archived',
-      header: 'Archived',
-    },
-    {
-      accessorKey: 'void',
-      header: 'Void',
-    },
-  ]
+  const applicationGender = useQuery({
+    queryFn: async () =>
+      await api
+        .get('senior_high/get_data_by_gender', {
+          params: { school: token.school }, // for school user
+        })
+        .then((response) => {
+          return response.data
+        }),
+    queryKey: ['applicationGender'],
+    staleTime: Infinity,
+  })
+
   return (
     <>
       <ToastContainer />
-      <h5>Welcome {user.firstname},</h5>
+      <h5>Welcome {token.firstname},</h5>
       <>
         <CRow className="animate__animated animate__pulse">
           <CCol style={{ position: 'relative' }}>
@@ -154,19 +141,18 @@ const Dashboard = ({ cardTitle }) => {
             {loadingTotal && <WidgetLoading />}
           </CCol>
         </CRow>
-        <CRow>
+
+        <CRow className="justify-content-center mb-4">
           <CCol style={{ position: 'relative' }}>
             <CCard>
               <CCardBody className="" bordered>
                 <CTable caption="top" responsive className="text-center" bordered>
-                  <CTableCaption>Approval Status Overview</CTableCaption>
+                  <CTableCaption className="h5">Approval Status Overview</CTableCaption>
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell scope="col">Pending</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Approved</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Archived</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Disapproved</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Void</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
@@ -182,18 +168,8 @@ const Dashboard = ({ cardTitle }) => {
                         </Link>
                       </CTableDataCell>
                       <CTableDataCell>
-                        <Link to="/status/archived" replace>
-                          {totalStatusData.archived}
-                        </Link>
-                      </CTableDataCell>
-                      <CTableDataCell>
                         <Link to="/status/disapproved" replace>
                           {totalStatusData.disapproved}
-                        </Link>
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <Link to="/status/void" replace>
-                          {totalStatusData.void}
                         </Link>
                       </CTableDataCell>
                     </CTableRow>
@@ -204,11 +180,49 @@ const Dashboard = ({ cardTitle }) => {
             {loadingTotal && <DefaultLoading />}
           </CCol>
         </CRow>
+
+        <CRow className="justify-content-center mb-4">
+          <CCol md={12}>
+            <CCard id="chart">
+              <CCardBody>
+                <p className="h5">Gender Statistics</p>
+                <br />
+                {applicationGender.isLoading ? (
+                  <>
+                    <div className="d-grid gap-2 d-md-flex justify-content-center mt-2">
+                      <Skeleton variant="rounded" width={90} height={15} />
+                      <Skeleton variant="rounded" width={90} height={15} />
+                    </div>
+                    <div className="d-grid gap-2 d-md-flex justify-content-center mt-3">
+                      <Skeleton variant="circular" height={350} width={350} />
+                    </div>
+                  </>
+                ) : (
+                  <CChart
+                    className="mx-auto"
+                    type="doughnut"
+                    style={{ height: 400, width: 400 }}
+                    data={{
+                      labels: ['Male', 'Female'],
+                      datasets: [
+                        {
+                          backgroundColor: ['#378CE7', '#FF5BAE'],
+                          data: [applicationGender.data?.male, applicationGender.data?.female],
+                        },
+                      ],
+                    }}
+                  />
+                )}
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
+
         <CRow className="justify-content-center mt-4">
           <CCol md={12}>
             <CCard className="mb-4">
               <CCardBody>
-                <p className="text-medium-emphasis small">
+                <p className="text-medium-emphasis h5">
                   A chart that shows the application status for each address.
                 </p>
 
