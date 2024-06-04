@@ -150,18 +150,13 @@ const Dashboard = ({ cardTitle }) => {
                   <CTableCaption className="h5">Approval Status Overview</CTableCaption>
                   <CTableHead>
                     <CTableRow>
-                      <CTableHeaderCell scope="col">Pending</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Approved</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Disapproved</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Pending</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
                     <CTableRow>
-                      <CTableDataCell>
-                        <Link to="/status/pending" replace>
-                          {totalStatusData.pending}
-                        </Link>
-                      </CTableDataCell>
                       <CTableDataCell>
                         <Link to="/status/approved" replace>
                           {totalStatusData.approved}
@@ -170,6 +165,11 @@ const Dashboard = ({ cardTitle }) => {
                       <CTableDataCell>
                         <Link to="/status/disapproved" replace>
                           {totalStatusData.disapproved}
+                        </Link>
+                      </CTableDataCell>
+                      <CTableDataCell>
+                        <Link to="/status/pending" replace>
+                          {totalStatusData.pending}
                         </Link>
                       </CTableDataCell>
                     </CTableRow>
