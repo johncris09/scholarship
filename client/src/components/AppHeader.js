@@ -187,14 +187,14 @@ const AppHeader = () => {
           <AppHeaderDropdown />
         </CHeaderNav>
       </CContainer>
-      {user.role !== 'azr14gGCV7hLW2ppQz2l' && (
+      {/* {user.role !== 'azr14gGCV7hLW2ppQz2l' && (
         <>
           <CHeaderDivider />
           <CContainer fluid>
             <AppBreadcrumb />
           </CContainer>
         </>
-      )}
+      )} */}
     </CHeader>
   )
 }
